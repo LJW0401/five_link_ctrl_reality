@@ -17,7 +17,6 @@
   */
 
 #include "shoot_task.h"
-
 #include "cmsis_os.h"
 #include "shoot.h"
 #include "shoot_fric_trigger.h"
@@ -45,7 +44,7 @@ __weak void SendShootCmd(void);
 void shoot_task(void const * pvParameters)
 {
     // 等待陀螺仪任务更新陀螺仪数据
-    vTaskDelay(SHOOT_TASK_INIT_TIME);
+    vTaskDelay(SHOOT_TASK_INIT_TIME);//
     // 射击初始化
     InitShoot();
 
@@ -65,7 +64,7 @@ void shoot_task(void const * pvParameters)
         vTaskDelay(SHOOT_CONTROL_TIME);
     }
 }
-
+//初始化
 __weak void InitShoot(void)
 {
     /* 
