@@ -20,13 +20,17 @@
 #if (GIMBAL_TYPE == GIMBAL_YAW_PITCH_DIRECT)
 #ifndef GIMBAL_YAW_PITCH_H
 #define GIMBAL_YAW_PITCH_H
-#include "IMU_task.h"
+#include "IMU_task.h"//陀螺仪文件
 #include "gimbal.h"
 #include "motor.h"
 #include "pid.h"
 #include "remote_control.h"
 #include "robot_param.h"
 #include "struct_typedef.h"
+#include  "user_lib.h"
+#include "CAN_cmd_dji.h"
+#include "detect_task.h"
+
 
 /**
  * @brief 云台模式
@@ -50,10 +54,11 @@ typedef struct
 typedef struct
 {
     pid_type_def yaw_angle;
-    pid_type_def yaw_velocity;
+    pid_type_def yaw_velocity;  //角速度
 
-    pid_type_def pitch_pid_angle;
-    pid_type_def pitch_pid_velocity;
+    pid_type_def pitch_angle;
+    pid_type_def pitch_velocity;
+    
 } PID_t;
 
 typedef struct
@@ -62,9 +67,9 @@ typedef struct
     GimbalMode_e mode;     // 模式
 
     /*-------------------- Motors --------------------*/
-
+    Motor_s yaw,pitch;
     /*-------------------- Values --------------------*/
-    ImuData_t * imu;  // IMU数据
+    const Imu_t  *imu;  // IMU数据
 
     Values_t reference;    // 期望值
     Values_t feedback;     // 状态值
