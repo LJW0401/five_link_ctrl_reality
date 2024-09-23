@@ -71,6 +71,7 @@ void InitShoot(void)
  */
 void SetShootMode(void)
 {
+    
     if (switch_is_up(SHOOT.rc->rc.s[SHOOT_MODE_CHANNEL])) {
         SHOOT.mode = LOAD_STOP;
     } else if (switch_is_mid(SHOOT.rc->rc.s[SHOOT_MODE_CHANNEL])) {
@@ -104,7 +105,7 @@ void ShootObserver(void) //稍后再写
  * @param[in]      none
  * @retval         none
  */
-void ShootReference(void) 
+void ShootReference(void)
 {
   if(SHOOT.mode == LOAD_STOP)
   {
@@ -139,22 +140,22 @@ void ShootConsole(void)
   {
     for(int i=0; i<4; i++)
     {
-      SHOOT.fric_motor[i].set.value = PID_calc(SHOOT.fric_pid[i], SHOOT.fric_motor[i].fdb.vel, SHOOT.fric_motor[i].set.vel);
+      SHOOT.fric_motor[i].set.value = PID_calc(SHOOT.speed_pid[i], SHOOT.fric_motor[i].fdb.vel, SHOOT.fric_motor[i].set.vel);
     }
-    SHOOT.trigger_motor.set.value = PID_calc(SHOOT.trigger_pid, SHOOT.trigger_motor.fdb.vel, SHOOT.trigger_motor.set.vel);
+    SHOOT.trigger_motor.set.value = PID_calc(SHOOT.speed_pid, SHOOT.trigger_motor.fdb.vel, SHOOT.trigger_motor.set.vel);
   }
   else//其他都是角度控制
   {
     for(int i=0; i<4; i++)
     {
-      SHOOT.fric_motor[i].set.value = PID_calc(SHOOT.fric_pid[i], SHOOT.fric_motor[i].pos, SHOOT.fric_motor[i].set.pos);
+      SHOOT.fric_motor[i].set.value = PID_calc(SHOOT.angle_pid[i], SHOOT.fric_motor[i].pos, SHOOT.fric_motor[i].set.pos);
     }
-    SHOOT.trigger_motor.set.value = PID_calc(SHOOT.trigger_pid, SHOOT.trigger_motor.fdb.pos, SHOOT.trigger_motor.set.pos);
+    SHOOT.trigger_motor.set.value = PID_calc(SHOOT.angle_pid, SHOOT.trigger_motor.fdb.pos, SHOOT.trigger_motor.set.pos);
   }
 }
 
 /*-------------------- Cmd --------------------*/
-
+//GetMotorMeasure
 /**
  * @brief          发送控制量
  * @param[in]      none
@@ -162,11 +163,9 @@ void ShootConsole(void)
  */
 void SendShootCmd(void) //晚点再找发送的代码
 {
-  for(int i=0;i<4;i++)
-  {
-    GetMotorMeasure(SHOOT.fric_motor[i]);
-  }
-  GetMotorMeasure(SHOOT.trigger_motor);//读取数据
+
+  CanCmdDjiMotor(2, 0x200, 1, 2, 3, 4);//发送摩擦轮电流
+  CanCmdDjiMotor(2, 0x200, 5, 0, 0, 0);//发送拨弹盘电流
 }
 
 #endif  // SHOOT_TYPE == SHOOT_FRIC

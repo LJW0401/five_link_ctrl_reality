@@ -25,19 +25,20 @@
 #include "remote_control.h"
 #include "shoot.h"
 
-#define shoot_fric_kp 8
-#define shoot_fric_ki 0.5
-#define shoot_fric_kd 0.05
-#define shoot_fric_max_out 0
-#define shoot_fric_max_iout 1000
-#define shoot_trigger_kp 8
-#define shoot_trigger_ki 0.5
-#define shoot_trigger_kd 0.05
-#define shoot_trigger_max_out 0
-#define shoot_trigger_max_iout 1000
+#define shoot_angle_kp 8
+#define shoot_angle_ki 0.5
+#define shoot_angle_kd 0.05
+#define shoot_angle_max_out 0
+#define shoot_angle_max_iout 1000
 
-#define shoot_trigger_speed 1111
-#define shoot_fric_speed 1111
+#define shoot_speed_kp 8
+#define shoot_speed_ki 0.5
+#define shoot_speed_kd 0.05
+#define shoot_speed_max_out 0
+#define shoot_speed_max_iout 1000
+
+#define shoot_speed_speed 1111
+#define shoot_speed_speed 1111
 #define PI 3.14
 typedef struct
 {
@@ -56,8 +57,8 @@ typedef struct
     //pid
     pid_type_def trigger_pid;
     pid_type_def fric_pid[4];
-    fric_PID[3] = {shoot_fric_kp, shoot_fric_ki, shoot_fric_kd};
-    trigger_PID[3] = {shoot_trigger_kp, shoot_trigger_ki, shoot_trigger_kd};
+    angle_PID[i] = {shoot_angle_kp, shoot_angle_ki, shoot_angle_kd};
+    speed_PID[3] = {shoot_speed_kp, shoot_speed_ki, shoot_speed_kd};
 } Shoot_s;
 
 typedef struct
