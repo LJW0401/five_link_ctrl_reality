@@ -122,7 +122,9 @@
         "robot_param_engineer_controller.h": "c",
         "custom_controller_engineer.h": "c",
         "shoot_fric_trigger.h": "c",
-        "calibrate_task.h": "c"
+        "calibrate_task.h": "c",
+        "train_virtual_ctrl.h": "c",
+        "robot_param_train.h": "c"
     },
     "C_Cpp.codeAnalysis.clangTidy.enabled": true,
     "[cpp]": {
