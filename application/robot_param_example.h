@@ -21,7 +21,6 @@
 #define CHASSIS_MODE_CHANNEL   0  // 选择底盘状态 开关通道号
 #define CHASSIS_POS_CHANNEL    0  // 位置的遥控器通道号码
 #define CHASSIS_VEL_CHANNEL    2  // 速度的遥控器通道号码
-#define CHASSIS_RC_DEADLINE    5  // 摇杆死区
 
 // deadzone parameters ---------------------
 // ratio parameters ---------------------

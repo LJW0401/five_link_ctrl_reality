@@ -20,10 +20,19 @@
 #if (CHASSIS_TYPE == CHASSIS_EXAMPLE)
 
 #include "CAN_communication.h"
+#include "IMU.h"
 #include "custom_controller.h"
+#include "detect_task.h"
+#include "macro_typedef.h"
+#include "remote_control.h"
 #include "string.h"
 
 #define MOTOR_NUM 4
+
+// clang-format off
+#define MOTOR_ERROR_OFFSET   ((uint8_t)1 << 0)  // 电机错误偏移量
+#define DBUS_ERROR_OFFSET    ((uint8_t)1 << 1)  // dbus错误偏移量
+// clang-format on
 
 /*------------------------------ Macro Definition ------------------------------*/
 
@@ -99,7 +108,14 @@ void ChassisInit(void)
 /* auxiliary function: None                                       */
 /******************************************************************/
 
-void ChassisHandleException(void) {}
+void ChassisHandleException(void)
+{
+    if (toe_is_error(DBUS_TOE)) {
+        CHASSIS.error_code |= DBUS_ERROR_OFFSET;
+    } else {
+        CHASSIS.error_code &= ~DBUS_ERROR_OFFSET;
+    }
+}
 
 /******************************************************************/
 /* SetMode                                                        */
@@ -108,7 +124,20 @@ void ChassisHandleException(void) {}
 /* auxiliary function: None                                       */
 /******************************************************************/
 
-void ChassisSetMode(void) {}
+void ChassisSetMode(void)
+{
+    if (CHASSIS.error_code != 0) {
+        CHASSIS.mode = CHASSIS_MODE_OFF;
+    }
+
+    if (GetDt7RcSw(CHASSIS_MODE_CHANNEL) == RC_SW_UP) {
+        CHASSIS.mode = CHASSIS_MODE_POS;
+    } else if (GetDt7RcSw(CHASSIS_MODE_CHANNEL) == RC_SW_MID) {
+        CHASSIS.mode = CHASSIS_MODE_VEL;
+    } else {
+        CHASSIS.mode = CHASSIS_MODE_OFF;
+    }
+}
 
 /******************************************************************/
 /* Observer                                                       */
@@ -144,40 +173,84 @@ void ChassisObserver(void)
 void ChassisReference(void)
 {
     int16_t rc_pos = 0, rc_vel = 0;
-    fp32_deadline(Rc, 0, 180);
-    // 位置环
-    for (uint8_t i = 0; i < MOTOR_NUM; i++) {
-        CHASSIS.motor[i].set.value =
-            PID_calc(&CHASSIS.pid.pos[i], CHASSIS.fdb.pos[i], CHASSIS.ref.pos[i]);
-    }
-    // 速度环
-    for (uint8_t i = 0; i < MOTOR_NUM; i++) {
-        CHASSIS.motor[i].set.value =
-            PID_calc(&CHASSIS.pid.vel[i], CHASSIS.fdb.vel[i], CHASSIS.ref.vel[i]);
+    rc_pos = GetDt7RcCh(CHASSIS_POS_CHANNEL) * M_PI * 4.0f;
+    rc_vel = fp32_deadline(GetDt7RcCh(CHASSIS_VEL_CHANNEL) * M_PI * 2.0f, -0.01f, 0.01f);
+
+    switch (CHASSIS.mode) {
+        case CHASSIS_MODE_POS: {
+            CHASSIS.ref.pos[0] = GetImuAngle(AX_PITCH);
+            for (uint8_t i = 1; i < MOTOR_NUM; i++) {
+                CHASSIS.ref.pos[i] = rc_pos;
+            }
+        } break;
+        case CHASSIS_MODE_VEL: {
+            for (uint8_t i = 0; i < MOTOR_NUM; i++) {
+                CHASSIS.ref.vel[i] = rc_vel;
+            }
+        } break;
+        case CHASSIS_MODE_OFF:
+        default: {
+            for (uint8_t i = 0; i < MOTOR_NUM; i++) {
+                CHASSIS.ref.vel[i] = 0;
+            }
+        }
     }
 }
 
 /******************************************************************/
 /* Console                                                        */
 /*----------------------------------------------------------------*/
-/* main function:      ChassisConsole                    */
-/* auxiliary function: None                                       */
+/* main function:      ChassisConsole                             */
+/* auxiliary function: ConsolePos                                 */
+/*                     ConsoleVel                                 */
+/*                     ConsoleOff                                 */
 /******************************************************************/
+
+void ConsolePos(void)
+{
+    float ref_vel = 0;
+    for (uint8_t i = 0; i < MOTOR_NUM; i++) {
+        ref_vel = PID_calc(&CHASSIS.pid.pos[i], CHASSIS.fdb.pos[i], CHASSIS.ref.pos[i]);
+        CHASSIS.motor[i].set.value = PID_calc(&CHASSIS.pid.vel[i], CHASSIS.fdb.vel[i], ref_vel);
+    }
+}
+
+void ConsoleVel(void)
+{
+    for (uint8_t i = 0; i < MOTOR_NUM; i++) {
+        CHASSIS.motor[i].set.value =
+            PID_calc(&CHASSIS.pid.vel[i], CHASSIS.fdb.vel[i], CHASSIS.ref.vel[i]);
+    }
+}
+
+void ConsoleOff(void)
+{
+    for (uint8_t i = 0; i < MOTOR_NUM; i++) {
+        CHASSIS.motor[i].set.value = 0;
+    }
+}
 
 void ChassisConsole(void)
 {
-    uint8_t i;
-    // 计算控制量
-    for (i = 0; i < MOTOR_NUM; i++) {
-        CHASSIS.motor[i].set.value =
-            PID_calc(&CHASSIS.pid.joint[i], CHASSIS.fdb.joint[i].vel, CHASSIS.ref.joint[i].vel);
+    switch (CHASSIS.mode) {
+        case CHASSIS_MODE_POS: {
+            ConsolePos();
+        } break;
+        case CHASSIS_MODE_VEL: {
+            ConsoleVel();
+
+        } break;
+        case CHASSIS_MODE_OFF:
+        default: {
+            ConsoleOff();
+        }
     }
 }
 
 /******************************************************************/
 /* SendCmd                                                        */
 /*----------------------------------------------------------------*/
-/* main function:      ChassisSendCmd                    */
+/* main function:      ChassisSendCmd                             */
 /* auxiliary function: None                                       */
 /******************************************************************/
 
@@ -188,12 +261,12 @@ void ChassisSendCmd(void)
         1, DJI_6020_MODE_VOLTAGE_1, 
         CHASSIS.motor[0].set.value,
         CHASSIS.motor[1].set.value, 
-        CHASSIS.motor[2].set.value, 0);
+        0, 0);
     CanCmdDjiMotor(
         2, DJI_3508_MODE_CURRENT_1, 
-        CHASSIS.motor[3].set.value,
-        CHASSIS.motor[4].set.value, 
-        CHASSIS.motor[5].set.value, 0);
+        CHASSIS.motor[2].set.value,
+        CHASSIS.motor[3].set.value, 
+        0, 0);
     // clang-format on
 }
 

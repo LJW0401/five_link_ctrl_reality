@@ -51,10 +51,10 @@ typedef struct
     } ref;             // 期望值
     struct
     {
-        float pos[4];  // 位置
-        float Dpos[4]; // 位置差
-        float vel[4];  // 速度
-    } fdb;             // 状态值
+        float pos[4];   // 位置
+        float Dpos[4];  // 位置差
+        float vel[4];   // 速度
+    } fdb;              // 状态值
     struct
     {
         uint16_t value[4];  // 电机控制量
@@ -67,7 +67,7 @@ typedef struct
     struct
     {
         LowPassFilter_t vel[4];  // 速度低通滤波器
-    } lpf;                    // 低通滤波器
+    } lpf;                       // 低通滤波器
 } Chassis_s;
 
 extern void ChassisInit(void);
@@ -86,3 +86,4 @@ extern void ChassisSendCmd(void);
 
 #endif  /* CHASSIS_EXAMPLE */
 #endif  // EXAMPLE_H
+/*------------------------------ End of File ------------------------------*/
