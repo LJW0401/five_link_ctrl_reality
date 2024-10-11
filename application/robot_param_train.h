@@ -7,7 +7,7 @@
 #define INCLUDED_ROBOT_PARAM_H
 #include "robot_typedef.h"
 
-#define CHASSIS_TYPE CHASSIS_BALANCE             // 选择底盘类型
+#define CHASSIS_TYPE CHASSIS_EXAMPLE             // 选择底盘类型
 #define GIMBAL_TYPE GIMBAL_NONE                  // 选择云台类型
 
 // clang-format off

@@ -22,6 +22,7 @@
 #include "attribute_typedef.h"
 #include "train_virtual_ctrl.h"
 #include "train_motor_ctrl.h"
+#include "example.h"
 #include "cmsis_os.h"
 #include "usb_debug.h"
 

@@ -124,7 +124,9 @@
         "shoot_fric_trigger.h": "c",
         "calibrate_task.h": "c",
         "train_virtual_ctrl.h": "c",
-        "robot_param_train.h": "c"
+        "robot_param_train.h": "c",
+        "train_motor_ctrl.h": "c",
+        "type_traits": "c"
     },
     "C_Cpp.codeAnalysis.clangTidy.enabled": true,
     "[cpp]": {
