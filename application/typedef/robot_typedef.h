@@ -8,6 +8,9 @@
 #define CHASSIS_OMNI_WHEEL      2  // 全向轮底盘
 #define CHASSIS_STEERING_WHEEL  3  // 舵轮底盘
 #define CHASSIS_BALANCE         4  // 平衡底盘
+#define TRAIN_VIRTUAL_CTRL      5  // 培训——虚拟控制
+#define TRAIN_MOTOR_CTRL        6  // 培训——电机控制
+#define CHASSIS_EXAMPLE         7  // 示例程序
 
 // 可用云台硬件类型
 #define GIMBAL_NONE                0  // 无云台
