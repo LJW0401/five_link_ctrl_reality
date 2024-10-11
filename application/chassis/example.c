@@ -159,7 +159,7 @@ void ChassisObserver(void)
         pos = CHASSIS.motor[i].fdb.pos;
         CHASSIS.fdb.Dpos[i] = pos - CHASSIS.fdb.pos[i];
         CHASSIS.fdb.pos[i] = pos;
-        CHASSIS.fdb.vel[i] = CHASSIS.motor[i].fdb.vel;
+        CHASSIS.fdb.vel[i] = LowPassFilterCalc(&CHASSIS.lpf.vel[i], CHASSIS.motor[i].fdb.vel);
     }
 }
 
