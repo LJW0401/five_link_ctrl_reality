@@ -21,7 +21,9 @@
 
 #include "CAN_communication.h"
 #include "custom_controller.h"
+#include "signal_generator.h"
 #include "string.h"
+#include "usb_debug.h"
 
 /*------------------------------ Macro Definition ------------------------------*/
 
@@ -146,9 +148,12 @@ void CustomControllerObserver(void)
             CUSTOM_CONTROLLER.joint_motor[i].fdb.pos, CUSTOM_CONTROLLER.transform.pos[i], 1, 1);
         CUSTOM_CONTROLLER.fdb.joint[i].dpos = pos - CUSTOM_CONTROLLER.fdb.joint[i].pos;
         CUSTOM_CONTROLLER.fdb.joint[i].pos = pos;
-        CUSTOM_CONTROLLER.fdb.joint[i].vel = CUSTOM_CONTROLLER.joint_motor[i].fdb.vel;
+        CUSTOM_CONTROLLER.fdb.joint[i].vel =
+            LowPassFilterCalc(&CUSTOM_CONTROLLER.lpf.joint[i], CUSTOM_CONTROLLER.joint_motor[i].fdb.vel);
     }
 
+    ModifyDebugDataPackage(3, CUSTOM_CONTROLLER.fdb.joint[3].vel, "j3_f_v_f");
+    ModifyDebugDataPackage(4, CUSTOM_CONTROLLER.joint_motor[3].fdb.vel, "j3_f_v_o");
     // 更新机械臂控制数据
     cc_control_data.pos[0] = CUSTOM_CONTROLLER.fdb.joint[0].pos;
     cc_control_data.pos[1] = CUSTOM_CONTROLLER.fdb.joint[1].pos;
@@ -173,8 +178,9 @@ void CustomControllerReference(void)
 {
     uint8_t i;
     for (i = 0; i < JOINT_NUM; i++) {
-        CUSTOM_CONTROLLER.ref.joint[i].vel = 0;
+        CUSTOM_CONTROLLER.ref.joint[i].vel = GenerateSinWave(3, 0, 2);
     }
+    ModifyDebugDataPackage(1, CUSTOM_CONTROLLER.ref.joint[3].vel, "j3_r_v");
 }
 
 /******************************************************************/
@@ -193,6 +199,8 @@ void CustomControllerConsole(void)
             &CUSTOM_CONTROLLER.pid.joint[i], CUSTOM_CONTROLLER.fdb.joint[i].vel,
             CUSTOM_CONTROLLER.ref.joint[i].vel);
     }
+    // CUSTOM_CONTROLLER.joint_motor[0].set.value = 3000;
+    ModifyDebugDataPackage(2, CUSTOM_CONTROLLER.joint_motor[3].set.value, "j3_c_val");
 }
 
 /******************************************************************/
@@ -211,7 +219,7 @@ void CustomControllerSendCmd(void)
         CUSTOM_CONTROLLER.joint_motor[1].set.value, 
         CUSTOM_CONTROLLER.joint_motor[2].set.value, 0);
     CanCmdDjiMotor(
-        2, DJI_3508_MODE_CURRENT_1, 
+        1, DJI_3508_MODE_CURRENT_1, 
         CUSTOM_CONTROLLER.joint_motor[3].set.value,
         CUSTOM_CONTROLLER.joint_motor[4].set.value, 
         CUSTOM_CONTROLLER.joint_motor[5].set.value, 0);
