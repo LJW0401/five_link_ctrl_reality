@@ -169,7 +169,13 @@ void CustomControllerObserver(void)
 /* auxiliary function: None                                       */
 /******************************************************************/
 
-void CustomControllerReference(void) {}
+void CustomControllerReference(void)
+{
+    uint8_t i;
+    for (i = 0; i < JOINT_NUM; i++) {
+        CUSTOM_CONTROLLER.ref.joint[i].vel = 0;
+    }
+}
 
 /******************************************************************/
 /* Console                                                        */
