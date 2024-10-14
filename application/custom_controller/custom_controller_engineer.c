@@ -21,6 +21,7 @@
 
 #include "CAN_communication.h"
 #include "custom_controller.h"
+#include "custom_controller_connect.h"
 #include "signal_generator.h"
 #include "string.h"
 #include "usb_debug.h"
@@ -33,6 +34,8 @@
 #define J3 3
 #define J4 4
 #define J5 5
+
+#define SEND_PC_DELTA_MS 34 //(ms)发送数据到电脑的间隔
 
 #define JointMotorInit(index)                                                                      \
     MotorInit(                                                                                     \
@@ -55,6 +58,11 @@
 /*------------------------------ Variable Definition ------------------------------*/
 
 CustomController_s CUSTOM_CONTROLLER;
+
+uint32_t SEND_DELTA;
+
+uint32_t LAST_TICK = 0;
+uint32_t DELTA_TICK = 0;
 
 /*------------------------------ Function Definition ------------------------------*/
 
@@ -136,6 +144,10 @@ void CustomControllerSetMode(void) {}
 
 void CustomControllerObserver(void)
 {
+    DELTA_TICK = xTaskGetTickCount() - LAST_TICK;
+    LAST_TICK = xTaskGetTickCount();
+    SEND_DELTA += DELTA_TICK;
+
     uint8_t i;
     // 更新电机测量数据
     for (i = 0; i < JOINT_NUM; i++) {
@@ -148,8 +160,8 @@ void CustomControllerObserver(void)
             CUSTOM_CONTROLLER.joint_motor[i].fdb.pos, CUSTOM_CONTROLLER.transform.pos[i], 1, 1);
         CUSTOM_CONTROLLER.fdb.joint[i].dpos = pos - CUSTOM_CONTROLLER.fdb.joint[i].pos;
         CUSTOM_CONTROLLER.fdb.joint[i].pos = pos;
-        CUSTOM_CONTROLLER.fdb.joint[i].vel =
-            LowPassFilterCalc(&CUSTOM_CONTROLLER.lpf.joint[i], CUSTOM_CONTROLLER.joint_motor[i].fdb.vel);
+        CUSTOM_CONTROLLER.fdb.joint[i].vel = LowPassFilterCalc(
+            &CUSTOM_CONTROLLER.lpf.joint[i], CUSTOM_CONTROLLER.joint_motor[i].fdb.vel);
     }
 
     ModifyDebugDataPackage(3, CUSTOM_CONTROLLER.fdb.joint[3].vel, "j3_f_v_f");
@@ -165,6 +177,10 @@ void CustomControllerObserver(void)
 
     cc_control_data.pos[4] += CUSTOM_CONTROLLER.fdb.joint[5].dpos;
     cc_control_data.pos[5] -= CUSTOM_CONTROLLER.fdb.joint[5].dpos;
+
+    if (SEND_DELTA > SEND_PC_DELTA_MS) {
+        SendDataToPC(cc_control_data.pos);
+    }
 }
 
 /******************************************************************/
