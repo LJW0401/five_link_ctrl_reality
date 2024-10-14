@@ -25,50 +25,42 @@
 #include "remote_control.h"
 #include "shoot.h"
 
-#define shoot_angle_kp 8
-#define shoot_angle_ki 0.5
-#define shoot_angle_kd 0.05
-#define shoot_angle_max_out 0
-#define shoot_angle_max_iout 1000
+#define shoot_angle_kp 8.0f
+#define shoot_angle_ki 0.5f
+#define shoot_angle_kd 0.05f
+#define shoot_angle_max_out 100f
+#define shoot_angle_max_iout 1000f
+//角度控制的PID
+#define shoot_speed_kp 8.0f
+#define shoot_speed_ki 0.5f
+#define shoot_speed_kd 0.05f
+#define shoot_speed_max_out 100f
+#define shoot_speed_max_iout 1000f
+//速度控制的PID
+#define PI 3.14f
 
-#define shoot_speed_kp 8
-#define shoot_speed_ki 0.5
-#define shoot_speed_kd 0.05
-#define shoot_speed_max_out 0
-#define shoot_speed_max_iout 1000
-
-#define shoot_speed_speed 1111
-#define shoot_speed_speed 1111
-#define PI 3.14
 typedef struct
 {
     const RC_ctrl_t * rc;  // 射击使用的遥控器指针
     LoadMode_e mode;       // 射击模式
     FricState_e state;     // 摩擦轮状态
 
-    Motor_s fric_motor[4];  // 摩擦轮电机
+    Motor_s fric_motor[2];  // 摩擦轮电机
     Motor_s trigger_motor;  // 拨弹盘电机
 
     /*目标量*/
     float shoot_frequency;  // (Hz)射频
     float shoot_speed;      // (m/s)射速
     float dangle;           // (rad)拨弹盘单次转动角度
-
+	  
+	  //角度过圈判断
+    int is_circle;
     //pid
-    pid_type_def trigger_pid;
-    pid_type_def fric_pid[4];
-    angle_PID[i] = {shoot_angle_kp, shoot_angle_ki, shoot_angle_kd};
-    speed_PID[3] = {shoot_speed_kp, shoot_speed_ki, shoot_speed_kd};
+    pid_type_def angle_pid;
+    pid_type_def speed_pid;
+    float angle_PID[3]; //= {shoot_angle_kp, shoot_angle_ki, shoot_angle_kd};
+    float speed_PID[3]; //= {shoot_speed_kp, shoot_speed_ki, shoot_speed_kd};
 } Shoot_s;
-
-typedef struct
-{
-  const motor_measure_t *fric_motor_measure;
-  fp32 accel;
-  fp32 speed;
-  fp32 speed_set;
-  int16_t give_current;
-}
 
 extern void InitShoot(void);
 

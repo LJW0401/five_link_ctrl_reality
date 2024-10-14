@@ -19,41 +19,94 @@
 #include "shoot.h"
 #include "shoot_task.h"
 #include "shoot_fric_trigger.h"
-#include "shoot_fric_trigger.c"
+#define LimitMax(input, max)   \
+    {                          \
+        if (input > max)       \
+        {                      \
+            input = max;       \
+        }                      \
+        else if (input < -max) \
+        {                      \
+            input = -max;      \
+        }                      \
+    }
 
+Shoot_s SHOOT;
 shoot_bullet_data shoot_bullet;
 shoot_1_bullet shoot_1;
-static void shoot_bullet_control(void)
+
+void angle_judgement(float *angle,float add,int *is_circle)
 {
-  if(SHOOT.mode == LOAD_STOP) break;
+	if(*angle + add > PI)
+	{
+		*angle += add - PI;
+		*is_circle = 1;
+	}
+	if(*angle + add < PI)
+	{
+		*angle += add + PI;
+		*is_circle = -1;
+	}
+	else
+	{
+		*angle += add;
+		*is_circle = 0 ;
+	}
+}
+
+
+
+void shoot_bullet_control(void)
+{
+  if(SHOOT.mode == LOAD_STOP) return;
   if(SHOOT.trigger_motor.fdb.pos == shoot_bullet.last_pos)
   {
-    shoot_bullet.time_list ++;
+    shoot_bullet.time_list ++;//时间累加
   }
   if(shoot_bullet.time_list >=500)
   {
     shoot_bullet.flag = 1;
     shoot_bullet.time_list = 0;
-    SHOOT.trigger_motor.set.pos = SHOOT.trigger_motor.fdb.pos - PI;
+    SHOOT.trigger_motor.set.pos = SHOOT.trigger_motor.fdb.pos - PI;//防堵转
   }
   if(shoot_bullet.flag == 1 && SHOOT.trigger_motor.fdb.pos == SHOOT.trigger_motor.set.pos)
   {
-    flag = 0;
+    shoot_bullet.flag = 0;//出口
   }
 }//防堵转，给出参数
 
-static void shoot_LOAD_1_BULLET(void)
+void if_prepared(void)
 {
-  if(shoot_bullet.flag == 1) break;//防堵转模式不进
-  if(flag == 0)
+	if(SHOOT.trigger_motor.fdb.vel == trigger_SPEED)
+	{
+		SHOOT.state = FRIC_READY;
+	}	
+  if(SHOOT.trigger_motor.fdb.vel == trigger_SPEED)
+	{
+		SHOOT.state = FRIC_NOT_READY;
+	}		
+}
+
+
+void shoot_LOAD_1_BULLET(void)
+{
+  if(shoot_bullet.flag == 1 || SHOOT.state == FRIC_NOT_READY) return;//防堵转模式不进
+  if(shoot_1.flag == 0 && SHOOT.state == FRIC_READY)
   {
-    SHOOT.trigger_motor.set.pos = SHOOT.trigger_motor.fdb.pos + SHOOT.dangle;//目标角度设定
+		angle_judgement(&SHOOT.trigger_motor.set.pos ,SHOOT.dangle, &SHOOT.is_circle);//目标角度设定
   }
-  if(flag == 1 && SHOOT.trigger_motor.fdb.pos == SHOOT.trigger_moter.set.pos ) flag = 0;
+  if(shoot_1.flag == 1 && SHOOT.trigger_motor.fdb.pos == SHOOT.trigger_motor.set.pos ) shoot_1.flag = 0;
 }//单发
 
-static void shoot_LOAD_BURSTFIRE(void)
+void shoot_LOAD_BURSTFIRE(void)
 {
-  if(shoot_bullet.flag == 1) break;//防堵转模式不进
-  SHOOT.trigger_motor.set.vel = trigger_SPEED;
+  if(shoot_bullet.flag == 1|| SHOOT.state == FRIC_NOT_READY) return;//防堵转模式不进
+  if(SHOOT.state == FRIC_READY)
+	{
+		SHOOT.trigger_motor.set.vel = trigger_SPEED;
+	}
 }//连发
+
+
+   
+

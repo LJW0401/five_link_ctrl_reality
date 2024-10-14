@@ -47,7 +47,7 @@ void shoot_task(void const * pvParameters)
     vTaskDelay(SHOOT_TASK_INIT_TIME);//
     // 射击初始化
     InitShoot();
-    
+
     while (1) {
         // 设置射击模式
         SetShootMode();
@@ -59,7 +59,6 @@ void shoot_task(void const * pvParameters)
         ShootConsole();
         // 发送控制量
         SendShootCmd();
-
         // 系统延时
         vTaskDelay(SHOOT_CONTROL_TIME);
     }

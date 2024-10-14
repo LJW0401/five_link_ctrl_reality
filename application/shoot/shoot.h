@@ -25,15 +25,20 @@
 
 // 遥控器相关宏定义
 #define SHOOT_MODE_CHANNEL 1  // 射击发射开关通道数据
+#define SHOOT_Control_CHANNEL 0 //连接通道信息
 #define trigger_SPEED 2000 //摩擦轮速度
+
+
 typedef struct{
   int last_pos;
   int time_list;
   int flag;
-}shoot_bullet_data;
+}shoot_bullet_data;//防堵转的结构体
+
 typedef struct{
   int flag;
-}shoot_1_bullet;
+}shoot_1_bullet;//单发的控制变量
+
 typedef enum {
     LOAD_STOP,      // 停止拨盘
     LOAD_1_BULLET,  // 单发模式,根据鼠标按下的时间,触发一次之后需要进入不响应输入的状态(否则按下的时间内可能多次进入,导致多次发射)
