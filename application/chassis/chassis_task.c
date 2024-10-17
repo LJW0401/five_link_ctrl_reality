@@ -20,10 +20,9 @@
 #include "chassis_task.h"
 
 #include "attribute_typedef.h"
-#include "chassis_balance.h"
-#include "chassis_mecanum.h"
-#include "chassis_omni.h"
-#include "chassis_steering.h"
+#include "train_virtual_ctrl.h"
+#include "train_motor_ctrl.h"
+#include "example.h"
 #include "cmsis_os.h"
 #include "usb_debug.h"
 
