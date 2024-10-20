@@ -20,6 +20,7 @@
 #if (CUSTOM_CONTROLLER_TYPE == CUSTOM_CONTROLLER_ENGINEER)
 
 #include "CAN_communication.h"
+#include "cmsis_os.h"
 #include "custom_controller.h"
 #include "custom_controller_connect.h"
 #include "signal_generator.h"
@@ -35,7 +36,7 @@
 #define J4 4
 #define J5 5
 
-#define SEND_PC_DELTA_MS 34 //(ms)发送数据到电脑的间隔
+#define SEND_PC_DELTA_MS 34  //(ms)发送数据到电脑的间隔
 
 #define JointMotorInit(index)                                                                      \
     MotorInit(                                                                                     \
@@ -115,6 +116,13 @@ void CustomControllerInit(void)
     CUSTOM_CONTROLLER.transform.pos[J3] = J3_ANGLE_TRANSFORM;
     CUSTOM_CONTROLLER.transform.pos[J4] = J4_ANGLE_TRANSFORM;
     CUSTOM_CONTROLLER.transform.pos[J5] = J5_ANGLE_TRANSFORM;
+
+    CUSTOM_CONTROLLER.ratio.vel_to_value[J0] = J0_VEL_TO_VALUE;
+    CUSTOM_CONTROLLER.ratio.vel_to_value[J1] = J1_VEL_TO_VALUE;
+    CUSTOM_CONTROLLER.ratio.vel_to_value[J2] = J2_VEL_TO_VALUE;
+    CUSTOM_CONTROLLER.ratio.vel_to_value[J3] = J3_VEL_TO_VALUE;
+    CUSTOM_CONTROLLER.ratio.vel_to_value[J4] = J4_VEL_TO_VALUE;
+    CUSTOM_CONTROLLER.ratio.vel_to_value[J5] = J5_VEL_TO_VALUE;
 }
 
 /******************************************************************/
@@ -164,8 +172,16 @@ void CustomControllerObserver(void)
             &CUSTOM_CONTROLLER.lpf.joint[i], CUSTOM_CONTROLLER.joint_motor[i].fdb.vel);
     }
 
-    ModifyDebugDataPackage(3, CUSTOM_CONTROLLER.fdb.joint[3].vel, "j3_f_v_f");
-    ModifyDebugDataPackage(4, CUSTOM_CONTROLLER.joint_motor[3].fdb.vel, "j3_f_v_o");
+    ModifyDebugDataPackage(1, CUSTOM_CONTROLLER.fdb.joint[0].pos, "j0_f_p");
+    ModifyDebugDataPackage(2, CUSTOM_CONTROLLER.fdb.joint[1].pos, "j1_f_p");
+    ModifyDebugDataPackage(3, CUSTOM_CONTROLLER.fdb.joint[2].pos, "j2_f_p");
+    ModifyDebugDataPackage(4, CUSTOM_CONTROLLER.joint_motor[0].fdb.pos, "j0_o_p");
+    ModifyDebugDataPackage(5, CUSTOM_CONTROLLER.joint_motor[1].fdb.pos, "j1_o_p");
+    ModifyDebugDataPackage(6, CUSTOM_CONTROLLER.joint_motor[2].fdb.pos, "j2_o_p");
+
+    // ModifyDebugDataPackage(7, CUSTOM_CONTROLLER.joint_motor[0].set.value, "j0_c_va");
+    // ModifyDebugDataPackage(8, CUSTOM_CONTROLLER.joint_motor[1].set.value, "j1_c_va");
+    // ModifyDebugDataPackage(9, CUSTOM_CONTROLLER.joint_motor[2].set.value, "j2_c_va");
     // 更新机械臂控制数据
     cc_control_data.pos[0] = CUSTOM_CONTROLLER.fdb.joint[0].pos;
     cc_control_data.pos[1] = CUSTOM_CONTROLLER.fdb.joint[1].pos;
@@ -179,7 +195,7 @@ void CustomControllerObserver(void)
     cc_control_data.pos[5] -= CUSTOM_CONTROLLER.fdb.joint[5].dpos;
 
     if (SEND_DELTA > SEND_PC_DELTA_MS) {
-        SendDataToPC(cc_control_data.pos);
+        SendDataToPC((uint8_t *)(&cc_control_data.pos[0]));
     }
 }
 
@@ -194,9 +210,8 @@ void CustomControllerReference(void)
 {
     uint8_t i;
     for (i = 0; i < JOINT_NUM; i++) {
-        CUSTOM_CONTROLLER.ref.joint[i].vel = GenerateSinWave(3, 0, 2);
+        CUSTOM_CONTROLLER.ref.joint[i].vel = 0;  //GenerateSinWave(3, 0, 2);
     }
-    ModifyDebugDataPackage(1, CUSTOM_CONTROLLER.ref.joint[3].vel, "j3_r_v");
 }
 
 /******************************************************************/
@@ -211,12 +226,14 @@ void CustomControllerConsole(void)
     uint8_t i;
     // 计算控制量
     for (i = 0; i < JOINT_NUM; i++) {
-        CUSTOM_CONTROLLER.joint_motor[i].set.value = PID_calc(
-            &CUSTOM_CONTROLLER.pid.joint[i], CUSTOM_CONTROLLER.fdb.joint[i].vel,
-            CUSTOM_CONTROLLER.ref.joint[i].vel);
+        // CUSTOM_CONTROLLER.joint_motor[i].set.value = PID_calc(
+        //     &CUSTOM_CONTROLLER.pid.joint[i], CUSTOM_CONTROLLER.fdb.joint[i].vel,
+        //     CUSTOM_CONTROLLER.ref.joint[i].vel);
+        CUSTOM_CONTROLLER.joint_motor[i].set.value = CUSTOM_CONTROLLER.fdb.joint[i].vel *
+                                                     CUSTOM_CONTROLLER.ratio.vel_to_value[i] *
+                                                     CUSTOM_CONTROLLER.joint_motor[i].direction;
     }
     // CUSTOM_CONTROLLER.joint_motor[0].set.value = 3000;
-    ModifyDebugDataPackage(2, CUSTOM_CONTROLLER.joint_motor[3].set.value, "j3_c_val");
 }
 
 /******************************************************************/

@@ -80,6 +80,10 @@ typedef struct
         LowPassFilter_t joint[JOINT_NUM];
     } lpf;
 
+    struct
+    {
+        float vel_to_value[JOINT_NUM];
+    } ratio;
 } CustomController_s;
 
 extern void CustomControllerPublish(void);

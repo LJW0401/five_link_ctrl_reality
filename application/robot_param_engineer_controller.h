@@ -68,9 +68,9 @@
 #define MIN_JOINT_3_POSITION 0.0f
 #define MIN_JOINT_4_POSITION 0.0f
 //LPF parameters ---------------------
-#define J0_LPF_ALPHA 0.015f
-#define J1_LPF_ALPHA 0.015f
-#define J2_LPF_ALPHA 0.015f
+#define J0_LPF_ALPHA 0.8f
+#define J1_LPF_ALPHA 0.8f
+#define J2_LPF_ALPHA 0.8f
 #define J3_LPF_ALPHA 0.35f
 #define J4_LPF_ALPHA 0.35f
 #define J5_LPF_ALPHA 0.35f
@@ -111,6 +111,13 @@
 #define KD_JOINT_5_VELOCITY 0.0f
 #define MAX_IOUT_JOINT_5_VELOCITY 0.0f
 #define MAX_OUT_JOINT_5_VELOCITY 16000.0f
+// Ratio parameters ---------------------
+#define J0_VEL_TO_VALUE (-2000.0f)
+#define J1_VEL_TO_VALUE (-3000.0f)
+#define J2_VEL_TO_VALUE (-3000.0f)
+#define J3_VEL_TO_VALUE (-300.0f)
+#define J4_VEL_TO_VALUE (-500.0f)
+#define J5_VEL_TO_VALUE (-100.0f)
 // Init parameters ---------------------
 // Other parameters ---------------------
 
