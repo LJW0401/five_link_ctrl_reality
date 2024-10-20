@@ -6,6 +6,7 @@
   * @history
   *  Version    Date            Author          Modification
   *  V1.0.0     Aug-22-2024     Penguin         1. done
+  *  V1.0.1     Oct-20-2024     Penguin         1. fill
   *
   @verbatim
   ==============================================================================
@@ -92,13 +93,6 @@ void CustomControllerInit(void)
     JointMotorInit(3);
     JointMotorInit(4);
     JointMotorInit(5);
-    // #PID init ---------------------
-    JointPidInit(0);
-    JointPidInit(1);
-    JointPidInit(2);
-    JointPidInit(3);
-    JointPidInit(4);
-    JointPidInit(5);
     // #LPF init ---------------------
     JointLpfInit(0);
     JointLpfInit(1);
@@ -167,7 +161,7 @@ void CustomControllerObserver(void)
         pos = theta_transform(
             CUSTOM_CONTROLLER.joint_motor[i].fdb.pos, CUSTOM_CONTROLLER.transform.pos[i],
             CUSTOM_CONTROLLER.joint_motor[i].direction, 1);
-        
+
         CUSTOM_CONTROLLER.fdb.joint[i].dpos = pos - CUSTOM_CONTROLLER.fdb.joint[i].pos;
         CUSTOM_CONTROLLER.fdb.joint[i].pos = pos;
         CUSTOM_CONTROLLER.fdb.joint[i].vel =
@@ -176,16 +170,17 @@ void CustomControllerObserver(void)
                 &CUSTOM_CONTROLLER.lpf.joint[i], CUSTOM_CONTROLLER.joint_motor[i].fdb.vel);
     }
 
-    ModifyDebugDataPackage(1, CUSTOM_CONTROLLER.fdb.joint[0].pos, "j0_f_p");
-    ModifyDebugDataPackage(2, CUSTOM_CONTROLLER.fdb.joint[1].pos, "j1_f_p");
-    ModifyDebugDataPackage(3, CUSTOM_CONTROLLER.fdb.joint[2].pos, "j2_f_p");
-    ModifyDebugDataPackage(4, CUSTOM_CONTROLLER.joint_motor[0].fdb.vel, "j0_o_v");
-    ModifyDebugDataPackage(5, CUSTOM_CONTROLLER.joint_motor[1].fdb.vel, "j1_o_v");
-    ModifyDebugDataPackage(6, CUSTOM_CONTROLLER.joint_motor[2].fdb.vel, "j2_o_v");
+    // ModifyDebugDataPackage(1, CUSTOM_CONTROLLER.fdb.joint[0].pos, "j0_f_p");
+    // ModifyDebugDataPackage(2, CUSTOM_CONTROLLER.fdb.joint[1].pos, "j1_f_p");
+    // ModifyDebugDataPackage(3, CUSTOM_CONTROLLER.fdb.joint[2].pos, "j2_f_p");
+    // ModifyDebugDataPackage(4, CUSTOM_CONTROLLER.joint_motor[0].fdb.vel, "j0_o_v");
+    // ModifyDebugDataPackage(5, CUSTOM_CONTROLLER.joint_motor[1].fdb.vel, "j1_o_v");
+    // ModifyDebugDataPackage(6, CUSTOM_CONTROLLER.joint_motor[2].fdb.vel, "j2_o_v");
 
-    ModifyDebugDataPackage(7, CUSTOM_CONTROLLER.joint_motor[0].set.value, "j0_c_va");
-    ModifyDebugDataPackage(8, CUSTOM_CONTROLLER.joint_motor[1].set.value, "j1_c_va");
-    ModifyDebugDataPackage(9, CUSTOM_CONTROLLER.joint_motor[2].set.value, "j2_c_va");
+    // ModifyDebugDataPackage(7, CUSTOM_CONTROLLER.joint_motor[0].set.value, "j0_c_va");
+    // ModifyDebugDataPackage(8, CUSTOM_CONTROLLER.joint_motor[1].set.value, "j1_c_va");
+    // ModifyDebugDataPackage(9, CUSTOM_CONTROLLER.joint_motor[2].set.value, "j2_c_va");
+
     // 更新机械臂控制数据
     cc_control_data.pos[0] = CUSTOM_CONTROLLER.fdb.joint[0].pos;
     cc_control_data.pos[1] = CUSTOM_CONTROLLER.fdb.joint[1].pos;
@@ -230,9 +225,6 @@ void CustomControllerConsole(void)
     uint8_t i;
     // 计算控制量
     for (i = 0; i < JOINT_NUM; i++) {
-        // CUSTOM_CONTROLLER.joint_motor[i].set.value = PID_calc(
-        //     &CUSTOM_CONTROLLER.pid.joint[i], CUSTOM_CONTROLLER.fdb.joint[i].vel,
-        //     CUSTOM_CONTROLLER.ref.joint[i].vel);
         CUSTOM_CONTROLLER.joint_motor[i].set.value = CUSTOM_CONTROLLER.fdb.joint[i].vel *
                                                      CUSTOM_CONTROLLER.ratio.vel_to_value[i] *
                                                      CUSTOM_CONTROLLER.joint_motor[i].direction;

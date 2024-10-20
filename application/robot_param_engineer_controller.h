@@ -55,69 +55,25 @@
 #define J3_ANGLE_TRANSFORM 0.0f
 #define J4_ANGLE_TRANSFORM 0.0f
 #define J5_ANGLE_TRANSFORM 0.0f
-//upper_limit parameters ---------------------
-#define MAX_JOINT_0_POSITION 6.283185f  //2*M_PI
-#define MAX_JOINT_1_POSITION M_PI
-#define MAX_JOINT_2_POSITION M_PI
-#define MAX_JOINT_3_POSITION 6.283185f
-#define MAX_JOINT_4_POSITION M_PI
-//lower_limit parameters ---------------------
-#define MIN_JOINT_0_POSITION 0.0f
-#define MIN_JOINT_1_POSITION 0.0f
-#define MIN_JOINT_2_POSITION 0.0f
-#define MIN_JOINT_3_POSITION 0.0f
-#define MIN_JOINT_4_POSITION 0.0f
+
 //LPF parameters ---------------------
+
 #define J0_LPF_ALPHA 0.8f
 #define J1_LPF_ALPHA 0.8f
 #define J2_LPF_ALPHA 0.8f
 #define J3_LPF_ALPHA 0.35f
 #define J4_LPF_ALPHA 0.35f
 #define J5_LPF_ALPHA 0.35f
-//PID parameters ---------------------
-//J0速度环PID参数
-#define KP_JOINT_0_VELOCITY 1000.0f
-#define KI_JOINT_0_VELOCITY 15.0f
-#define KD_JOINT_0_VELOCITY 0.0f
-#define MAX_IOUT_JOINT_0_VELOCITY 3000.0f
-#define MAX_OUT_JOINT_0_VELOCITY 15000.0f
-//J1速度环PID参数
-#define KP_JOINT_1_VELOCITY 1000.0f
-#define KI_JOINT_1_VELOCITY 15.0f
-#define KD_JOINT_1_VELOCITY 0.0f
-#define MAX_IOUT_JOINT_1_VELOCITY 3000.0f
-#define MAX_OUT_JOINT_1_VELOCITY 15000.0f
-//J2速度环PID参数
-#define KP_JOINT_2_VELOCITY 1000.0f
-#define KI_JOINT_2_VELOCITY 15.0f
-#define KD_JOINT_2_VELOCITY 0.0f
-#define MAX_IOUT_JOINT_2_VELOCITY 3000.0f
-#define MAX_OUT_JOINT_2_VELOCITY 15000.0f
-//J3速度环PID参数
-#define KP_JOINT_3_VELOCITY 200.0f
-#define KI_JOINT_3_VELOCITY 0.0f
-#define KD_JOINT_3_VELOCITY 30.0f
-#define MAX_IOUT_JOINT_3_VELOCITY 100.0f
-#define MAX_OUT_JOINT_3_VELOCITY 15000.0f
-//J4速度环PID参数
-#define KP_JOINT_4_VELOCITY 0.0f
-#define KI_JOINT_4_VELOCITY 0.0f
-#define KD_JOINT_4_VELOCITY 0.0f
-#define MAX_IOUT_JOINT_4_VELOCITY 500.0f
-#define MAX_OUT_JOINT_4_VELOCITY 15000.0f
-//J5速度环PID参数
-#define KP_JOINT_5_VELOCITY 0.0f
-#define KI_JOINT_5_VELOCITY 0.0f
-#define KD_JOINT_5_VELOCITY 0.0f
-#define MAX_IOUT_JOINT_5_VELOCITY 0.0f
-#define MAX_OUT_JOINT_5_VELOCITY 16000.0f
+
 // Ratio parameters ---------------------
+
 #define J0_VEL_TO_VALUE (-2000.0f)
 #define J1_VEL_TO_VALUE (-2000.0f)
-#define J2_VEL_TO_VALUE (-1000.0f)
+#define J2_VEL_TO_VALUE (-500.0f)
 #define J3_VEL_TO_VALUE (-300.0f)
 #define J4_VEL_TO_VALUE (-500.0f)
 #define J5_VEL_TO_VALUE (-100.0f)
+
 // Init parameters ---------------------
 // Other parameters ---------------------
 
