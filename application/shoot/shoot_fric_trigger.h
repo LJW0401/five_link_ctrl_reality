@@ -25,6 +25,22 @@
 #include "remote_control.h"
 #include "shoot.h"
 
+#define SHOOT_Trigger_Motor_ID          1
+#define SHOOT_Trigger_Motor_CAN         1
+#define SHOOT_Trigger_Motor_TYPE        DJI_M3508
+#define SHOOT_Trigger_Motor_DIRECTION   1
+#define SHOOT_Trigger_Motor_RATIO       1
+#define SHOOT_Trigger_Motor_MODE        1
+
+#define SHOOT_fric_motor_ID             1
+#define SHOOT_fric_motor_CAN            1
+#define SHOOT_fric_motor_TYPE           DJI_M3508
+#define SHOOT_fric_motor_DIRECTION      1
+#define SHOOT_fric_motor_RATIO          1
+#define SHOOT_fric_motor_MODE           1
+
+
+
 #define shoot_angle_kp 8.0f
 #define shoot_angle_ki 0.5f
 #define shoot_angle_kd 0.05f

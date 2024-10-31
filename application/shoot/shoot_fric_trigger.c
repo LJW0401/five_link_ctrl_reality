@@ -43,11 +43,13 @@ void InitShoot(void)
   SHOOT.mode = LOAD_STOP;
   SHOOT.state = FRIC_NOT_READY;
 //遥控器，射击，摩擦轮
-  for(int i=0;i<4;i++)
+  for(int i=0;i<2;i++)
   {
-    GetMotorMeasure(&SHOOT.fric_motor[i]);
+    MotorInit(SHOOT.fric_motor[i], i,SHOOT_fric_motor_CAN, 
+		SHOOT_fric_motor_TYPE ,SHOOT_fric_motor_DIRECTION ,SHOOT_fric_motor_RATIO,SHOOT_fric_motor_MODE);
   }
-  GetMotorMeasure(&SHOOT.trigger_motor);//读取数据
+  MotorInit(SHOOT.trigger_motor,SHOOT_Trigger_Motor_ID ,SHOOT_Trigger_Motor_CAN, 
+		SHOOT_Trigger_Motor_TYPE ,SHOOT_Trigger_Motor_DIRECTION ,SHOOT_Trigger_Motor_RATIO,SHOOT_Trigger_Motor_MODE);//读取数据
 //摩擦轮电机，拨弹盘电机
   SHOOT.shoot_frequency = 0;
   SHOOT.shoot_speed = 0;
@@ -88,11 +90,11 @@ void SetShootMode(void)
     else if (switch_is_up(SHOOT.rc->rc.s[SHOOT_MODE_CHANNEL])) 
     {
         SHOOT.mode = LOAD_BURSTFIRE;
-    } //
+    } //键位往上
     else if (switch_is_mid(SHOOT.rc->rc.s[SHOOT_MODE_CHANNEL]))
     {
         SHOOT.mode = LOAD_1_BULLET;
-    } 
+    } //键位往中
 		
 }
 
@@ -103,7 +105,7 @@ void SetShootMode(void)
  * @param[in]      none
  * @retval         none
  */
-void ShootObserver(void) //稍后再写
+void ShootObserver(void) 
 {
   for(int i=0;i<4;i++)
   {
@@ -141,7 +143,6 @@ void ShootReference(void)
     shoot_LOAD_BURSTFIRE();
   }
   //目标量
-
 }
 
 /*-------------------- Console --------------------*/
@@ -178,7 +179,7 @@ void ShootConsole(void)
  * @param[in]      none
  * @retval         none
  */
-void SendShootCmd(void) //晚点再找发送的代码
+void SendShootCmd(void)
 {
 
   //CanCmdDjiMotor(2, 0x200, SHOOT.fric_motor[0].set.value, SHOOT.fric_motor.set.value[1] , 0, 0);//发送摩擦轮电流
