@@ -83,7 +83,7 @@ inline float GetGimbalDeltaYawMid(void)
  * @retval         bool 解释是否需要继续初始化
  */
 
-inline bool_t GimbalInitJudgeReturn(void)
+inline bool GimbalInitJudgeReturn(void)
 {
   return gimbal_direct.init_continue;
 }
