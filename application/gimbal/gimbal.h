@@ -19,6 +19,7 @@
 #define GIMBAL_H
 
 #include "robot_param.h"
+#include "stdbool.h"
 
 #if GIMBAL_TYPE != GIMBAL_NONE
 
