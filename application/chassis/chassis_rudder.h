@@ -30,7 +30,7 @@
 
 /*-------------------- Structural definition --------------------*/
 typedef enum {
-    CHASSIS_LOCK,        //底盘锁定，所有轮子速度设定为0
+    CHASSIS_LOCK,        //底盘锁定，所有轮子速度设定为0 
     CHASSIS_SINGLE,      //只有底盘的模式
     CHASSIS_FOLLOW,      //云台跟随模式
     CHASSIS_NAVIGATION,  //导航模式
@@ -41,10 +41,10 @@ typedef enum {
  */
 typedef struct
 {
-    pid_type_def wheel_velocity[4];  //麦轮速度解算PID
+    pid_type_def wheel_velocity;  //麦轮速度解算PID
 
-    pid_type_def rudder_position[4];  //舵机角度环
-    pid_type_def rudder_velocity[4];  //舵机速度环
+    pid_type_def rudder_position;  //舵机角度环
+    pid_type_def rudder_velocity;  //舵机速度环
 
     pid_type_def follow;  //云台跟随PID
 } PID_t;
@@ -60,6 +60,17 @@ typedef struct
 } Values_t;
 
 /**
+ * @brief  轮子期望
+ */
+typedef struct
+{
+    float vx;
+    float vy;
+    float v;
+    float theta;
+} Values_Wheel_t;
+
+/**
  * @brief  底盘数据结构体
  * @note   底盘坐标使用右手系，前进方向为x轴，左方向为y轴，上方向为z轴
  */
@@ -67,15 +78,16 @@ typedef struct
 {
     const RC_ctrl_t * rc;  // 底盘使用的遥控器指针
     const Imu_t * imu;     // imu数据
-    ChassisMode_e mode;    // 底盘模式
+    ChassisMode_e mode,last_mode;    // 底盘模式
 
     /*-------------------- Motors --------------------*/
     Motor_s wheel[4], rudder[4];  //底盘电机
 
     /*-------------------- Values --------------------*/
-    Values_t reference;
+    Values_t reference_chassis;
+    Values_Wheel_t reference_wheel[4];
 
-    fp32 yaw_delta;
+    float reference_rudder[4];
 } Chassis_s;
 
 extern void ChassisInit(void);

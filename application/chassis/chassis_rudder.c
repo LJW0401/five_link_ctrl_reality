@@ -44,22 +44,14 @@ void ChassisInit(void)
 
   //step2 PID数据清零，设置PID参数
   const static fp32 wheel_vel[3]={KP_WHEEL_VEL,KI_WHEEL_VEL,KD_WHEEL_VEL};
-  for (int i=0;i<4;++i)
-  {
-    PID_init(&chassis_pid.wheel_velocity[i],PID_POSITION,wheel_vel,MAX_OUT_WHEEL_VEL,MAX_IOUT_WHEEL_VEL);
-  }
+  PID_init(&chassis_pid.wheel_velocity,PID_POSITION,wheel_vel,MAX_OUT_WHEEL_VEL,MAX_IOUT_WHEEL_VEL);
+  
 
   const static fp32 rudder_pos[3]={KP_RUDDER_POS,KI_RUDDER_POS,KD_RUDDER_POS};
-  for (int i=0;i<4;++i)
-  {
-    PID_init(&chassis_pid.rudder_position[i],PID_POSITION,rudder_pos,MAX_OUT_RUDDER_POS,MAX_IOUT_RUDDER_POS);
-  }
+  PID_init(&chassis_pid.rudder_position,PID_POSITION,rudder_pos,MAX_OUT_RUDDER_POS,MAX_IOUT_RUDDER_POS);
 
   const static fp32 rudder_vel[3]={KP_RUDDER_VEL,KI_RUDDER_VEL,KD_RUDDER_VEL};
-  for (int i=0;i<4;++i)
-  {
-    PID_init(&chassis_pid.rudder_velocity[i],PID_POSITION,rudder_vel,MAX_OUT_RUDDER_VEL,MAX_IOUT_RUDDER_VEL);
-  }
+  PID_init(&chassis_pid.rudder_velocity,PID_POSITION,rudder_vel,MAX_OUT_RUDDER_VEL,MAX_IOUT_RUDDER_VEL);
 
   //step3 初始化电机
   MotorInit(&chassis.wheel[0],WHEEL_1_ID,WHEEL_CAN,WHEEL_MOTOR_TYPE,WHEEL_1_DIRECTION,WHEEL_1_RATIO,WHEEL_MODE);
@@ -90,10 +82,12 @@ void ChassisSetMode(void)
   {
     chassis.mode = CHASSIS_LOCK;
   }
+
   else if (switch_is_mid(chassis.rc->rc.s[0]))
   {
     chassis.mode = CHASSIS_SINGLE;
   }
+
   else if (switch_is_up(chassis.rc->rc.s[0]))
   {
     chassis.mode = CHASSIS_NAVIGATION;
@@ -110,11 +104,14 @@ void ChassisSetMode(void)
  */
 void ChassisObserver(void) 
 {
+  //更新电机相关参数
   for (int i=0;i<4;++i)
   {
     GetMotorMeasure(&chassis.wheel[i]);
     GetMotorMeasure(&chassis.rudder[i]);
   }
+
+  chassis.last_mode = chassis.mode;                                                                                        
 }
 
 /*-------------------- Reference --------------------*/
@@ -128,15 +125,15 @@ void ChassisReference(void)
 {
   if (chassis.mode == CHASSIS_LOCK)
   {
-    chassis.reference.vx=0;
-    chassis.reference.vy=0;
-    chassis.reference.wz=0;
+    chassis.reference_chassis.vx=0;
+    chassis.reference_chassis.vy=0;
+    chassis.reference_chassis.wz=0;
   }
   else if (chassis.mode == CHASSIS_SINGLE)
   {
-    chassis.reference.vx=fp32_deadline(chassis.rc->rc.ch[3],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_SPEED;
-    chassis.reference.vy=fp32_deadline(-chassis.rc->rc.ch[2],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_SPEED;
-    chassis.reference.wz=fp32_deadline(-chassis.rc->rc.ch[0],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_VELOCITY;
+    chassis.reference_chassis.vx=fp32_deadline(chassis.rc->rc.ch[3],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_SPEED;
+    chassis.reference_chassis.vy=fp32_deadline(-chassis.rc->rc.ch[2],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_SPEED;
+    chassis.reference_chassis.wz=fp32_deadline(-chassis.rc->rc.ch[0],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_VELOCITY;
   }
 }
 
@@ -149,7 +146,37 @@ void ChassisReference(void)
  */
 void ChassisConsole(void)
 {
+  float vx = chassis.reference_chassis.vx,vy = chassis.reference_chassis.vy , wz = chassis.reference_chassis.wz;
+
+  for (int i=0;i<4;++i)
+  {
+    chassis.reference_wheel[i].vx = vx - wz * WHEEL_CENTER_DISTANCE * (float)sin(M_PI_4 * (1 + 2*i));
+    chassis.reference_wheel[i].vy = vy + wz * WHEEL_CENTER_DISTANCE * (float)cos(M_PI_4 * (1 + 2*i));
+
+    chassis.reference_wheel[i].v = (float)sqrt( pow(chassis.reference_wheel[i].vx,2) + pow(chassis.reference_wheel[i].vy,2) );
+    chassis.reference_wheel[i].theta = (float)atan2(chassis.reference_wheel[i].vy ,chassis.reference_wheel[i].vx );
+  }
   
+  chassis.reference_rudder[0] = loop_fp32_constrain(chassis.reference_wheel[0].theta + RUDDER_1_INIT_POS, -M_PI , M_PI);
+  chassis.reference_rudder[1] = loop_fp32_constrain(chassis.reference_wheel[1].theta + RUDDER_2_INIT_POS, -M_PI , M_PI);
+  chassis.reference_rudder[2] = loop_fp32_constrain(chassis.reference_wheel[2].theta + RUDDER_3_INIT_POS, -M_PI , M_PI);
+  chassis.reference_rudder[3] = loop_fp32_constrain(chassis.reference_wheel[3].theta + RUDDER_4_INIT_POS, -M_PI , M_PI);
+
+  for (int i=0;i<4;++i)
+  {
+    chassis.wheel[i].set.vel = chassis.reference_wheel[i].v * WHEEL_RADIUS;
+
+    chassis.rudder[i].set.pos = chassis.reference_rudder[i] ;
+  }
+
+  for (int i=0;i<4;++i)
+  {
+    chassis.wheel[i].set.curr = PID_calc(&chassis_pid.wheel_velocity,chassis.wheel[i].fdb.vel,chassis.wheel[i].set.vel);
+
+    chassis.rudder[i].set.vel = PID_calc(&chassis_pid.rudder_position,chassis.rudder[i].fdb.pos,chassis.rudder[i].set.pos);
+    chassis.rudder[i].set.curr = PID_calc(&chassis_pid.rudder_velocity,chassis.rudder[i].fdb.vel,chassis.rudder[i].set.vel);
+  }
+
 }
 
 /*-------------------- Cmd --------------------*/
@@ -162,6 +189,8 @@ void ChassisConsole(void)
 
 void ChassisSendCmd(void)
 {
-    
+    CanCmdDjiMotor(WHEEL_CAN,0x1FF,chassis.wheel[0].set.curr,chassis.wheel[1].set.curr,chassis.wheel[2].set.curr,chassis.wheel[3].set.curr);
+
+    CanCmdDjiMotor(RUDDER_CAN,0x200,chassis.rudder[0].set.curr,chassis.rudder[1].set.curr,chassis.rudder[2].set.curr,chassis.rudder[3].set.curr);
 }
 #endif

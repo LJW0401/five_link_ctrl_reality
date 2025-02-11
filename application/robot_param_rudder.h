@@ -69,6 +69,13 @@
 
 #define RUDDER_MODE (0)
 
+//舵机初始方向
+#define RUDDER_1_INIT_POS (0.0f)
+#define RUDDER_2_INIT_POS (0.0f)
+#define RUDDER_3_INIT_POS (0.0f)
+#define RUDDER_4_INIT_POS (0.0f)
+
+
 //PID parameters ---------------------
 //驱动轮速度环PID参数
 #define KP_WHEEL_VEL (20.0f)
