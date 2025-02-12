@@ -23,15 +23,15 @@
 
 //motor parameters ---------------------
 //电机ID ---------------------
-#define WHEEL_1_ID (1)
-#define WHEEL_2_ID (2)
-#define WHEEL_3_ID (3)
-#define WHEEL_4_ID (4)
+#define WHEEL_1_ID (2)
+#define WHEEL_2_ID (8)
+#define WHEEL_3_ID (4)
+#define WHEEL_4_ID (1)
 
-#define RUDDER_1_ID (1)
-#define RUDDER_2_ID (2)
-#define RUDDER_3_ID (3)
-#define RUDDER_4_ID (4)
+#define RUDDER_1_ID (2)
+#define RUDDER_2_ID (8)
+#define RUDDER_3_ID (4)
+#define RUDDER_4_ID (1)
 
 //电机CAN ---------------------
 #define WHEEL_CAN (1)
@@ -55,15 +55,15 @@
 #define RUDDER_4_DIRECTION (-1)
 
 //电机减速比
-#define WHEEL_1_RATIO (19)
-#define WHEEL_2_RATIO (19)
-#define WHEEL_3_RATIO (19)
-#define WHEEL_4_RATIO (19)
+#define WHEEL_1_RATIO (14)
+#define WHEEL_2_RATIO (14)
+#define WHEEL_3_RATIO (14)
+#define WHEEL_4_RATIO (14)
 
-#define RUDDER_1_RATIO (19)
-#define RUDDER_2_RATIO (19)
-#define RUDDER_3_RATIO (19)
-#define RUDDER_4_RATIO (19)
+#define RUDDER_1_RATIO (1)
+#define RUDDER_2_RATIO (1)
+#define RUDDER_3_RATIO (1)
+#define RUDDER_4_RATIO (1)
 //电机模式
 #define WHEEL_MODE (0)
 
@@ -78,25 +78,25 @@
 
 //PID parameters ---------------------
 //驱动轮速度环PID参数
-#define KP_WHEEL_VEL (20.0f)
-#define KI_WHEEL_VEL (0.3f)
-#define KD_WHEEL_VEL (0.3f)
-#define MAX_IOUT_WHEEL_VEL (10000.0f)
-#define MAX_OUT_WHEEL_VEL (30000.0f)
+#define KP_WHEEL_VEL (250.0f)
+#define KI_WHEEL_VEL (1000.0f)
+#define KD_WHEEL_VEL (0.0f)
+#define MAX_IOUT_WHEEL_VEL (1000.0f)
+#define MAX_OUT_WHEEL_VEL (10000.0f)
 
 //方向舵角度环PID参数
-#define KP_RUDDER_POS (20.0f)
-#define KI_RUDDER_POS (0.3f)
+#define KP_RUDDER_POS (50.0f)
+#define KI_RUDDER_POS (0.0f)
 #define KD_RUDDER_POS (0.3f)
-#define MAX_IOUT_RUDDER_POS (10000.0f)
-#define MAX_OUT_RUDDER_POS (30000.0f)
+#define MAX_IOUT_RUDDER_POS (1080.0f)
+#define MAX_OUT_RUDDER_POS (1080.0f)
 
 //方向舵速度环PID参数
-#define KP_RUDDER_VEL (20.0f)
-#define KI_RUDDER_VEL (0.3f)
+#define KP_RUDDER_VEL (3000.0f)
+#define KI_RUDDER_VEL (40000.3f)
 #define KD_RUDDER_VEL (0.3f)
-#define MAX_IOUT_RUDDER_VEL (10000.0f)
-#define MAX_OUT_RUDDER_VEL (30000.0f)
+#define MAX_IOUT_RUDDER_VEL (40000.0f)
+#define MAX_OUT_RUDDER_VEL (40000.0f)
 
 //云台跟随角度环PID参数
 #define KP_CHASSIS_FOLLOW_GIMBAL (200.0f)

@@ -33,7 +33,7 @@ PID_t chassis_pid;
 /*-------------------- Init --------------------*/
 
 /**
- * @brief          初始化
+ * @brie。f          初始化
  * @param[in]      none
  * @retval         none
  */
@@ -54,15 +54,15 @@ void ChassisInit(void)
   PID_init(&chassis_pid.rudder_velocity,PID_POSITION,rudder_vel,MAX_OUT_RUDDER_VEL,MAX_IOUT_RUDDER_VEL);
 
   //step3 初始化电机
-  MotorInit(&chassis.wheel[0],WHEEL_1_ID,WHEEL_CAN,WHEEL_MOTOR_TYPE,WHEEL_1_DIRECTION,WHEEL_1_RATIO,WHEEL_MODE);
-  MotorInit(&chassis.wheel[1],WHEEL_2_ID,WHEEL_CAN,WHEEL_MOTOR_TYPE,WHEEL_2_DIRECTION,WHEEL_2_RATIO,WHEEL_MODE);
-  MotorInit(&chassis.wheel[2],WHEEL_3_ID,WHEEL_CAN,WHEEL_MOTOR_TYPE,WHEEL_3_DIRECTION,WHEEL_3_RATIO,WHEEL_MODE);
-  MotorInit(&chassis.wheel[3],WHEEL_4_ID,WHEEL_CAN,WHEEL_MOTOR_TYPE,WHEEL_4_DIRECTION,WHEEL_4_RATIO,WHEEL_MODE);
+  MotorInit(&chassis.wheel[0],WHEEL_1_ID,2,WHEEL_MOTOR_TYPE,WHEEL_1_DIRECTION,WHEEL_1_RATIO,WHEEL_MODE);
+  MotorInit(&chassis.wheel[1],WHEEL_2_ID,1,WHEEL_MOTOR_TYPE,WHEEL_2_DIRECTION,WHEEL_2_RATIO,WHEEL_MODE);
+  MotorInit(&chassis.wheel[2],WHEEL_3_ID,2,WHEEL_MOTOR_TYPE,WHEEL_3_DIRECTION,WHEEL_3_RATIO,WHEEL_MODE);
+  MotorInit(&chassis.wheel[3],WHEEL_4_ID,1,WHEEL_MOTOR_TYPE,WHEEL_4_DIRECTION,WHEEL_4_RATIO,WHEEL_MODE);
 
-  MotorInit(&chassis.rudder[0],RUDDER_1_ID,RUDDER_CAN,RUDDER_MOTOR_TYPE,RUDDER_1_DIRECTION,RUDDER_1_RATIO,RUDDER_MODE);
-  MotorInit(&chassis.rudder[1],RUDDER_2_ID,RUDDER_CAN,RUDDER_MOTOR_TYPE,RUDDER_2_DIRECTION,RUDDER_2_RATIO,RUDDER_MODE);
-  MotorInit(&chassis.rudder[2],RUDDER_3_ID,RUDDER_CAN,RUDDER_MOTOR_TYPE,RUDDER_3_DIRECTION,RUDDER_3_RATIO,RUDDER_MODE);
-  MotorInit(&chassis.rudder[3],RUDDER_4_ID,RUDDER_CAN,RUDDER_MOTOR_TYPE,RUDDER_4_DIRECTION,RUDDER_4_RATIO,RUDDER_MODE);
+  MotorInit(&chassis.rudder[0],RUDDER_1_ID,2,RUDDER_MOTOR_TYPE,RUDDER_1_DIRECTION,RUDDER_1_RATIO,RUDDER_MODE);
+  MotorInit(&chassis.rudder[1],RUDDER_2_ID,1,RUDDER_MOTOR_TYPE,RUDDER_2_DIRECTION,RUDDER_2_RATIO,RUDDER_MODE);
+  MotorInit(&chassis.rudder[2],RUDDER_3_ID,2,RUDDER_MOTOR_TYPE,RUDDER_3_DIRECTION,RUDDER_3_RATIO,RUDDER_MODE);
+  MotorInit(&chassis.rudder[3],RUDDER_4_ID,1,RUDDER_MOTOR_TYPE,RUDDER_4_DIRECTION,RUDDER_4_RATIO,RUDDER_MODE);
 
   //step4 初始模式设置
   chassis.mode = CHASSIS_LOCK;
@@ -177,6 +177,15 @@ void ChassisConsole(void)
     chassis.rudder[i].set.curr = PID_calc(&chassis_pid.rudder_velocity,chassis.rudder[i].fdb.vel,chassis.rudder[i].set.vel);
   }
 
+  if (chassis.mode == CHASSIS_LOCK)
+  {
+    for (int i=0;i<4;++i)
+  {
+    chassis.wheel[i].set.curr = 0;
+
+    chassis.rudder[i].set.curr = 0;
+  }
+  }
 }
 
 /*-------------------- Cmd --------------------*/
@@ -189,8 +198,17 @@ void ChassisConsole(void)
 
 void ChassisSendCmd(void)
 {
-    CanCmdDjiMotor(WHEEL_CAN,0x1FF,chassis.wheel[0].set.curr,chassis.wheel[1].set.curr,chassis.wheel[2].set.curr,chassis.wheel[3].set.curr);
+  CanCmdDjiMotor(2,0x200,0,chassis.wheel[0].set.curr,0,chassis.wheel[2].set.curr);
+  CanCmdDjiMotor(1,0x200,chassis.wheel[3].set.curr,0,0,0);
+  CanCmdDjiMotor(1,0x1FF,0,0,0,chassis.wheel[1].set.curr);
 
-    CanCmdDjiMotor(RUDDER_CAN,0x200,chassis.rudder[0].set.curr,chassis.rudder[1].set.curr,chassis.rudder[2].set.curr,chassis.rudder[3].set.curr);
+  CanCmdDjiMotor(2,0x1FF,0,0,chassis.rudder[0].set.curr,0);
+  CanCmdDjiMotor(1,0x2FF,chassis.rudder[3].set.curr,chassis.rudder[1].set.curr,0,0);
+  CanCmdDjiMotor(2,0x2FF,0,0,chassis.rudder[2].set.curr,0);
+
+  ModifyDebugDataPackage(0,chassis.rudder[0].fdb.pos,"0");
+  ModifyDebugDataPackage(1,chassis.rudder[1].fdb.pos,"1");
+  ModifyDebugDataPackage(2,chassis.rudder[2].fdb.pos,"2");
+  ModifyDebugDataPackage(3,chassis.rudder[3].fdb.pos,"3");
 }
 #endif
