@@ -1,9 +1,9 @@
 /**
   * @file       robot_param_omni_infantry.h
-  * @brief      这里是舵轮底盘参数配置文件，包括物理参数、PID参数等
+  * @brief      这里是港中深哨兵舵轮底盘参数配置文件，包括物理参数、PID参数等
   * @history
   *  Version    Date            Author          Modification
-  *  V1.0.0     2025-02-05     Harry_Wong        1. 初步建立底盘框架
+  *  V1.0.0     2025-02-14     Harry_Wong        1. 初步建立底盘框架
   */
 
 #ifndef INCLUDED_ROBOT_PARAM_H
@@ -18,7 +18,7 @@
 
 /*-------------------- Chassis --------------------*/
 //physical parameters ---------------------
-#define WHEEL_RADIUS 0.12f                  //(m)轮子直径
+#define WHEEL_RADIUS 0.12f           //(m)轮子直径
 #define WHEEL_CENTER_DISTANCE 0.22f  //(m)轮子到车的距离（0.22 + 0.21）
 
 //motor parameters ---------------------
@@ -74,7 +74,6 @@
 #define RUDDER_2_INIT_POS (-0.78f)
 #define RUDDER_3_INIT_POS (-0.207f)
 #define RUDDER_4_INIT_POS (1.348f)
-
 
 //PID parameters ---------------------
 //驱动轮速度环PID参数

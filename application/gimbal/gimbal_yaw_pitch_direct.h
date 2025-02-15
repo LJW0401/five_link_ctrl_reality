@@ -48,6 +48,7 @@ typedef enum {
     GIMBAL_DBUS_ERR,    //遥控器断联相关处理任务
     GIMBAL_GAP,         //跳出矫正进入IMU/AUTO_AIM模式之前的存储数据模式
     GIMBAL_AUTO_AIM,    //自瞄模式
+    GIMBAL_TEST ,       //自定义调参模式
 } GimbalMode_e;
 
 
@@ -91,6 +92,8 @@ typedef struct
     uint32_t init_start_time,init_timer;
 
     bool init_continue,init_base; //是否继续进行校准模式 / 是否需要更新云台基准位置
+
+    LowPassFilter_t yaw_vel;
 } Gimbal_s;
 
 extern void GimbalInit(void);

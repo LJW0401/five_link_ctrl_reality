@@ -51,7 +51,7 @@ void Angle_solution(void)
 
 bool Gimbal_direct_init_judge (void)
 {
-  if ( ((gimbal_direct.reference.yaw-gimbal_direct.yaw.fdb.pos<0.003f && (-0.003f)<gimbal_direct.reference.yaw-gimbal_direct.yaw.fdb.pos) && (gimbal_direct.reference.pitch-gimbal_direct.pitch.fdb.pos<0.003f && (-0.003f)<gimbal_direct.reference.pitch-gimbal_direct.pitch.fdb.pos) ) || gimbal_direct.init_timer>=GIMBAL_INIT_TIME )
+  if ( ((gimbal_direct.reference.yaw-gimbal_direct.yaw.fdb.pos<0.0036f && (-0.0036f)<gimbal_direct.reference.yaw-gimbal_direct.yaw.fdb.pos) && (gimbal_direct.reference.pitch-gimbal_direct.pitch.fdb.pos<0.0036f && (-0.0036f)<gimbal_direct.reference.pitch-gimbal_direct.pitch.fdb.pos) ) || gimbal_direct.init_timer>=GIMBAL_INIT_TIME )
   {
     return true;
   }
@@ -167,6 +167,8 @@ void GimbalInit(void)
    gimbal_direct.init_base = false;
    gimbal_direct.imu_base.pitch=0.0f;
    gimbal_direct.imu_base.yaw=0.0f;
+
+   LowPassFilterInit(&gimbal_direct.yaw_vel,0.60);
 }
 /*-------------------- Set mode --------------------*/
 
@@ -193,28 +195,34 @@ void GimbalSetMode(void)
     gimbal_direct.mode=GIMBAL_ZERO_FORCE;
     gimbal_direct.init_continue=false;
   }
-  //初始校准模式
-  else if (gimbal_direct.mode==GIMBAL_ZERO_FORCE || gimbal_direct.mode==GIMBAL_INIT)  
-  {
 
-    gimbal_direct.mode=GIMBAL_INIT;
+  else 
+  {
+    gimbal_direct.mode = GIMBAL_TEST;
+  }
+
+  // //初始校准模式
+  // else if (gimbal_direct.mode==GIMBAL_ZERO_FORCE || gimbal_direct.mode==GIMBAL_INIT)  
+  // {
+
+  //   gimbal_direct.mode=GIMBAL_INIT;
  
-    gimbal_direct.init_continue=Gimbal_direct_init_judge();
-    if (gimbal_direct.init_continue==true)//判断是否需要跳出循环
-    {
-      gimbal_direct.mode=GIMBAL_GAP;
-    }
-  }
-  //上，中档陀螺仪控制
-  else if (switch_is_mid(gimbal_direct.rc->rc.s[0]))
-  {
-    gimbal_direct.mode=GIMBAL_IMU;
-  }
+  //   gimbal_direct.init_continue=Gimbal_direct_init_judge();
+  //   if (gimbal_direct.init_continue==true)//判断是否需要跳出循环
+  //   {
+  //     gimbal_direct.mode=GIMBAL_GAP;
+  //   }
+  // }
+  // //上，中档陀螺仪控制
+  // else if (switch_is_mid(gimbal_direct.rc->rc.s[0]))
+  // {
+  //   gimbal_direct.mode=GIMBAL_IMU;
+  // }
 
-  else if (switch_is_up(gimbal_direct.rc->rc.s[0]))
-  {
-    gimbal_direct.mode=GIMBAL_AUTO_AIM;
-  }
+  // else if (switch_is_up(gimbal_direct.rc->rc.s[0]))
+  // {
+  //   gimbal_direct.mode=GIMBAL_AUTO_AIM;
+  // }
 }
 /*-------------------- Observe --------------------*/
  
@@ -318,6 +326,12 @@ void GimbalReference(void)
     gimbal_direct.reference.pitch = fp32_constrain(gimbal_direct.imu_base.pitch + GetScCmdGimbalAngle(AX_PITCH) , GIMBAL_LOWER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu  , GIMBAL_UPPER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu );
     gimbal_direct.reference.yaw   = loop_fp32_constrain(gimbal_direct.imu_base.yaw + GetScCmdGimbalAngle(AX_YAW) , -M_PI , M_PI );
   }
+
+  else if (gimbal_direct.mode == GIMBAL_TEST)
+  {
+    gimbal_direct.pitch.set.vel = 0.0f;
+    gimbal_direct.reference.yaw = loop_fp32_constrain(gimbal_direct.reference.yaw-fp32_deadline(gimbal_direct.rc->rc.ch[0], REMOTE_CONTROLLER_MIN_DEADLINE,REMOTE_CONTROLLER_MAX_DEADLINE)/REMOTE_CONTROLLER_SENSITIVITY,-M_PI,M_PI);
+  }
 }
 
 /*-------------------- Console --------------------*/
@@ -352,6 +366,14 @@ void GimbalConsole(void)
     gimbal_direct.yaw.set.vel=PID_calc(&gimbal_direct_pid.yaw_angle,0,delta_yaw);
     gimbal_direct.yaw.set.curr=PID_calc(&gimbal_direct_pid.yaw_velocity,gimbal_direct.yaw.fdb.vel,gimbal_direct.yaw.set.vel);
   }
+  else if(gimbal_direct.mode == GIMBAL_TEST)
+  {
+    gimbal_direct.pitch.set.curr=0;
+
+    fp32 delta_yaw=loop_fp32_constrain(gimbal_direct.reference.yaw-gimbal_direct.yaw.fdb.pos,-M_PI,M_PI);
+    gimbal_direct.yaw.set.vel=PID_calc(&gimbal_direct_pid.yaw_angle,0,delta_yaw);
+    gimbal_direct.yaw.set.curr=PID_calc(&gimbal_direct_pid.yaw_velocity,gimbal_direct.yaw.fdb.vel,LowPassFilterCalc(&gimbal_direct.yaw_vel,gimbal_direct.yaw.set.vel));
+  }
  
 }
   
@@ -365,7 +387,11 @@ void GimbalConsole(void)
  */
 void GimbalSendCmd(void) 
 {
-    CanCmdDjiMotor(2,0x1FF,gimbal_direct.yaw.set.curr,gimbal_direct.pitch.set.curr,0,0);
+    CanCmdDjiMotor(1,0x1FF,gimbal_direct.pitch.set.curr,gimbal_direct.yaw.set.curr,0,0);
+
+    ModifyDebugDataPackage(0, gimbal_direct.yaw.set.vel,"set");
+    ModifyDebugDataPackage(1, gimbal_direct.yaw.fdb.vel,"fdb");
+    ModifyDebugDataPackage(2, gimbal_direct.yaw.set.curr, "curr");
 }
 
 

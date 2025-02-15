@@ -43,25 +43,50 @@ void ChassisInit(void)
   chassis.rc = get_remote_control_point();
 
   //step2 PID数据清零，设置PID参数
+
+  //驱动轮速度环
   const static fp32 wheel_vel[3]={KP_WHEEL_VEL,KI_WHEEL_VEL,KD_WHEEL_VEL};
   PID_init(&chassis_pid.wheel_velocity,PID_POSITION,wheel_vel,MAX_OUT_WHEEL_VEL,MAX_IOUT_WHEEL_VEL);
   
 
-  const static fp32 rudder_pos[3]={KP_RUDDER_POS,KI_RUDDER_POS,KD_RUDDER_POS};
-  PID_init(&chassis_pid.rudder_position,PID_POSITION,rudder_pos,MAX_OUT_RUDDER_POS,MAX_IOUT_RUDDER_POS);
 
-  const static fp32 rudder_vel[3]={KP_RUDDER_VEL,KI_RUDDER_VEL,KD_RUDDER_VEL};
-  PID_init(&chassis_pid.rudder_velocity,PID_POSITION,rudder_vel,MAX_OUT_RUDDER_VEL,MAX_IOUT_RUDDER_VEL);
+  //舵机角度环
+  const static fp32 rudder_pos0[3]={KP_RUDDER_POS,KI_RUDDER_POS,KD_RUDDER_POS};
+  PID_init(&chassis_pid.rudder_position[0],PID_POSITION,rudder_pos0,MAX_OUT_RUDDER_POS,MAX_IOUT_RUDDER_POS);
+
+  const static fp32 rudder_pos1[3]={KP_RUDDER_POS,KI_RUDDER_POS,KD_RUDDER_POS};
+  PID_init(&chassis_pid.rudder_position[1],PID_POSITION,rudder_pos1,MAX_OUT_RUDDER_POS,MAX_IOUT_RUDDER_POS);
+
+  const static fp32 rudder_pos2[3]={KP_RUDDER_POS,KI_RUDDER_POS,KD_RUDDER_POS};
+  PID_init(&chassis_pid.rudder_position[2],PID_POSITION,rudder_pos2,MAX_OUT_RUDDER_POS,MAX_IOUT_RUDDER_POS);
+
+  const static fp32 rudder_pos3[3]={KP_RUDDER_POS,KI_RUDDER_POS,KD_RUDDER_POS};
+  PID_init(&chassis_pid.rudder_position[3],PID_POSITION,rudder_pos3,MAX_OUT_RUDDER_POS,MAX_IOUT_RUDDER_POS);
+
+
+
+  //舵机速度环
+  const static fp32 rudder_vel0[3]={KP_RUDDER_VEL,KI_RUDDER_VEL,KD_RUDDER_VEL};
+  PID_init(&chassis_pid.rudder_velocity[0],PID_POSITION,rudder_vel0,MAX_OUT_RUDDER_VEL,MAX_IOUT_RUDDER_VEL);
+
+  const static fp32 rudder_vel1[3]={KP_RUDDER_VEL,KI_RUDDER_VEL,KD_RUDDER_VEL};
+  PID_init(&chassis_pid.rudder_velocity[1],PID_POSITION,rudder_vel1,MAX_OUT_RUDDER_VEL,MAX_IOUT_RUDDER_VEL);
+  
+  const static fp32 rudder_vel2[3]={0.0f,0.0f,0.0f};
+  PID_init(&chassis_pid.rudder_velocity[2],PID_POSITION,rudder_vel2,MAX_OUT_RUDDER_VEL,MAX_IOUT_RUDDER_VEL);
+
+  const static fp32 rudder_vel3[3]={KP_RUDDER_VEL,KI_RUDDER_VEL,KD_RUDDER_VEL};
+  PID_init(&chassis_pid.rudder_velocity[3],PID_POSITION,rudder_vel3,MAX_OUT_RUDDER_VEL,MAX_IOUT_RUDDER_VEL);
 
   //step3 初始化电机
   MotorInit(&chassis.wheel[0],WHEEL_1_ID,2,WHEEL_MOTOR_TYPE,WHEEL_1_DIRECTION,WHEEL_1_RATIO,WHEEL_MODE);
-  MotorInit(&chassis.wheel[1],WHEEL_2_ID,1,WHEEL_MOTOR_TYPE,WHEEL_2_DIRECTION,WHEEL_2_RATIO,WHEEL_MODE);
-  MotorInit(&chassis.wheel[2],WHEEL_3_ID,2,WHEEL_MOTOR_TYPE,WHEEL_3_DIRECTION,WHEEL_3_RATIO,WHEEL_MODE);
+  MotorInit(&chassis.wheel[1],WHEEL_2_ID,2,WHEEL_MOTOR_TYPE,WHEEL_2_DIRECTION,WHEEL_2_RATIO,WHEEL_MODE);
+  MotorInit(&chassis.wheel[2],WHEEL_3_ID,1,WHEEL_MOTOR_TYPE,WHEEL_3_DIRECTION,WHEEL_3_RATIO,WHEEL_MODE);
   MotorInit(&chassis.wheel[3],WHEEL_4_ID,1,WHEEL_MOTOR_TYPE,WHEEL_4_DIRECTION,WHEEL_4_RATIO,WHEEL_MODE);
 
   MotorInit(&chassis.rudder[0],RUDDER_1_ID,2,RUDDER_MOTOR_TYPE,RUDDER_1_DIRECTION,RUDDER_1_RATIO,RUDDER_MODE);
-  MotorInit(&chassis.rudder[1],RUDDER_2_ID,1,RUDDER_MOTOR_TYPE,RUDDER_2_DIRECTION,RUDDER_2_RATIO,RUDDER_MODE);
-  MotorInit(&chassis.rudder[2],RUDDER_3_ID,2,RUDDER_MOTOR_TYPE,RUDDER_3_DIRECTION,RUDDER_3_RATIO,RUDDER_MODE);
+  MotorInit(&chassis.rudder[1],RUDDER_2_ID,2,RUDDER_MOTOR_TYPE,RUDDER_2_DIRECTION,RUDDER_2_RATIO,RUDDER_MODE);
+  MotorInit(&chassis.rudder[2],RUDDER_3_ID,1,RUDDER_MOTOR_TYPE,RUDDER_3_DIRECTION,RUDDER_3_RATIO,RUDDER_MODE);
   MotorInit(&chassis.rudder[3],RUDDER_4_ID,1,RUDDER_MOTOR_TYPE,RUDDER_4_DIRECTION,RUDDER_4_RATIO,RUDDER_MODE);
 
   //step4 初始模式设置
@@ -173,8 +198,14 @@ void ChassisConsole(void)
   {
     chassis.wheel[i].set.curr = PID_calc(&chassis_pid.wheel_velocity,chassis.wheel[i].fdb.vel,chassis.wheel[i].set.vel);
 
-    chassis.rudder[i].set.vel = PID_calc(&chassis_pid.rudder_position,chassis.rudder[i].fdb.pos,chassis.rudder[i].set.pos);
-    chassis.rudder[i].set.curr = PID_calc(&chassis_pid.rudder_velocity,chassis.rudder[i].fdb.vel,chassis.rudder[i].set.vel);
+    fp32 rudder_del_pos = loop_fp32_constrain(chassis.rudder[i].set.pos - chassis.rudder[i].fdb.pos ,- M_PI , M_PI);
+    chassis.rudder[i].set.vel = PID_calc(&chassis_pid.rudder_position[i],0,rudder_del_pos);
+    chassis.rudder[i].set.curr = PID_calc(&chassis_pid.rudder_velocity[i],chassis.rudder[i].fdb.vel,chassis.rudder[i].set.vel);
+  }
+ 
+  for (int i=0;i<4;++i)
+  {
+    chassis.wheel[i].set.curr = 0;
   }
 
   if (chassis.mode == CHASSIS_LOCK)
@@ -198,17 +229,22 @@ void ChassisConsole(void)
 
 void ChassisSendCmd(void)
 {
-  CanCmdDjiMotor(2,0x200,0,chassis.wheel[0].set.curr,0,chassis.wheel[2].set.curr);
-  CanCmdDjiMotor(1,0x200,chassis.wheel[3].set.curr,0,0,0);
-  CanCmdDjiMotor(1,0x1FF,0,0,0,chassis.wheel[1].set.curr);
+  CanCmdDjiMotor(2,0x200,0,chassis.wheel[0].set.curr,0,chassis.wheel[1].set.curr);
+  CanCmdDjiMotor(1,0x200,chassis.wheel[2].set.curr,0,0,0);
+  CanCmdDjiMotor(1,0x1FF,0,0,0,chassis.wheel[3].set.curr);
 
   CanCmdDjiMotor(2,0x1FF,0,0,chassis.rudder[0].set.curr,0);
-  CanCmdDjiMotor(1,0x2FF,chassis.rudder[3].set.curr,chassis.rudder[1].set.curr,0,0);
-  CanCmdDjiMotor(2,0x2FF,0,0,chassis.rudder[2].set.curr,0);
+  CanCmdDjiMotor(1,0x2FF,chassis.rudder[2].set.curr,chassis.rudder[3].set.curr,0,0);
+  CanCmdDjiMotor(2,0x2FF,0,0,chassis.rudder[1].set.curr,0);
 
-  ModifyDebugDataPackage(0,chassis.rudder[0].fdb.pos,"0");
-  ModifyDebugDataPackage(1,chassis.rudder[1].fdb.pos,"1");
-  ModifyDebugDataPackage(2,chassis.rudder[2].fdb.pos,"2");
-  ModifyDebugDataPackage(3,chassis.rudder[3].fdb.pos,"3");
+  ModifyDebugDataPackage(0,chassis.rudder[0].fdb.vel,"f0");
+  ModifyDebugDataPackage(1,chassis.rudder[1].fdb.vel,"f1");
+  ModifyDebugDataPackage(2,chassis.rudder[2].fdb.vel,"f2");
+  ModifyDebugDataPackage(3,chassis.rudder[3].fdb.vel,"f3");
+
+  ModifyDebugDataPackage(4,chassis.rudder[0].set.vel,"s0");
+  ModifyDebugDataPackage(5,chassis.rudder[1].set.vel,"s1");
+  ModifyDebugDataPackage(6,chassis.rudder[2].set.vel,"s2");
+  ModifyDebugDataPackage(7,chassis.rudder[3].set.vel,"s3");
 }
 #endif

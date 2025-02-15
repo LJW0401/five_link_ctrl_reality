@@ -41,10 +41,10 @@ typedef enum {
  */
 typedef struct
 {
-    pid_type_def wheel_velocity;  //麦轮速度解算PID
+    pid_type_def wheel_velocity;  //舵轮速度解算PID
 
-    pid_type_def rudder_position;  //舵机角度环
-    pid_type_def rudder_velocity;  //舵机速度环
+    pid_type_def rudder_position[4];  //舵机角度环
+    pid_type_def rudder_velocity[4];  //舵机速度环
 
     pid_type_def follow;  //云台跟随PID
 } PID_t;

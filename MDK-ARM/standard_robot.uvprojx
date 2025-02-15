@@ -3348,6 +3348,11 @@
               <FileType>1</FileType>
               <FilePath>..\application\chassis\chassis_steering.c</FilePath>
             </File>
+            <File>
+              <FileName>chassis_rudder.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\chassis\chassis_rudder.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
