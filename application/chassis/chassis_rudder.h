@@ -34,6 +34,7 @@ typedef enum {
     CHASSIS_SINGLE,      //只有底盘的模式
     CHASSIS_FOLLOW,      //云台跟随模式
     CHASSIS_NAVIGATION,  //导航模式
+    CHASSIS_TEST,
 } ChassisMode_e;
 
 /**
