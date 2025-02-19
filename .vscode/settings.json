@@ -128,7 +128,9 @@
         "ahrs_middleware.h": "c",
         "can_cmd_supcap.h": "c",
         "supcap.h": "c",
-        "usb.h": "c"
+        "usb.h": "c",
+        "robot_param_sentinel_cuhk_gimbal.h": "c",
+        "robot_param_sentinel_cuhk_chassis.h": "c"
     },
     "C_Cpp.codeAnalysis.clangTidy.enabled": true,
     "[cpp]": {

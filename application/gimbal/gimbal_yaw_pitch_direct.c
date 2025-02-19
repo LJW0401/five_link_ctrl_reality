@@ -276,7 +276,7 @@ void GimbalReference(void)
 {
   if (gimbal_direct.mode == GIMBAL_INIT)
   {
-    gimbal_direct.reference.pitch=GIMBAL_DIRECT_PITCH_MID;
+    gimbal_direct.reference.pitch=0;
     gimbal_direct.reference.yaw=GIMBAL_DIRECT_YAW_MID;
   }
 
@@ -359,8 +359,8 @@ void GimbalConsole(void)
   }
   else if (gimbal_direct.mode == GIMBAL_INIT)
   {
-    gimbal_direct.pitch.set.vel=PID_calc(&gimbal_direct_pid.pitch_angle,gimbal_direct.pitch.fdb.pos,gimbal_direct.reference.pitch);
-    gimbal_direct.pitch.set.curr=(PID_calc(&gimbal_direct_pid.pitch_velocity,gimbal_direct.pitch.fdb.vel,gimbal_direct.pitch.set.vel))-8000;
+    gimbal_direct.pitch.set.vel=PID_calc(&gimbal_direct_pid.pitch_angle,gimbal_direct.feedback_pos.pitch,gimbal_direct.reference.pitch);
+    gimbal_direct.pitch.set.curr=PID_calc(&gimbal_direct_pid.pitch_velocity,gimbal_direct.feedback_vel.pitch,gimbal_direct.pitch.set.vel)-8000;
 
     fp32 delta_yaw=loop_fp32_constrain(gimbal_direct.reference.yaw-gimbal_direct.yaw.fdb.pos,-M_PI,M_PI);
     gimbal_direct.yaw.set.vel=PID_calc(&gimbal_direct_pid.yaw_angle,0,delta_yaw);
@@ -397,3 +397,4 @@ void GimbalSendCmd(void)
 
 
 #endif  // GIMBAL_YAW_PITCH
+

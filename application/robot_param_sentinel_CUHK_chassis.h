@@ -70,46 +70,46 @@
 #define RUDDER_MODE (0)
 
 //舵机初始方向
-#define RUDDER_1_INIT_POS (0.136f)
+#define RUDDER_1_INIT_POS (-0.0337f)
 #define RUDDER_2_INIT_POS (-0.78f)
 #define RUDDER_3_INIT_POS (-0.207f)
 #define RUDDER_4_INIT_POS (1.348f)
 
 //PID parameters ---------------------
 //驱动轮速度环PID参数
-#define KP_WHEEL_VEL (250.0f)
-#define KI_WHEEL_VEL (1000.0f)
-#define KD_WHEEL_VEL (0.0f)
+#define KP_WHEEL_VEL (193.0f)
+#define KI_WHEEL_VEL (0.0f)
+#define KD_WHEEL_VEL (0.4f)
 #define MAX_IOUT_WHEEL_VEL (1000.0f)
-#define MAX_OUT_WHEEL_VEL (10000.0f)
+#define MAX_OUT_WHEEL_VEL (16000.0f)
 
 //方向舵角度环PID参数
 //1
-#define KP_RUDDER1_POS (7000.0f) //7000
-#define KI_RUDDER1_POS (100.0f)  //100
-#define KD_RUDDER1_POS (1.0f)    //1
-#define MAX_IOUT_RUDDER1_POS (3000.0f)  //3000
+#define KP_RUDDER1_POS (3000.0f) //7000
+#define KI_RUDDER1_POS (0.1f)  //100
+#define KD_RUDDER1_POS (500.0f)    //1
+#define MAX_IOUT_RUDDER1_POS (100.0f)  //3000
 #define MAX_OUT_RUDDER1_POS (30000.0f)
 
 //2
-#define KP_RUDDER2_POS (9800.0f)
-#define KI_RUDDER2_POS (300.0f)
-#define KD_RUDDER2_POS (1.0f)
-#define MAX_IOUT_RUDDER2_POS (3000.0f)
+#define KP_RUDDER2_POS (3000.0f)
+#define KI_RUDDER2_POS (0.1f)
+#define KD_RUDDER2_POS (500.0f)
+#define MAX_IOUT_RUDDER2_POS (100.0f)
 #define MAX_OUT_RUDDER2_POS (30000.0f)
 
 //3
-#define KP_RUDDER3_POS (12000.0f)
-#define KI_RUDDER3_POS (250.0f)
-#define KD_RUDDER3_POS (1.0f)
-#define MAX_IOUT_RUDDER3_POS (4500.0f)
+#define KP_RUDDER3_POS (5500.0f)
+#define KI_RUDDER3_POS (0.0f)
+#define KD_RUDDER3_POS (0.0f)
+#define MAX_IOUT_RUDDER3_POS (1000.0f)
 #define MAX_OUT_RUDDER3_POS (30000.0f)
 
 //4
-#define KP_RUDDER4_POS (6000.0f)
-#define KI_RUDDER4_POS (200.0f)
-#define KD_RUDDER4_POS (1.0f)
-#define MAX_IOUT_RUDDER4_POS (3500.0f)
+#define KP_RUDDER4_POS (3000.0f)
+#define KI_RUDDER4_POS (0.1f)
+#define KD_RUDDER4_POS (500.0f)
+#define MAX_IOUT_RUDDER4_POS (100.0f)
 #define MAX_OUT_RUDDER4_POS (30000.0f)
 
 //方向舵速度环PID参数
@@ -153,7 +153,7 @@
 //遥控器相关参数
 #define CHASSIS_RC_DEADLINE (5.0f)      // 摇杆死区
 #define CHASSIS_RC_MAX_RANGE (660.0f)   //遥控器最大量程
-#define CHASSIS_RC_MAX_SPEED (2.0f)     //最大速度(m/s)
+#define CHASSIS_RC_MAX_SPEED (1.0f)     //最大速度(m/s)
 #define CHASSIS_RC_MAX_VELOCITY (2.0f)  //最大角速度(rad/s) 仅用于无云台模式
 
 #endif

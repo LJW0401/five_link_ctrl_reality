@@ -26,6 +26,7 @@
 #include "gimbal.h"
 #include "math.h"
 #include "usb_debug.h"
+#include "bsp_delay.h"
 
 Chassis_s chassis;
 PID_t chassis_pid;
@@ -178,7 +179,7 @@ void ChassisConsole(void)
     chassis.reference_wheel[i].vx = vx - wz * WHEEL_CENTER_DISTANCE * (float)sin(M_PI_4 * (1 + 2*i));
     chassis.reference_wheel[i].vy = vy + wz * WHEEL_CENTER_DISTANCE * (float)cos(M_PI_4 * (1 + 2*i));
 
-    chassis.reference_wheel[i].v = (float)sqrt( pow(chassis.reference_wheel[i].vx,2) + pow(chassis.reference_wheel[i].vy,2) );
+    chassis.reference_wheel[i].v = (float)sqrt( pow(chassis.reference_wheel[i].vx,2) + pow(chassis.reference_wheel[i].vy,2) ) / WHEEL_RADIUS * chassis.wheel[i].reduction_ratio;
     chassis.reference_wheel[i].theta = (float)atan2(chassis.reference_wheel[i].vy ,chassis.reference_wheel[i].vx );
   }
   
@@ -189,7 +190,7 @@ void ChassisConsole(void)
 
   for (int i=0;i<4;++i)
   {
-    chassis.wheel[i].set.vel = chassis.reference_wheel[i].v * WHEEL_RADIUS;
+    chassis.wheel[i].set.vel = chassis.reference_wheel[i].v ;
 
     chassis.rudder[i].set.pos = chassis.reference_rudder[i] ;
   }
@@ -200,12 +201,13 @@ void ChassisConsole(void)
 
     fp32 rudder_del_pos = loop_fp32_constrain(chassis.rudder[i].set.pos - chassis.rudder[i].fdb.pos ,- M_PI , M_PI);
     chassis.rudder[i].set.curr = PID_calc(&chassis_pid.rudder_position[i],0,rudder_del_pos);
+
+    //if (fp32_deadline(chassis.rudder[i].set.curr , -0.087f , 0.087f ) != 0)
+    {
+      if (chassis.rudder[i].set.curr > 0 ) chassis.rudder[i].set.curr = fp32_constrain( chassis.rudder[i].set.curr + 3000 , -30000 ,30000);
+      else if (chassis.rudder[i].set.curr < 0 ) chassis.rudder[i].set.curr = fp32_constrain( chassis.rudder[i].set.curr - 3000 , -30000 , 30000);
+    }
     //chassis.rudder[i].set.curr = PID_calc(&chassis_pid.rudder_velocity[i],chassis.rudder[i].fdb.vel,chassis.rudder[i].set.vel);
-  }
- 
-  for (int i=0;i<4;++i)
-  {
-    chassis.wheel[i].set.curr = 0;
   }
 
   if (chassis.mode == CHASSIS_LOCK)
@@ -231,24 +233,22 @@ void ChassisConsole(void)
 void ChassisSendCmd(void)
 {
   CanCmdDjiMotor(2,0x200,0,chassis.wheel[0].set.curr,0,chassis.wheel[1].set.curr);
+  delay_us(200);
   CanCmdDjiMotor(1,0x200,chassis.wheel[2].set.curr,0,0,0);
+  delay_us(200);
   CanCmdDjiMotor(1,0x1FF,0,0,0,chassis.wheel[3].set.curr);
+  delay_us(200);
 
   CanCmdDjiMotor(2,0x1FF,0,0,chassis.rudder[0].set.curr,0);
+  delay_us(200);
   CanCmdDjiMotor(1,0x2FF,chassis.rudder[2].set.curr,chassis.rudder[3].set.curr,0,0);
+  delay_us(200);
   CanCmdDjiMotor(2,0x2FF,0,0,chassis.rudder[1].set.curr,0);
+  delay_us(100);
 
-  ModifyDebugDataPackage(0,chassis.rudder[0].fdb.vel,"f0");
-  ModifyDebugDataPackage(1,chassis.rudder[1].fdb.vel,"f1");
-  ModifyDebugDataPackage(2,chassis.rudder[2].fdb.vel,"f2");
-  ModifyDebugDataPackage(3,chassis.rudder[3].fdb.vel,"f3");
+  ModifyDebugDataPackage(0,chassis.wheel[0].fdb.vel,"f0");
+  ModifyDebugDataPackage(1,chassis.wheel[0].set.vel,"s0");
+  ModifyDebugDataPackage(2,chassis.wheel[0].set.curr,"curr");
 
-  ModifyDebugDataPackage(4,chassis.rudder[0].set.vel,"s0");
-  ModifyDebugDataPackage(5,chassis.rudder[1].set.vel,"s1");
-  ModifyDebugDataPackage(6,chassis.rudder[2].set.vel,"s2");
-  ModifyDebugDataPackage(7,chassis.rudder[3].set.vel,"s3");
-
-  ModifyDebugDataPackage(8,chassis.rudder[0].set.curr,"curr0");
-  ModifyDebugDataPackage(9,chassis.rudder[1].set.curr,"curr1");
 }
 #endif
