@@ -36,6 +36,7 @@
 #include "math.h"
 #include "macro_typedef.h"
 #include "supervisory_computer_cmd.h"
+#include "referee.h"
 
 
 /**

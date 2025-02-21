@@ -27,6 +27,8 @@
 #include "math.h"
 #include "usb_debug.h"
 #include "bsp_delay.h"
+#include "supervisory_computer_cmd.h"
+#include "referee.h"
 
 Chassis_s chassis;
 PID_t chassis_pid;
@@ -104,20 +106,21 @@ void ChassisInit(void)
  */
 void ChassisSetMode(void)
 {
-  if ((toe_is_error(DBUS_TOE)) || switch_is_down(chassis.rc->rc.s[0]) )
-  {
-    chassis.mode = CHASSIS_LOCK;
-  }
+  // if ((toe_is_error(DBUS_TOE)) || switch_is_down(chassis.rc->rc.s[0]) )
+  // {
+  //   chassis.mode = CHASSIS_LOCK;
+  // }
 
-  else if (switch_is_mid(chassis.rc->rc.s[0]))
-  {
-    chassis.mode = CHASSIS_SINGLE;
-  }
+  // else if (switch_is_mid(chassis.rc->rc.s[0]))
+  // {
+  //   chassis.mode = CHASSIS_SINGLE;
+  // }
 
-  else if (switch_is_up(chassis.rc->rc.s[0]))
-  {
-    chassis.mode = CHASSIS_SINGLE;
-  }
+  // else if (switch_is_up(chassis.rc->rc.s[0]))
+  // {
+  //   chassis.mode = CHASSIS_NAVIGATION;
+  // }
+  chassis.mode = CHASSIS_NAVIGATION;
 }
 
 
@@ -161,6 +164,12 @@ void ChassisReference(void)
     chassis.reference_chassis.vy=fp32_deadline(-chassis.rc->rc.ch[2],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_SPEED;
     chassis.reference_chassis.wz=fp32_deadline(-chassis.rc->rc.ch[0],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_VELOCITY;
   }
+  else if(chassis.mode == CHASSIS_NAVIGATION)
+  {
+    chassis.reference_chassis.vx= GetScCmdChassisSpeed(AX_X) ;
+    chassis.reference_chassis.vy= GetScCmdChassisSpeed(AX_Y) ;
+    chassis.reference_chassis.wz= GetScCmdChassisVelocity(AX_Z) ;
+  }
 }
 
 /*-------------------- Console --------------------*/
@@ -202,7 +211,7 @@ void ChassisConsole(void)
     fp32 rudder_del_pos = loop_fp32_constrain(chassis.rudder[i].set.pos - chassis.rudder[i].fdb.pos ,- M_PI , M_PI);
     chassis.rudder[i].set.curr = PID_calc(&chassis_pid.rudder_position[i],0,rudder_del_pos);
 
-    //if (fp32_deadline(chassis.rudder[i].set.curr , -0.087f , 0.087f ) != 0)
+    if (fp32_deadline(chassis.rudder[i].set.curr , -0.087f , 0.087f ) != 0)
     {
       if (chassis.rudder[i].set.curr > 0 ) chassis.rudder[i].set.curr = fp32_constrain( chassis.rudder[i].set.curr + 3000 , -30000 ,30000);
       else if (chassis.rudder[i].set.curr < 0 ) chassis.rudder[i].set.curr = fp32_constrain( chassis.rudder[i].set.curr - 3000 , -30000 , 30000);
@@ -245,10 +254,5 @@ void ChassisSendCmd(void)
   delay_us(200);
   CanCmdDjiMotor(2,0x2FF,0,0,chassis.rudder[1].set.curr,0);
   delay_us(100);
-
-  ModifyDebugDataPackage(0,chassis.wheel[0].fdb.vel,"f0");
-  ModifyDebugDataPackage(1,chassis.wheel[0].set.vel,"s0");
-  ModifyDebugDataPackage(2,chassis.wheel[0].set.curr,"curr");
-
 }
 #endif

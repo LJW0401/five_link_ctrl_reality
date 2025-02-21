@@ -130,7 +130,8 @@
         "supcap.h": "c",
         "usb.h": "c",
         "robot_param_sentinel_cuhk_gimbal.h": "c",
-        "robot_param_sentinel_cuhk_chassis.h": "c"
+        "robot_param_sentinel_cuhk_chassis.h": "c",
+        "chassis_rudder.h": "c"
     },
     "C_Cpp.codeAnalysis.clangTidy.enabled": true,
     "[cpp]": {

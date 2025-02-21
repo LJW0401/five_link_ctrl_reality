@@ -12,7 +12,7 @@
 
 #define CHASSIS_TYPE CHASSIS_NONE                // 选择底盘类型
 #define GIMBAL_TYPE GIMBAL_YAW_PITCH_DIRECT      // 选择云台类型
-#define SHOOT_TYPE SHOOT_NONE            // 选择发射机构类型
+#define SHOOT_TYPE SHOOT_FRIC_TRIGGER            // 选择发射机构类型
 #define MECHANICAL_ARM_TYPE MECHANICAL_ARM_NONE  // 选择机械臂类型
 #define CONTROL_TYPE GIMBAL_ONLY                 // 选择控制类型
 
@@ -113,10 +113,10 @@
 #define FRIC_STD_ID 0x1FF
 
 //单环拨弹速度
-#define TRIGGER_SPEED (500.0f)
+#define TRIGGER_SPEED (400.0f)
 //摩擦轮速度
-#define FRIC_R_SPEED (666.0f)
-#define FRIC_L_SPEED (-666.0f)
+#define FRIC_R_SPEED (-666.0f)
+#define FRIC_L_SPEED (666.0f)
 #define FRIC_SPEED_LIMIT (640.0f)
 
 //电机反馈码盘值范围

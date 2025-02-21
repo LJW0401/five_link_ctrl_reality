@@ -70,7 +70,7 @@
 #define RUDDER_MODE (0)
 
 //舵机初始方向
-#define RUDDER_1_INIT_POS (-0.0337f)
+#define RUDDER_1_INIT_POS (-0.03474f)
 #define RUDDER_2_INIT_POS (-0.78f)
 #define RUDDER_3_INIT_POS (-0.207f)
 #define RUDDER_4_INIT_POS (1.348f)
@@ -94,7 +94,7 @@
 //2
 #define KP_RUDDER2_POS (3000.0f)
 #define KI_RUDDER2_POS (0.1f)
-#define KD_RUDDER2_POS (500.0f)
+#define KD_RUDDER2_POS (550.0f)
 #define MAX_IOUT_RUDDER2_POS (100.0f)
 #define MAX_OUT_RUDDER2_POS (30000.0f)
 
@@ -108,7 +108,7 @@
 //4
 #define KP_RUDDER4_POS (3000.0f)
 #define KI_RUDDER4_POS (0.1f)
-#define KD_RUDDER4_POS (500.0f)
+#define KD_RUDDER4_POS (550.0f)
 #define MAX_IOUT_RUDDER4_POS (100.0f)
 #define MAX_OUT_RUDDER4_POS (30000.0f)
 
@@ -153,7 +153,7 @@
 //遥控器相关参数
 #define CHASSIS_RC_DEADLINE (5.0f)      // 摇杆死区
 #define CHASSIS_RC_MAX_RANGE (660.0f)   //遥控器最大量程
-#define CHASSIS_RC_MAX_SPEED (1.0f)     //最大速度(m/s)
-#define CHASSIS_RC_MAX_VELOCITY (2.0f)  //最大角速度(rad/s) 仅用于无云台模式
+#define CHASSIS_RC_MAX_SPEED (4.5f)     //最大速度(m/s)
+#define CHASSIS_RC_MAX_VELOCITY (6.0f)  //最大角速度(rad/s) 仅用于无云台模式
 
 #endif
