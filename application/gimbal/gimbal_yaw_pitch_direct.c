@@ -61,32 +61,6 @@ bool Gimbal_direct_init_judge (void)
   }
 }
 
-/*----------------Gimbal_direct_imu_to_ecd--------------------*/
-/**
- * @brief          imu角度值转换成ecd角度值
- * @param[in]      axis 用于知道读取哪一个轴的角度转换
- * @param[in]      value 用于准换的值
- * @retval         float 电机映射角度值
- */
-
- float Gimbal_direct_imu_to_ecd(uint8_t axis,float value)
- {
-    if (axis == AX_PITCH)
-    {
-      return value - gimbal_direct.imu_base.pitch + GIMBAL_DIRECT_PITCH_MID;
-    }
-
-    else if (axis == AX_YAW)
-    {
-      return value - gimbal_direct.imu_base.yaw + GIMBAL_DIRECT_YAW_MID;
-    }
-
-    else 
-    {
-      return 0.0f;
-    }
- }
-
 /*----------------Gimbal_direct_ecd_to_imu--------------------*/
 /**
  * @brief          ecd角度值转换成imu角度值
@@ -99,12 +73,12 @@ bool Gimbal_direct_init_judge (void)
  {
   if (axis == AX_PITCH)
   {
-    return value - GIMBAL_DIRECT_PITCH_MID + gimbal_direct.imu_base.pitch;
+    return value + gimbal_direct.imu_base.pitch;
   }
 
   else if (axis == AX_YAW)
   {
-    return value - GIMBAL_DIRECT_YAW_MID + gimbal_direct.imu_base.yaw;
+    return value + gimbal_direct.imu_base.yaw;
   }
 
   else 
@@ -150,11 +124,11 @@ inline float CmdGimbalJointState(uint8_t axis)
 {
   if ( axis == AX_PITCH )
   {
-    return loop_fp32_constrain(Gimbal_direct_imu_to_ecd(AX_PITCH, gimbal_direct.feedback_pos.pitch),-M_PI,M_PI);
+    return loop_fp32_constrain(gimbal_direct.feedback_pos.pitch - gimbal_direct.imu_base.pitch,-M_PI,M_PI);//gimbal_direct.pitch.direction * (gimbal_direct.pitch.fdb.pos - GIMBAL_DIRECT_PITCH_MID)
   }
   else if ( axis == AX_YAW )
   {
-    return loop_fp32_constrain(Gimbal_direct_imu_to_ecd(AX_YAW,gimbal_direct.feedback_pos.yaw),-M_PI,M_PI);
+    return loop_fp32_constrain(gimbal_direct.feedback_pos.yaw - gimbal_direct.imu_base.yaw,-M_PI,M_PI); //gimbal_direct.yaw.direction * (gimbal_direct.yaw.fdb.pos - GIMBAL_DIRECT_YAW_MID)
   }
   else 
   {
@@ -338,7 +312,7 @@ void GimbalReference(void)
 
     if (gimbal_direct.init_base == false)
     {
-      gimbal_direct.imu_base.pitch=0;
+      gimbal_direct.imu_base.pitch=gimbal_direct.feedback_pos.pitch;
       gimbal_direct.imu_base.yaw=gimbal_direct.feedback_pos.yaw;
       gimbal_direct.init_base=true;
     }
@@ -368,8 +342,8 @@ void GimbalReference(void)
 
   else if (gimbal_direct.mode == GIMBAL_AUTO_AIM)
   {
-    gimbal_direct.reference.pitch = fp32_constrain(gimbal_direct.imu_base.pitch + Gimbal_direct_ecd_to_imu(AX_PITCH,GetScCmdGimbalAngle(AX_PITCH)) , GIMBAL_LOWER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu  , GIMBAL_UPPER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu );
-    gimbal_direct.reference.yaw   = loop_fp32_constrain(gimbal_direct.imu_base.yaw + Gimbal_direct_ecd_to_imu(AX_YAW,GetScCmdGimbalAngle(AX_YAW)) , -M_PI , M_PI );
+    gimbal_direct.reference.pitch = fp32_constrain(GetScCmdGimbalAngle(AX_PITCH)  + gimbal_direct.imu_base.pitch, GIMBAL_LOWER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu  , GIMBAL_UPPER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu ); //Gimbal_direct_ecd_to_imu(AX_PITCH,GetScCmdGimbalAngle(AX_PITCH)
+    gimbal_direct.reference.yaw   = loop_fp32_constrain(GetScCmdGimbalAngle(AX_YAW) + gimbal_direct.imu_base.yaw, -M_PI , M_PI );  //Gimbal_direct_ecd_to_imu(AX_YAW,GetScCmdGimbalAngle(AX_YAW)) 
   }
 
   else if (gimbal_direct.mode == GIMBAL_TEST)
@@ -436,6 +410,9 @@ void GimbalConsole(void)
 void GimbalSendCmd(void) 
 {
     CanCmdDjiMotor(1,0x1FF,gimbal_direct.pitch.set.curr,gimbal_direct.yaw.set.curr,0,0);
+
+    ModifyDebugDataPackage(0,loop_fp32_constrain(Gimbal_direct_ecd_to_imu(AX_YAW,GetScCmdGimbalAngle(AX_YAW)) , -M_PI , M_PI ),"yaw");
+    ModifyDebugDataPackage(1,fp32_constrain( Gimbal_direct_ecd_to_imu(AX_PITCH,GetScCmdGimbalAngle(AX_PITCH)) , GIMBAL_LOWER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu  , GIMBAL_UPPER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu ),"pitch");   
 }
 
 

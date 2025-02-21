@@ -106,21 +106,21 @@ void ChassisInit(void)
  */
 void ChassisSetMode(void)
 {
-  // if ((toe_is_error(DBUS_TOE)) || switch_is_down(chassis.rc->rc.s[0]) )
-  // {
-  //   chassis.mode = CHASSIS_LOCK;
-  // }
+  if ((toe_is_error(DBUS_TOE)) || switch_is_down(chassis.rc->rc.s[0]) )
+  {
+    chassis.mode = CHASSIS_LOCK;
+  }
 
-  // else if (switch_is_mid(chassis.rc->rc.s[0]))
-  // {
-  //   chassis.mode = CHASSIS_SINGLE;
-  // }
+  else if (switch_is_mid(chassis.rc->rc.s[0]))
+  {
+    chassis.mode = CHASSIS_SINGLE;
+  }
 
-  // else if (switch_is_up(chassis.rc->rc.s[0]))
-  // {
-  //   chassis.mode = CHASSIS_NAVIGATION;
-  // }
-  chassis.mode = CHASSIS_NAVIGATION;
+  else if (switch_is_up(chassis.rc->rc.s[0]))
+  {
+    chassis.mode = CHASSIS_NAVIGATION;
+  }
+ // chassis.mode = CHASSIS_NAVIGATION;
 }
 
 
