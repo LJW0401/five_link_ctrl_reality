@@ -25,6 +25,7 @@
 #include "supervisory_computer_cmd.h"
 #include "user_lib.h"
 #include "arm_math.h"
+#include "detect_task.h"
 
 #if (SHOOT_TYPE == SHOOT_FRIC_TRIGGER)
 
@@ -87,48 +88,50 @@ void ShootSetMode(void)
 
     else if (switch_is_mid(SHOOT.rc->rc.s[SHOOT_MODE_CHANNEL]))
     {
-        if(SHOOT.rc->key.v & KEY_PRESSED_OFFSET_Q || GetScCmdFricOn())//Q启动摩擦轮
-        {
-          SHOOT.fric_flag = 1;
-        }
-        else if(SHOOT.rc->key.v & KEY_PRESSED_OFFSET_E || !GetScCmdFricOn())//E关闭摩擦轮
-        {
-          SHOOT.fric_flag = 0;
-        }
+        // if(SHOOT.rc->key.v & KEY_PRESSED_OFFSET_Q || GetScCmdFricOn())//Q启动摩擦轮
+        // {
+        //   SHOOT.fric_flag = 1;
+        // }
+        // else if(SHOOT.rc->key.v & KEY_PRESSED_OFFSET_E || !GetScCmdFricOn())//E关闭摩擦轮
+        // {
+        //   SHOOT.fric_flag = 0;
+        // }
         
-        if (SHOOT.fric_flag)
-        {
-            SHOOT.state = FRIC_READY;
-        }
-        else
-        {
-            SHOOT.state = FRIC_NOT_READY;
-        }
+        // if (SHOOT.fric_flag)
+        // {
+        //     SHOOT.state = FRIC_READY;
+        // }
+        // else
+        // {
+        //     SHOOT.state = FRIC_NOT_READY;
+        // }
 
 
-        if (SHOOT.rc->mouse.press_l)
-        {
-          SHOOT.shoot_flag = 1;
-        }
+        // if (SHOOT.rc->mouse.press_l)
+        // {
+        //   SHOOT.shoot_flag = 1;
+        // }
         
-        if(SHOOT.move_flag == 0 && SHOOT.shoot_flag != SHOOT.rc->mouse.press_l)
-        {
-            SHOOT.mode = LAOD_BULLET;
-            SHOOT.shoot_flag = 0;
-        }
-        else if (SHOOT.rc->mouse.press_r || GetScCmdFire())
-        {
-          SHOOT.mode = LOAD_BURSTFIRE;
-        }
-        else if(!SHOOT.rc->mouse.press_r && !SHOOT.move_flag)
-        {
-          SHOOT.mode = LOAD_STOP;
-        }
+        // if(SHOOT.move_flag == 0 && SHOOT.shoot_flag != SHOOT.rc->mouse.press_l)
+        // {
+        //     SHOOT.mode = LAOD_BULLET;
+        //     SHOOT.shoot_flag = 0;
+        // }
+        // else if (SHOOT.rc->mouse.press_r || GetScCmdFire())
+        // {
+        //   SHOOT.mode = LOAD_BURSTFIRE;
+        // }
+        // else if(!SHOOT.rc->mouse.press_r && !SHOOT.move_flag)
+        // {
+        //   SHOOT.mode = LOAD_STOP;
+        // }
 
-        if (SHOOT.move_flag)
-        {
-          SHOOT.mode = LAOD_BULLET;
-        }
+        // if (SHOOT.move_flag)
+        // {
+        //   SHOOT.mode = LAOD_BULLET;
+        // }
+        SHOOT.state = FRIC_READY;
+        SHOOT.mode = LOAD_STOP;
         
         
     } 
@@ -136,20 +139,20 @@ void ShootSetMode(void)
     else if (switch_is_down(SHOOT.rc->rc.s[SHOOT_MODE_CHANNEL]))
     {
       //清弹
-        //SHOOT.state = FRIC_READY;
-        //SHOOT.mode = LOAD_BURSTFIRE;
+        SHOOT.state = FRIC_READY;
+        SHOOT.mode = LOAD_BURSTFIRE;
 
       //上位机测试
-        SHOOT.state = FRIC_READY;
+        // SHOOT.state = FRIC_READY;
 
-        if (GetScCmdFire())
-        {
-          SHOOT.mode = LOAD_BURSTFIRE;
-        }
-        else
-        {
-          SHOOT.mode = LOAD_STOP;
-        }
+        // if (GetScCmdFire())
+        // {
+        //   SHOOT.mode = LOAD_BURSTFIRE;
+        // }
+        // else
+        // {
+        //   SHOOT.mode = LOAD_STOP;
+        //}
     }
 
 
@@ -193,6 +196,12 @@ void ShootSetMode(void)
         }
         
     }
+
+    // if ( toe_is_error(DBUS_TOE) )
+    // {        
+    //   SHOOT.state = FRIC_NOT_READY;
+    //   SHOOT.mode = LOAD_STOP;
+    // }
     
 }
 
