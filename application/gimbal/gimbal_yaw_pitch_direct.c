@@ -73,12 +73,12 @@ bool Gimbal_direct_init_judge (void)
  {
   if (axis == AX_PITCH)
   {
-    return value + gimbal_direct.imu_base.pitch;
+    return value - CmdGimbalJointState(AX_PITCH) + gimbal_direct.feedback_pos.pitch;
   }
 
   else if (axis == AX_YAW)
   {
-    return value + gimbal_direct.imu_base.yaw;
+    return value - CmdGimbalJointState(AX_YAW) + gimbal_direct.feedback_pos.yaw;
   }
 
   else 
@@ -124,11 +124,11 @@ inline float CmdGimbalJointState(uint8_t axis)
 {
   if ( axis == AX_PITCH )
   {
-    return loop_fp32_constrain(gimbal_direct.feedback_pos.pitch - gimbal_direct.imu_base.pitch,-M_PI,M_PI);//gimbal_direct.pitch.direction * (gimbal_direct.pitch.fdb.pos - GIMBAL_DIRECT_PITCH_MID)
+    return loop_fp32_constrain(gimbal_direct.pitch.direction * (gimbal_direct.pitch.fdb.pos - GIMBAL_DIRECT_PITCH_MID),-M_PI,M_PI);// gimbal_direct.feedback_pos.pitch - gimbal_direct.imu_base.pitch
   }
   else if ( axis == AX_YAW )
   {
-    return loop_fp32_constrain(gimbal_direct.feedback_pos.yaw - gimbal_direct.imu_base.yaw,-M_PI,M_PI); //gimbal_direct.yaw.direction * (gimbal_direct.yaw.fdb.pos - GIMBAL_DIRECT_YAW_MID)
+    return loop_fp32_constrain(gimbal_direct.yaw.direction * (gimbal_direct.yaw.fdb.pos - GIMBAL_DIRECT_YAW_MID),-M_PI,M_PI); // gimbal_direct.feedback_pos.yaw - gimbal_direct.imu_base.yaw
   }
   else 
   {
@@ -342,8 +342,8 @@ void GimbalReference(void)
 
   else if (gimbal_direct.mode == GIMBAL_AUTO_AIM)
   {
-    gimbal_direct.reference.pitch = fp32_constrain(GetScCmdGimbalAngle(AX_PITCH)  + gimbal_direct.imu_base.pitch, GIMBAL_LOWER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu  , GIMBAL_UPPER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu ); //Gimbal_direct_ecd_to_imu(AX_PITCH,GetScCmdGimbalAngle(AX_PITCH)
-    gimbal_direct.reference.yaw   = loop_fp32_constrain(GetScCmdGimbalAngle(AX_YAW) + gimbal_direct.imu_base.yaw, -M_PI , M_PI );  //Gimbal_direct_ecd_to_imu(AX_YAW,GetScCmdGimbalAngle(AX_YAW)) 
+    gimbal_direct.reference.pitch = fp32_constrain(Gimbal_direct_ecd_to_imu(AX_PITCH,GetScCmdGimbalAngle(AX_PITCH)), GIMBAL_LOWER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu  , GIMBAL_UPPER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu ); //Gimbal_direct_ecd_to_imu(AX_PITCH,GetScCmdGimbalAngle(AX_PITCH)
+    gimbal_direct.reference.yaw   = loop_fp32_constrain(Gimbal_direct_ecd_to_imu(AX_YAW,GetScCmdGimbalAngle(AX_YAW)), -M_PI , M_PI );  //Gimbal_direct_ecd_to_imu(AX_YAW,GetScCmdGimbalAngle(AX_YAW)) 
   }
 
   else if (gimbal_direct.mode == GIMBAL_TEST)

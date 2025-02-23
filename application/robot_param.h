@@ -23,7 +23,7 @@
 #include "struct_typedef.h"
 
 //导入具体的机器人参数配置文件
-#include "robot_param_sentinel_CUHK_gimbal.h"
+#include "robot_param_sentinel_CUHK_chassis.h"
 
 // 选择机器人的各种类型
 #define __DEVELOP 1                // 开发模式
