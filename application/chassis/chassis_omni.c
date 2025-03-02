@@ -1,11 +1,11 @@
 /**
   ****************************(C) COPYRIGHT 2024 Polarbear****************************
-  * @file       chassis_mecanum.c/h
-  * @brief      麦轮轮底盘控制器。
+  * @file       chassis_omni.c/h
+  * @brief      全向轮底盘控制器。
   * @note       包括初始化，目标量更新、状态量更新、控制量计算与直接控制量的发送
   * @history
   *  Version    Date            Author          Modification
-  *  V1.0.0   2025.1.19       Harry_Wong        1.重新构建麦克纳姆轮底盘，完成单底盘控制
+  *  V1.0.0   2025.03.03       Harry_Wong        1.重新构建全向轮底盘，完成单底盘控制
   @verbatim
   ==============================================================================
 
