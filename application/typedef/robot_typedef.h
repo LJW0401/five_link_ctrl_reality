@@ -6,7 +6,7 @@
 #define CHASSIS_NONE            0  // 无底盘
 #define CHASSIS_MECANUM_WHEEL   1  // 麦克纳姆轮底盘
 #define CHASSIS_OMNI_WHEEL      2  // 全向轮底盘
-#define CHASSIS_STEERING_WHEEL  3  // 舵轮底盘
+#define CHASSIS_RUDDER_WHEEL    3  // 舵轮底盘
 #define CHASSIS_BALANCE         4  // 平衡底盘
 
 // 可用云台硬件类型

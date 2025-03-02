@@ -55,7 +55,7 @@ void Angle_solution(void)
 
 bool Gimbal_direct_init_judge (void)
 {
-  if ( ((gimbal_direct.reference.yaw-gimbal_direct.yaw.fdb.pos<0.003f && (-0.003f)<gimbal_direct.reference.yaw-gimbal_direct.yaw.fdb.pos) && (gimbal_direct.reference.pitch-gimbal_direct.pitch.fdb.pos<0.003f && (-0.003f)<gimbal_direct.reference.pitch-gimbal_direct.pitch.fdb.pos) ) || gimbal_direct.init_timer>=GIMBAL_INIT_TIME )
+  if ( ((gimbal_direct.reference.yaw-gimbal_direct.yaw.fdb.pos<0.0036f && (-0.0036f)<gimbal_direct.reference.yaw-gimbal_direct.yaw.fdb.pos) && (gimbal_direct.reference.pitch-gimbal_direct.pitch.fdb.pos<0.0036f && (-0.0036f)<gimbal_direct.reference.pitch-gimbal_direct.pitch.fdb.pos) ) || gimbal_direct.init_timer>=GIMBAL_INIT_TIME )
   {
     return true;
   }
@@ -64,7 +64,6 @@ bool Gimbal_direct_init_judge (void)
     return false;
   }
 }
-
 
 /*----------------Gimbal_direct_ecd_to_imu--------------------*/
 /**
@@ -219,6 +218,7 @@ void GimbalSetMode(void)
     gimbal_direct.mode=GIMBAL_ZERO_FORCE;
     gimbal_direct.init_continue=false;
   }
+
   //初始校准模式
   else if (gimbal_direct.mode==GIMBAL_ZERO_FORCE || gimbal_direct.mode==GIMBAL_INIT)  
   {
@@ -239,7 +239,7 @@ void GimbalSetMode(void)
 
   else if (switch_is_up(gimbal_direct.rc->rc.s[0]))
   {
-    gimbal_direct.mode=GIMBAL_AUTO_AIM;
+    gimbal_direct.mode=GIMBAL_IMU;
   }
 }
 /*-------------------- Observe --------------------*/
@@ -303,6 +303,7 @@ void GimbalReference(void)
     gimbal_direct.reference.pitch=  gimbal_direct.pitch.direction * (GIMBAL_DIRECT_PITCH_MID - gimbal_direct.pitch.fdb.pos) + gimbal_direct.feedback_pos.pitch;
     gimbal_direct.reference.yaw=    gimbal_direct.yaw.direction * (GIMBAL_DIRECT_YAW_MID - gimbal_direct.yaw.fdb.pos) + gimbal_direct.feedback_pos.yaw;
   }
+
 
   else if (gimbal_direct.mode == GIMBAL_GAP)
   {
@@ -379,3 +380,4 @@ void GimbalSendCmd(void)
 
 
 #endif  // GIMBAL_YAW_PITCH
+
