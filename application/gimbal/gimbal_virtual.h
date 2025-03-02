@@ -22,9 +22,5 @@
 #include "gimbal.h"
 #include  "user_lib.h"
 
-extern inline float GetGimbalDeltaYawMid(void);
-extern inline bool GetGimbalInitJudgeReturn(void);
-extern inline float CmdGimbalJointState(uint8_t axis);
-
 #endif
 #endif

@@ -91,32 +91,6 @@ bool Gimbal_direct_init_judge (void)
   }
  }
 
-/*----------------Gimbal_direct_ecd_to_imu--------------------*/
-/**
- * @brief          ecd角度值转换成imu角度值
- * @param[in]      axis 用于知道读取哪一个轴的角度转换
- * @param[in]      value 用于准换的值
- * @retval         float imu映射角度值
- */
-
- float Gimbal_direct_ecd_to_imu(uint8_t axis,float value)
- {
-  if (axis == AX_PITCH)
-  {
-    return value - CmdGimbalJointState(AX_PITCH) + gimbal_direct.feedback_pos.pitch;
-  }
-
-  else if (axis == AX_YAW)
-  {
-    return value - CmdGimbalJointState(AX_YAW) + gimbal_direct.feedback_pos.yaw;
-  }
-
-  else 
-  {
-    return 0.0f;
-  }
- }
-
 
 /*-------------------------The end of internal functions--------------------------------------*/
 
@@ -265,7 +239,7 @@ void GimbalSetMode(void)
 
   else if (switch_is_up(gimbal_direct.rc->rc.s[0]))
   {
-    gimbal_direct.mode=GIMBAL_AUTO_AIM;
+    gimbal_direct.mode=GIMBAL_IMU;
   }
 }
 /*-------------------- Observe --------------------*/
@@ -400,10 +374,7 @@ void GimbalConsole(void)
  */
 void GimbalSendCmd(void) 
 {
-    CanCmdDjiMotor(1,0x1FF,gimbal_direct.pitch.set.curr,gimbal_direct.yaw.set.curr,0,0);
-
-    ModifyDebugDataPackage(0,loop_fp32_constrain(Gimbal_direct_ecd_to_imu(AX_YAW,GetScCmdGimbalAngle(AX_YAW)) , -M_PI , M_PI ),"yaw");
-    ModifyDebugDataPackage(1,fp32_constrain( Gimbal_direct_ecd_to_imu(AX_PITCH,GetScCmdGimbalAngle(AX_PITCH)) , GIMBAL_LOWER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu  , GIMBAL_UPPER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu ),"pitch");   
+    CanCmdDjiMotor(2,0x1FF,gimbal_direct.yaw.set.curr,gimbal_direct.pitch.set.curr,0,0);
 }
 
 
