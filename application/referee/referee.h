@@ -289,5 +289,6 @@ extern CustomControllerData_t * GetCustomControllerDataPoint(void);
 
 extern inline bool GetRefereeState(void);
 extern inline float GetCustomControllerPos(uint8_t index);
+extern power_heat_data_t power_heat_data;
 
 #endif
