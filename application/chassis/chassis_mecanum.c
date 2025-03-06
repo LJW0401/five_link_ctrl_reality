@@ -72,13 +72,13 @@ void ChassisInit(void)
  */
 void ChassisSetMode(void)
 {
-    if ((toe_is_error(DBUS_TOE)) || switch_is_down(chassis.rc->rc.s[0]) )
+    if ((toe_is_error(DBUS_TOE)) || switch_is_down(chassis.rc->rc.s[0]) || GetGimbalInitJudgeReturn() == false)
     {
         chassis.mode = CHASSIS_LOCK;
     }
     else if (switch_is_mid(chassis.rc->rc.s[0]))
     {
-        chassis.mode = CHASSIS_SINGLE;
+        chassis.mode = CHASSIS_FOLLOW;
     }
     else if (switch_is_up(chassis.rc->rc.s[0]))
     {
@@ -101,6 +101,10 @@ void ChassisObserver(void)
         GetMotorMeasure(&chassis.wheel[i]);
     }
 
+    for (int i=0;i<4;++i)
+    {
+        chassis.feedback[i] = chassis.wheel[i].fdb.vel;
+    }
 
     chassis.yaw_delta = GetGimbalDeltaYawMid();
 }
@@ -128,9 +132,34 @@ void ChassisReference(void)
     }
     else if (chassis.mode == CHASSIS_FOLLOW)
     {
-        chassis.reference.vx=fp32_deadline(chassis.rc->rc.ch[3],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_SPEED;
-        chassis.reference.vy=fp32_deadline(-chassis.rc->rc.ch[2],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_SPEED;
-        chassis.reference.wz=PID_calc(&chassis_pid.follow,chassis.yaw_delta,0);
+        chassis.reference_rc.vx=fp32_deadline(chassis.rc->rc.ch[3],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_SPEED;
+        chassis.reference_rc.vy=fp32_deadline(-chassis.rc->rc.ch[2],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_SPEED;
+
+        if (chassis.rc->key.v & KEY_PRESSED_OFFSET_W) 
+        {
+            chassis.reference_rc.vx += CHASSIS_RC_MAX_SPEED;
+        }
+
+        else if (chassis.rc->key.v & KEY_PRESSED_OFFSET_S) 
+        {
+            chassis.reference_rc.vx -= CHASSIS_RC_MAX_SPEED;
+        }
+
+        if (chassis.rc->key.v & KEY_PRESSED_OFFSET_A) 
+        {
+            chassis.reference_rc.vy += CHASSIS_RC_MAX_SPEED;
+        }
+
+        else if (chassis.rc->key.v & KEY_PRESSED_OFFSET_D) 
+        {
+            chassis.reference_rc.vy -= CHASSIS_RC_MAX_SPEED;
+        }
+
+
+        chassis.reference.vx =  chassis.reference_rc.vx * cosf(chassis.yaw_delta) - chassis.reference_rc.vy * sinf(chassis.yaw_delta);
+        chassis.reference.vy =  chassis.reference_rc.vx * sinf(chassis.yaw_delta) + chassis.reference_rc.vy * cos(chassis.yaw_delta);
+
+        chassis.reference.wz=PID_calc(&chassis_pid.follow,0,chassis.yaw_delta);
     }
 }
 
@@ -143,14 +172,14 @@ void ChassisReference(void)
  */
 void ChassisConsole(void)
 {
-    chassis.wheel[0].set.vel = ( sqrt(2)*(chassis.reference.vx - chassis.reference.vy) - WHEEL_CENTER_DISTANCE*chassis.reference.wz )/WHEEL_RADIUS*chassis.wheel[0].reduction_ratio*chassis.wheel[0].direction;
-    chassis.wheel[1].set.vel = ( sqrt(2)*(chassis.reference.vx + chassis.reference.vy) - WHEEL_CENTER_DISTANCE*chassis.reference.wz )/WHEEL_RADIUS*chassis.wheel[1].reduction_ratio*chassis.wheel[1].direction;
-    chassis.wheel[2].set.vel = ( sqrt(2)*(chassis.reference.vx - chassis.reference.vy) + WHEEL_CENTER_DISTANCE*chassis.reference.wz )/WHEEL_RADIUS*chassis.wheel[2].reduction_ratio*chassis.wheel[2].direction;
-    chassis.wheel[3].set.vel = ( sqrt(2)*(chassis.reference.vx + chassis.reference.vy) + WHEEL_CENTER_DISTANCE*chassis.reference.wz )/WHEEL_RADIUS*chassis.wheel[3].reduction_ratio*chassis.wheel[3].direction;
+    chassis.set[0] = ( sqrt(2)*(chassis.reference.vx - chassis.reference.vy) - WHEEL_CENTER_DISTANCE*chassis.reference.wz )/WHEEL_RADIUS*chassis.wheel[0].reduction_ratio*chassis.wheel[0].direction;
+    chassis.set[1] = ( sqrt(2)*(chassis.reference.vx + chassis.reference.vy) - WHEEL_CENTER_DISTANCE*chassis.reference.wz )/WHEEL_RADIUS*chassis.wheel[1].reduction_ratio*chassis.wheel[1].direction;
+    chassis.set[2] = ( sqrt(2)*(chassis.reference.vx - chassis.reference.vy) + WHEEL_CENTER_DISTANCE*chassis.reference.wz )/WHEEL_RADIUS*chassis.wheel[2].reduction_ratio*chassis.wheel[2].direction;
+    chassis.set[3] = ( sqrt(2)*(chassis.reference.vx + chassis.reference.vy) + WHEEL_CENTER_DISTANCE*chassis.reference.wz )/WHEEL_RADIUS*chassis.wheel[3].reduction_ratio*chassis.wheel[3].direction;
 
     for (int i=0;i<4;++i)
     {
-        chassis.wheel[i].set.curr = PID_calc(&chassis_pid.wheel_velocity[i], chassis.wheel[i].fdb.vel, chassis.wheel[i].set.vel);
+        chassis.wheel[i].set.curr = PID_calc(&chassis_pid.wheel_velocity[i], chassis.feedback[i], chassis.set[i]);
     }
 }
 
