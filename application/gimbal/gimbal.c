@@ -19,7 +19,6 @@
 
 #include "attribute_typedef.h"
 
-
 #if GIMBAL_TYPE != GIMBAL_NONE
 
 #include <stdlib.h>
