@@ -31,27 +31,35 @@ uint32_t referee_online_time = 0;
 frame_header_struct_t referee_receive_header;
 frame_header_struct_t referee_send_header;
 
-game_status_t game_status;
-game_result_t game_result;
-game_robot_HP_t game_robot_HP;
+game_status_t game_status;                                           //0x0001
+game_result_t game_result;                                           //0x0002
+game_robot_HP_t game_robot_HP;                                       //0x0003
 
-event_data_t field_event;
-ext_supply_projectile_action_t supply_projectile_action_t;
-ext_supply_projectile_booking_t supply_projectile_booking_t;
-referee_warning_t referee_warning;
+event_data_t event_data;                                             //0x0101
+referee_warning_t referee_warning;                                   //0x0104
+dart_info_t dart_info;                                               //0x0105
 
-robot_status_t robot_status;
-power_heat_data_t power_heat_data;
-robot_pos_t game_robot_pos_t;
-buff_t buff_musk_t;
-air_support_data_t robot_energy_t;
-hurt_data_t robot_hurt_t;
-shoot_data_t shoot_data;
-ext_bullet_remaining_t bullet_remaining_t;
-robot_interaction_data_t student_interactive_data_t;
-CustomControllerData_t CUSTOM_CONTROLLER_DATA;  //自定义控制器数据
+robot_status_t robot_status;                                         //0x0201
+power_heat_data_t power_heat_data;                                   //0x0202
+robot_pos_t robot_pos;                                               //0x0203
+buff_t buff;                                                         //0x0204
+hurt_data_t hurt_data;                                               //0x0206
+shoot_data_t shoot_data;                                             //0x0207
+projectile_allowance_t projectile_allowance;                         //0x0208
+rfid_status_t rfid_status;                                           //0x0209
+dart_client_cmd_t dart_client_cmd;                                   //0x020A
+ground_robot_position_t ground_robot_position;                       //0x020B
+radar_mark_data_t radar_mark_data;                                   //0x020C
+sentry_info_t sentry_info;                                           //0x020D
+radar_info_t radar_info;                                             //0x020E
 
-ext_robot_command_t robot_command_t;
+
+robot_interaction_data_t robot_interaction_data;                     //0x0301
+custom_robot_data_t custom_robot_data;                               //0x0302
+map_command_t map_command;                                           //0x0303
+remote_control_t remote_control;                                     //0x0304
+
+
 
 void init_referee_struct_data(void)
 {
@@ -62,24 +70,28 @@ void init_referee_struct_data(void)
     memset(&game_result, 0, sizeof(game_result_t));
     memset(&game_robot_HP, 0, sizeof(game_robot_HP_t));
 
-    memset(&field_event, 0, sizeof(event_data_t));
-    memset(&supply_projectile_action_t, 0, sizeof(ext_supply_projectile_action_t));
-    memset(&supply_projectile_booking_t, 0, sizeof(ext_supply_projectile_booking_t));
+    memset(&event_data, 0, sizeof(event_data_t));
     memset(&referee_warning, 0, sizeof(referee_warning_t));
+    memset(&dart_info, 0 , sizeof(dart_info_t));
 
     memset(&robot_status, 0, sizeof(robot_status_t));
     memset(&power_heat_data, 0, sizeof(power_heat_data_t));
-    memset(&game_robot_pos_t, 0, sizeof(robot_pos_t));
-    memset(&buff_musk_t, 0, sizeof(buff_t));
-    memset(&robot_energy_t, 0, sizeof(air_support_data_t));
-    memset(&robot_hurt_t, 0, sizeof(hurt_data_t));
+    memset(&robot_pos, 0, sizeof(robot_pos_t));
+    memset(&buff, 0, sizeof(buff_t));
+    memset(&hurt_data, 0, sizeof(hurt_data_t));
     memset(&shoot_data, 0, sizeof(shoot_data_t));
-    memset(&bullet_remaining_t, 0, sizeof(ext_bullet_remaining_t));
+    memset(&projectile_allowance, 0, sizeof(projectile_allowance_t));
+    memset(&rfid_status, 0, sizeof(rfid_status_t));
+    memset(&dart_client_cmd, 0, sizeof(dart_client_cmd_t));
+    memset(&ground_robot_position, 0, sizeof(ground_robot_position_t));
+    memset(&radar_mark_data, 0, sizeof(radar_mark_data_t));
+    memset(&sentry_info, 0, sizeof(sentry_info_t));
+    memset(&radar_info, 0, sizeof(radar_info_t));
 
-    memset(&student_interactive_data_t, 0, sizeof(robot_interaction_data_t));
-    memset(&CUSTOM_CONTROLLER_DATA, 0, sizeof(CustomControllerData_t));
-
-    memset(&robot_command_t, 0, sizeof(ext_robot_command_t));
+    memset(&robot_interaction_data, 0, sizeof(robot_interaction_data_t));
+    memset(&custom_robot_data, 0, sizeof(custom_robot_data_t));
+    memset(&map_command, 0, sizeof(map_command_t));
+    memset(&remote_control, 0, sizeof(remote_control_t));
 }
 
 void referee_data_solve(uint8_t * frame)
@@ -97,7 +109,7 @@ void referee_data_solve(uint8_t * frame)
     buzzer_on(100, 300);
 
     switch (cmd_id) {
-        case GAME_STATE_CMD_ID: {
+        case GAME_STATUS_CMD_ID: {
             memcpy(&game_status, frame + index, sizeof(game_status_t));
             referee_online_time = HAL_GetTick();
         } break;
@@ -110,68 +122,89 @@ void referee_data_solve(uint8_t * frame)
             referee_online_time = HAL_GetTick();
         } break;
 
-        case FIELD_EVENTS_CMD_ID: {
-            memcpy(&field_event, frame + index, sizeof(event_data_t));
-            referee_online_time = HAL_GetTick();
-        } break;
-        case SUPPLY_PROJECTILE_ACTION_CMD_ID: {
-            memcpy(
-                &supply_projectile_action_t, frame + index, sizeof(ext_supply_projectile_action_t));
-            referee_online_time = HAL_GetTick();
-        } break;
-        case SUPPLY_PROJECTILE_BOOKING_CMD_ID: {
-            memcpy(
-                &supply_projectile_booking_t, frame + index,
-                sizeof(ext_supply_projectile_booking_t));
+        case EVENT_DATA_CMD_ID: {
+            memcpy(&event_data, frame + index, sizeof(event_data_t));
             referee_online_time = HAL_GetTick();
         } break;
         case REFEREE_WARNING_CMD_ID: {
-            memcpy(&referee_warning, frame + index, sizeof(referee_warning_t));
+            memcpy(
+                &referee_warning, frame + index, sizeof(referee_warning_t));
             referee_online_time = HAL_GetTick();
         } break;
-
-        case ROBOT_STATE_CMD_ID: {
-            memcpy(&robot_status, frame + index, sizeof(robot_status_t));
+        case DART_INFO_CMD_ID: {
+            memcpy(
+                &dart_info, frame + index,
+                sizeof(dart_info_t));
+            referee_online_time = HAL_GetTick();
+        } break;
+        
+        case ROBOT_STATUS_CMD_ID: {
+            memcpy(&referee_warning, frame + index, sizeof(robot_status_t));
             referee_online_time = HAL_GetTick();
         } break;
         case POWER_HEAT_DATA_CMD_ID: {
-            memcpy(&power_heat_data, frame + index, sizeof(power_heat_data_t));
+            memcpy(&robot_status, frame + index, sizeof(power_heat_data_t));
             referee_online_time = HAL_GetTick();
         } break;
         case ROBOT_POS_CMD_ID: {
-            memcpy(&game_robot_pos_t, frame + index, sizeof(robot_pos_t));
+            memcpy(&power_heat_data, frame + index, sizeof(robot_pos_t));
             referee_online_time = HAL_GetTick();
         } break;
-        case BUFF_MUSK_CMD_ID: {
-            memcpy(&buff_musk_t, frame + index, sizeof(buff_t));
+        case BUFF_CMD_ID: {
+            memcpy(&buff, frame + index, sizeof(buff_t));
             referee_online_time = HAL_GetTick();
         } break;
-        case AERIAL_ROBOT_ENERGY_CMD_ID: {
-            memcpy(&robot_energy_t, frame + index, sizeof(air_support_data_t));
-            referee_online_time = HAL_GetTick();
-        } break;
-        case ROBOT_HURT_CMD_ID: {
-            memcpy(&robot_hurt_t, frame + index, sizeof(hurt_data_t));
+        case HURT_DATA_CMD_ID: {
+            memcpy(&hurt_data, frame + index, sizeof(hurt_data_t));
             referee_online_time = HAL_GetTick();
         } break;
         case SHOOT_DATA_CMD_ID: {
             memcpy(&shoot_data, frame + index, sizeof(shoot_data_t));
             referee_online_time = HAL_GetTick();
         } break;
-        case BULLET_REMAINING_CMD_ID: {
-            memcpy(&bullet_remaining_t, frame + index, sizeof(ext_bullet_remaining_t));
+        case PROJECTILE_ALLOWANCE_CMD_ID: {
+            memcpy(&projectile_allowance, frame + index, sizeof(projectile_allowance_t));
             referee_online_time = HAL_GetTick();
         } break;
-        case STUDENT_INTERACTIVE_DATA_CMD_ID: {
-            memcpy(&student_interactive_data_t, frame + index, sizeof(robot_interaction_data_t));
+        case RFID_STATUS_CMD_ID: {
+            memcpy(&rfid_status, frame + index, sizeof(rfid_status_t));
             referee_online_time = HAL_GetTick();
         } break;
-        case CUSTOM_CONTROLLER_CMD_ID: {
-            memcpy(&CUSTOM_CONTROLLER_DATA, frame + index, sizeof(CustomControllerData_t));
+        case DART_CLIENT_CMD_CMD_ID: {
+            memcpy(&dart_client_cmd, frame + index, sizeof(dart_client_cmd_t));
             referee_online_time = HAL_GetTick();
         } break;
-        case ROBOT_COMMAND_CMD_ID: {
-            memcpy(&robot_command_t, frame + index, sizeof(ext_robot_command_t));
+        case GROUND_ROBOT_POSITION_CMD_ID: {
+            memcpy(&ground_robot_position, frame + index, sizeof(ground_robot_position_t));
+            referee_online_time = HAL_GetTick();
+        } break;
+        case RADAR_MARK_DATA_CMD_ID: {
+            memcpy(&radar_mark_data, frame + index, sizeof(radar_mark_data_t));
+            referee_online_time = HAL_GetTick();
+        } break;
+        case SENTRY_INFO_CMD_ID: {
+            memcpy(&sentry_info, frame + index, sizeof(sentry_info_t));
+            referee_online_time = HAL_GetTick();
+        } break;
+        case RADAR_INFO_CMD_ID: {
+            memcpy(&radar_info, frame + index, sizeof(radar_info_t));
+            referee_online_time = HAL_GetTick();
+        } break;
+
+        case ROBOT_INTERACTION_DATA_CMD_ID: {
+            memcpy(&robot_interaction_data, frame + index, sizeof(robot_interaction_data_t));
+            referee_online_time = HAL_GetTick();
+        } break;
+        case CUSTOM_ROBOT_DATA_CMD_ID: {
+            memcpy(&custom_robot_data, frame + index, sizeof(custom_robot_data_t));
+            referee_online_time = HAL_GetTick();
+        } break;
+        case MAP_COMMAND_CMD_ID: {
+            memcpy(&map_command, frame + index, sizeof(map_command_t));
+            referee_online_time = HAL_GetTick();
+        } break;
+        case REMOTE_CONTROL_CMD_ID: {
+            memcpy(&remote_control, frame + index, sizeof(remote_control_t));
             referee_online_time = HAL_GetTick();
         } break;
         default: {
@@ -182,7 +215,7 @@ void referee_data_solve(uint8_t * frame)
 
 void get_chassis_power_and_buffer(fp32 * power, fp32 * buffer)
 {
-    *power = power_heat_data.chassis_power;
+    *power = power_heat_data.buffer_energy;
     *buffer = power_heat_data.buffer_energy;
 }
 
@@ -200,42 +233,7 @@ void get_shoot_heat1_limit_and_heat1(uint16_t * heat1_limit, uint16_t * heat1)
     *heat1 = power_heat_data.shooter_17mm_2_barrel_heat;  // 第 2 个 17mm 发射机构的枪口热量
 }
 
-/**
- * @brief 反馈机器人颜色
- * @param  none
- * @return 0为红色,1为蓝色,2为未知
- */
-uint8_t get_team_color(void)  // 谨防“哨兵在打我”
-{
-    switch (robot_status.robot_id) {
-        case 1:
-        case 2:
-        case 3:
-        case 4:
-        case 5:
-        case 6:
-        case 7:
-        case 8:
-        case 9:
-        case 10:
-        case 11:
-            return 0;
-        case 101:
-        case 102:
-        case 103:
-        case 104:
-        case 105:
-        case 106:
-        case 107:
-        case 108:
-        case 109:
-        case 110:
-        case 111:
-            return 1;
-        default:
-            return 2;
-    }
-}
+
 
 uint16_t get_shoot_heat(void)  // 双枪管哨兵
 {
@@ -246,7 +244,7 @@ uint16_t get_shoot_heat(void)  // 双枪管哨兵
     }
 }
 
-CustomControllerData_t * GetCustomControllerDataPoint(void) { return &CUSTOM_CONTROLLER_DATA; }
+custom_robot_data_t * GetCustomControllerDataPoint(void) { return &custom_robot_data; }
 
 /*========== API ==========*/
 
@@ -262,10 +260,85 @@ inline bool GetRefereeState(void) {
  */
 inline float GetCustomControllerPos(uint8_t index){
     float data = 0;
-    memcpy(&data, &CUSTOM_CONTROLLER_DATA.data[index * 4], 4);
+    memcpy(&data, &custom_robot_data.data[index * 4], 4);
     return data;
-    // return *((float *)(&CUSTOM_CONTROLLER_DATA.data[index * 4]));
+    // return *((float *)(&custom_robot_data.data[index * 4]));
 }
+/**
+ * @brief 获取事件数据
+ * @param  无
+ * @return uint32_t 
+ */
+inline uint32_t GetEventData(void){return event_data.event_data;}
+
+/**
+ * @brief 获取机器人血量数据
+ * @param  无
+ * @return game_robot_HP_t
+ */
+inline game_robot_HP_t GetGameRobotHP(void){return game_robot_HP;}
+
+/**
+ * @brief 获取比赛信息
+ * @param  无
+ * @return game_status_t
+ */
+inline game_status_t GetGameStatus(void){return game_status;}
+
+/**
+ * @brief 获取地面机器人位置信息
+ * @param  无
+ * @return ground_robot_position_t
+ */
+inline ground_robot_position_t GetGroundRobotPosition(void){return ground_robot_position;}
+
+/**
+ * @brief 获取RFID信息
+ * @param  无
+ * @return rfid_status_t
+ */
+inline rfid_status_t GetRFIDStatus(void){return rfid_status;}
 
 
+/**
+ * @brief 获取机器人信息
+ * @param  无
+ * @return robot_status_t
+ */
+inline robot_status_t GetRobotStatus(void){return robot_status;}
+
+/**
+ * @brief 获取能量热量信息
+ * @param  无
+ * @return power_heat_data_t
+ */
+inline power_heat_data_t GetPoweHeatData(void){return power_heat_data;}
+
+/**
+ * @brief 获取机器人位姿信息
+ * @param  无
+ * @return robot_pos_t
+ */
+inline robot_pos_t GetRobotPos(void){return robot_pos;}
+
+/**
+ * @brief 获取受伤信息
+ * @param  无
+ * @return hurt_data_t
+ */
+inline hurt_data_t GetHurtData(void){return hurt_data;}
+
+/**
+ * @brief 获取允许发弹量信息
+ * @param  无
+ * @return hurt_data_t
+ */
+inline projectile_allowance_t GetProjectiliAllowance(void){return projectile_allowance;}
+
+/**
+ * @brief 获取buff信息
+ * @param  无
+ * @return buff_t
+ */
+inline buff_t GetBuff(void){return buff;}
 /*------------------------------ End of File ------------------------------*/
