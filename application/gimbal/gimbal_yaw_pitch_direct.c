@@ -300,8 +300,8 @@ void GimbalReference(void)
 {
   if (gimbal_direct.mode == GIMBAL_INIT)
   {
-    gimbal_direct.reference.pitch=  gimbal_direct.pitch.direction * (GIMBAL_DIRECT_PITCH_MID - gimbal_direct.pitch.fdb.pos) + gimbal_direct.feedback_pos.pitch;
-    gimbal_direct.reference.yaw=    gimbal_direct.yaw.direction * (GIMBAL_DIRECT_YAW_MID - gimbal_direct.yaw.fdb.pos) + gimbal_direct.feedback_pos.yaw;
+    gimbal_direct.reference.pitch=  loop_fp32_constrain(gimbal_direct.pitch.direction * (GIMBAL_DIRECT_PITCH_MID - gimbal_direct.pitch.fdb.pos) + gimbal_direct.feedback_pos.pitch ,-M_PI,M_PI) ;
+    gimbal_direct.reference.yaw=    loop_fp32_constrain(gimbal_direct.yaw.direction * (GIMBAL_DIRECT_YAW_MID - gimbal_direct.yaw.fdb.pos) + gimbal_direct.feedback_pos.yaw ,-M_PI,M_PI)  ;
   }
 
   else if (gimbal_direct.mode == GIMBAL_GAP)
@@ -323,8 +323,8 @@ void GimbalReference(void)
       // warning :不建议键鼠跟遥控器同时使用！
       //读取鼠标的移动（还未测试过鼠标）
       //暂时先屏蔽一下鼠标功能
-      gimbal_direct.reference.pitch=fp32_constrain( gimbal_direct.reference.pitch - gimbal_direct.rc->mouse.y/MOUSE_SENSITIVITY , GIMBAL_LOWER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu,GIMBAL_UPPER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu);      //GetDt7MouseSpeed(AX_YAW)
-      gimbal_direct.reference.yaw  =loop_fp32_constrain( gimbal_direct.reference.yaw - gimbal_direct.rc->mouse.x/MOUSE_SENSITIVITY,-M_PI,M_PI);//GetDt7MouseSpeed(AX_PITCH)
+      //gimbal_direct.reference.pitch=fp32_constrain( gimbal_direct.reference.pitch - gimbal_direct.rc->mouse.y/MOUSE_SENSITIVITY , GIMBAL_LOWER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu,GIMBAL_UPPER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu);      //GetDt7MouseSpeed(AX_YAW)
+      //gimbal_direct.reference.yaw  =loop_fp32_constrain( gimbal_direct.reference.yaw - gimbal_direct.rc->mouse.x/MOUSE_SENSITIVITY,-M_PI,M_PI);//GetDt7MouseSpeed(AX_PITCH)
       //读取摇杆的数据
       gimbal_direct.reference.pitch= fp32_constrain(gimbal_direct.reference.pitch-fp32_deadline(gimbal_direct.rc->rc.ch[1], REMOTE_CONTROLLER_MIN_DEADLINE,REMOTE_CONTROLLER_MAX_DEADLINE)/REMOTE_CONTROLLER_SENSITIVITY,GIMBAL_LOWER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu,GIMBAL_UPPER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu);
       gimbal_direct.reference.yaw = loop_fp32_constrain(gimbal_direct.reference.yaw-fp32_deadline(gimbal_direct.rc->rc.ch[0], REMOTE_CONTROLLER_MIN_DEADLINE,REMOTE_CONTROLLER_MAX_DEADLINE)/REMOTE_CONTROLLER_SENSITIVITY,-M_PI,M_PI);
@@ -357,8 +357,8 @@ void GimbalConsole(void)
     gimbal_direct.pitch.set.vel=PID_calc(&gimbal_direct_pid.pitch_angle,gimbal_direct.feedback_pos.pitch,gimbal_direct.reference.pitch);
     gimbal_direct.pitch.set.curr=gimbal_direct.pitch.direction * PID_calc(&gimbal_direct_pid.pitch_velocity,gimbal_direct.feedback_vel.pitch,gimbal_direct.pitch.set.vel);
 
-    fp32 delta_yaw=loop_fp32_constrain(gimbal_direct.reference.yaw-gimbal_direct.feedback_pos.yaw,-M_PI,M_PI);
-    gimbal_direct.yaw.set.vel=PID_calc(&gimbal_direct_pid.yaw_angle,0,delta_yaw);
+    gimbal_direct.yaw.set.pos=loop_fp32_constrain(gimbal_direct.reference.yaw-gimbal_direct.feedback_pos.yaw,-M_PI,M_PI);
+    gimbal_direct.yaw.set.vel=PID_calc(&gimbal_direct_pid.yaw_angle,0,gimbal_direct.yaw.set.pos);
     gimbal_direct.yaw.set.curr=gimbal_direct.yaw.direction * PID_calc(&gimbal_direct_pid.yaw_velocity,gimbal_direct.feedback_vel.yaw,gimbal_direct.yaw.set.vel);
   }
 }
@@ -373,7 +373,14 @@ void GimbalConsole(void)
  */
 void GimbalSendCmd(void) 
 {
-    CanCmdDjiMotor(GIMBAL_CAN,GIMBAL_STDID,gimbal_direct.yaw.set.curr,gimbal_direct.pitch.set.curr,0,0);
+    CanCmdDjiMotor(2,0x1FF,0,gimbal_direct.pitch.set.curr,0,gimbal_direct.yaw.set.curr);
+    ModifyDebugDataPackage(1,gimbal_direct.reference.yaw,"set_pos");
+    ModifyDebugDataPackage(2,gimbal_direct.feedback_pos.yaw,"fdb_pos"); 
+    ModifyDebugDataPackage(3,gimbal_direct.yaw.set.vel,"set_vel");
+    ModifyDebugDataPackage(4,gimbal_direct.feedback_vel.yaw,"fdb_vel");
+    ModifyDebugDataPackage(5,gimbal_direct.yaw.set.curr,"set_curr");
+    ModifyDebugDataPackage(6,gimbal_direct.yaw.fdb.pos,"pos_ECD");
+    
 }
 
 
