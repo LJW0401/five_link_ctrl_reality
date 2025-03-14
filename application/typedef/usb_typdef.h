@@ -365,6 +365,10 @@ typedef struct RobotCmdData
         } __packed__ gimbal;
         struct
         {
+            bool tracking;
+        } __packed__ tracking;
+        struct
+        {
             uint8_t fire;
             uint8_t fric_on;
         } __packed__ shoot;

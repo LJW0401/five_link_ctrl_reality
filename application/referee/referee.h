@@ -209,7 +209,7 @@ typedef __packed struct  //0x0301
     uint16_t data_cmd_id;
     uint16_t sender_id;
     uint16_t receiver_id;
-    uint8_t user_data[113];
+    uint8_t user_data[112];
 } robot_interaction_data_t;
 
 
@@ -240,9 +240,18 @@ typedef __packed struct //0x0304
     uint16_t reserved;
 } remote_control_t;
 
+extern event_data_t event_data;
 extern game_robot_HP_t game_robot_HP;
 extern robot_status_t robot_status;
 extern game_status_t game_status;
+extern ground_robot_position_t ground_robot_position;
+extern rfid_status_t rfid_status;
+extern power_heat_data_t power_heat_data;
+extern robot_pos_t robot_pos;
+extern hurt_data_t hurt_data;
+extern projectile_allowance_t projectile_allowance;
+extern buff_t buff;
+
 extern void init_referee_struct_data(void);
 extern void referee_data_solve(uint8_t * frame);
 
@@ -258,15 +267,5 @@ extern custom_robot_data_t * GetCustomControllerDataPoint(void);
 
 extern inline bool GetRefereeState(void);
 extern inline float GetCustomControllerPos(uint8_t index);
-extern inline uint32_t GetEventData(void);
-extern inline game_robot_HP_t GetGameRobotHP(void);
-extern inline game_status_t GetGameStatus(void);
-extern inline ground_robot_position_t GetGroundRobotPosition(void);
-extern inline rfid_status_t GetRFIDStatus(void);
-extern inline robot_status_t GetRobotStatus(void);
-extern inline power_heat_data_t GetPoweHeatData(void);
-extern inline robot_pos_t GetRobotPos(void);
-extern inline hurt_data_t GetHurtData(void);
-extern inline projectile_allowance_t GetProjectiliAllowance(void);
-extern inline buff_t GetBuff(void);
+
 #endif

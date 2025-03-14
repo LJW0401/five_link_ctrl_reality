@@ -36,7 +36,7 @@ typedef enum
     RFID_STATUS_CMD_ID                = 0x0209,
     DART_CLIENT_CMD_CMD_ID            = 0x020A,
     GROUND_ROBOT_POSITION_CMD_ID      = 0x020B,
-    RADAR_MARK_DATA_CMD_ID            = 0X020C,
+    RADAR_MARK_DATA_CMD_ID            = 0x020C,
     SENTRY_INFO_CMD_ID                = 0x020D,
     RADAR_INFO_CMD_ID                 = 0x020E,
 

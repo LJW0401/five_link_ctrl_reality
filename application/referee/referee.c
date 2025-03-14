@@ -139,15 +139,15 @@ void referee_data_solve(uint8_t * frame)
         } break;
         
         case ROBOT_STATUS_CMD_ID: {
-            memcpy(&referee_warning, frame + index, sizeof(robot_status_t));
+            memcpy(&robot_status, frame + index, sizeof(robot_status_t));
             referee_online_time = HAL_GetTick();
         } break;
         case POWER_HEAT_DATA_CMD_ID: {
-            memcpy(&robot_status, frame + index, sizeof(power_heat_data_t));
+            memcpy(&power_heat_data, frame + index, sizeof(power_heat_data_t));
             referee_online_time = HAL_GetTick();
         } break;
         case ROBOT_POS_CMD_ID: {
-            memcpy(&power_heat_data, frame + index, sizeof(robot_pos_t));
+            memcpy(&robot_pos, frame + index, sizeof(robot_pos_t));
             referee_online_time = HAL_GetTick();
         } break;
         case BUFF_CMD_ID: {
@@ -264,81 +264,81 @@ inline float GetCustomControllerPos(uint8_t index){
     return data;
     // return *((float *)(&custom_robot_data.data[index * 4]));
 }
-/**
- * @brief 获取事件数据
- * @param  无
- * @return uint32_t 
- */
-inline uint32_t GetEventData(void){return event_data.event_data;}
+// /**
+//  * @brief 获取事件数据
+//  * @param  无
+//  * @return uint32_t 
+//  */
+// inline event_data_t GetEventData(void){return event_data;}
 
-/**
- * @brief 获取机器人血量数据
- * @param  无
- * @return game_robot_HP_t
- */
-inline game_robot_HP_t GetGameRobotHP(void){return game_robot_HP;}
+// /**
+//  * @brief 获取机器人血量数据
+//  * @param  无
+//  * @return game_robot_HP_t
+//  */
+// inline game_robot_HP_t GetGameRobotHP(void){return game_robot_HP;}
 
-/**
- * @brief 获取比赛信息
- * @param  无
- * @return game_status_t
- */
-inline game_status_t GetGameStatus(void){return game_status;}
+// /**
+//  * @brief 获取比赛信息
+//  * @param  无
+//  * @return game_status_t
+//  */
+// inline game_status_t GetGameStatus(void){return game_status;}
 
-/**
- * @brief 获取地面机器人位置信息
- * @param  无
- * @return ground_robot_position_t
- */
-inline ground_robot_position_t GetGroundRobotPosition(void){return ground_robot_position;}
+// /**
+//  * @brief 获取地面机器人位置信息
+//  * @param  无
+//  * @return ground_robot_position_t
+//  */
+// inline ground_robot_position_t GetGroundRobotPosition(void){return ground_robot_position;}
 
-/**
- * @brief 获取RFID信息
- * @param  无
- * @return rfid_status_t
- */
-inline rfid_status_t GetRFIDStatus(void){return rfid_status;}
+// /**
+//  * @brief 获取RFID信息
+//  * @param  无
+//  * @return rfid_status_t
+//  */
+// inline rfid_status_t GetRFIDStatus(void){return rfid_status;}
 
 
-/**
- * @brief 获取机器人信息
- * @param  无
- * @return robot_status_t
- */
-inline robot_status_t GetRobotStatus(void){return robot_status;}
+// /**
+//  * @brief 获取机器人信息
+//  * @param  无
+//  * @return robot_status_t
+//  */
+// inline robot_status_t GetRobotStatus(void){return robot_status;}
 
-/**
- * @brief 获取能量热量信息
- * @param  无
- * @return power_heat_data_t
- */
-inline power_heat_data_t GetPoweHeatData(void){return power_heat_data;}
+// /**
+//  * @brief 获取能量热量信息
+//  * @param  无
+//  * @return power_heat_data_t
+//  */
+// inline power_heat_data_t GetPoweHeatData(void){return power_heat_data;}
 
-/**
- * @brief 获取机器人位姿信息
- * @param  无
- * @return robot_pos_t
- */
-inline robot_pos_t GetRobotPos(void){return robot_pos;}
+// /**
+//  * @brief 获取机器人位姿信息
+//  * @param  无
+//  * @return robot_pos_t
+//  */
+// inline robot_pos_t GetRobotPos(void){return robot_pos;}
 
-/**
- * @brief 获取受伤信息
- * @param  无
- * @return hurt_data_t
- */
-inline hurt_data_t GetHurtData(void){return hurt_data;}
+// /**
+//  * @brief 获取受伤信息
+//  * @param  无
+//  * @return hurt_data_t
+//  */
+// inline hurt_data_t GetHurtData(void){return hurt_data;}
 
-/**
- * @brief 获取允许发弹量信息
- * @param  无
- * @return hurt_data_t
- */
-inline projectile_allowance_t GetProjectiliAllowance(void){return projectile_allowance;}
+// /**
+//  * @brief 获取允许发弹量信息
+//  * @param  无
+//  * @return hurt_data_t
+//  */
+// inline projectile_allowance_t GetProjectiliAllowance(void){return projectile_allowance;}
 
-/**
- * @brief 获取buff信息
- * @param  无
- * @return buff_t
- */
-inline buff_t GetBuff(void){return buff;}
+// /**
+//  * @brief 获取buff信息
+//  * @param  无
+//  * @return buff_t
+//  */
+// inline buff_t GetBuff(void){return buff;}
 /*------------------------------ End of File ------------------------------*/
