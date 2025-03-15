@@ -300,8 +300,8 @@ void GimbalReference(void)
 {
   if (gimbal_direct.mode == GIMBAL_INIT)
   {
-    gimbal_direct.reference.pitch=  gimbal_direct.pitch.direction * (GIMBAL_DIRECT_PITCH_MID - gimbal_direct.pitch.fdb.pos) + gimbal_direct.feedback_pos.pitch;
-    gimbal_direct.reference.yaw=    gimbal_direct.yaw.direction * (GIMBAL_DIRECT_YAW_MID - gimbal_direct.yaw.fdb.pos) + gimbal_direct.feedback_pos.yaw;
+    gimbal_direct.reference.pitch=  loop_fp32_constrain(gimbal_direct.pitch.direction * (GIMBAL_DIRECT_PITCH_MID - gimbal_direct.pitch.fdb.pos) + gimbal_direct.feedback_pos.pitch ,-M_PI,M_PI); 
+    gimbal_direct.reference.yaw=    loop_fp32_constrain(gimbal_direct.yaw.direction * (GIMBAL_DIRECT_YAW_MID - gimbal_direct.yaw.fdb.pos) + gimbal_direct.feedback_pos.yaw ,-M_PI ,M_PI) ;
   }
 
   else if (gimbal_direct.mode == GIMBAL_GAP)
@@ -374,6 +374,10 @@ void GimbalConsole(void)
 void GimbalSendCmd(void) 
 {
     CanCmdDjiMotor(GIMBAL_CAN,GIMBAL_STDID,gimbal_direct.yaw.set.curr,gimbal_direct.pitch.set.curr,0,0);
+    ModifyDebugDataPackage(0,gimbal_direct.pitch.fdb.pos,"p");
+    ModifyDebugDataPackage(1,gimbal_direct.pitch.set.curr,"y");
+    ModifyDebugDataPackage(2,gimbal_direct.reference.pitch,"ps");
+    ModifyDebugDataPackage(3,gimbal_direct.pitch.fdb.pos,"yfdbp");
 }
 
 

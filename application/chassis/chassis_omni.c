@@ -192,9 +192,7 @@ void ChassisConsole(void)
  */
 
 void ChassisSendCmd(void){
-    CanCmdDjiMotor(CHASSIS_CAN,CHASSIS_STDID,chassis.wheel[3].set.curr,chassis.wheel[0].set.curr,chassis.wheel[1].set.curr,chassis.wheel[2].set.curr);
-
-    ModifyDebugDataPackage(0,chassis.yaw_delta,"del");
+    CanCmdDjiMotor(CHASSIS_CAN,CHASSIS_STDID,chassis.wheel[0].set.curr,chassis.wheel[1].set.curr,chassis.wheel[2].set.curr,chassis.wheel[3].set.curr);
 }
 
 #endif
