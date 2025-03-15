@@ -75,5 +75,5 @@
         }
      }
    }
-   
+   ModifyDebugDataPackage(7,initial_total_power,"total_power");
  }

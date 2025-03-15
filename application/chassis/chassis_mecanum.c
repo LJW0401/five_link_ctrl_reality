@@ -218,7 +218,7 @@ void ChassisReference(void)
         chassis.reference.vx =  chassis.reference_rc.vx * cosf(chassis.yaw_delta) - chassis.reference_rc.vy * sinf(chassis.yaw_delta);
         chassis.reference.vy =  chassis.reference_rc.vx * sinf(chassis.yaw_delta) + chassis.reference_rc.vy * cos(chassis.yaw_delta);
 
-        chassis.reference.wz=3;
+        chassis.reference.wz=8;
     }
     
 }
@@ -254,6 +254,8 @@ void ChassisConsole(void)
 
 void ChassisSendCmd(void){
     CanCmdDjiMotor(1,0x200,chassis.wheel[0].set.curr,chassis.wheel[1].set.curr,chassis.wheel[2].set.curr,chassis.wheel[3].set.curr);
+    ModifyDebugDataPackage(6,chassis.set[0],"wheel1");
+    ModifyDebugDataPackage(5,chassis.wheel[0].fdb.vel,"wheel1_fdb");
    
 }
 

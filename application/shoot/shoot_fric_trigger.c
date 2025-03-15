@@ -535,6 +535,8 @@ void ShootSendCmd(void)
     DmMitCtrlVelocity(&SHOOT.trigger_motor, TRIGGER_SPEED_MIT_KD);
   
     CanCmdDjiMotor(FRIC_MOTOR_R_CAN, STD_ID ,0 ,SHOOT.fric_motor[1].set.curr,SHOOT.fric_motor[0].set.curr, 0);
+    ModifyDebugDataPackage(1,SHOOT.fric_motor[0].fdb.vel,"fric_fdb"); 
+    ModifyDebugDataPackage(2,SHOOT.FDB.trigger_angel_fdb,"trigger_fdb");
   }
 
 }

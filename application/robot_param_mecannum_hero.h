@@ -9,7 +9,7 @@
 
 #define CHASSIS_MODE_CHANNEL 0  // 选择底盘状态 开关通道号
 
-#define CHASSIS_TYPE CHASSIS_MECANUM_WHEEL                // 选择底盘类型
+#define CHASSIS_TYPE CHASSIS_MECANUM_WHEEL      // 选择底盘类型
 #define GIMBAL_TYPE GIMBAL_YAW_PITCH_DIRECT      // 选择云台类型
 #define SHOOT_TYPE SHOOT_NONE                    // 选择发射机构类型
 #define CONTROL_TYPE CHASSIS_AND_GIMBAL          // 选择控制类型
@@ -59,18 +59,18 @@
 
 //PID parameters ---------------------
 //驱动轮速度环PID参数
-#define KP_MECANNUM_VEL (110.0f)
+#define KP_MECANNUM_VEL (115.0f)
 #define KI_MECANNUM_VEL (0.2f)
 #define KD_MECANNUM_VEL (0.0f)
 #define MAX_IOUT_MECANNUM_VEL (1000.0f)
 #define MAX_OUT_MECANNUM_VEL (16000.0f)
 
 //云台跟随角度环PID参数
-#define KP_CHASSIS_FOLLOW_GIMBAL (9.0f)
-#define KI_CHASSIS_FOLLOW_GIMBAL (0.00f)
-#define KD_CHASSIS_FOLLOW_GIMBAL (10.0f)
+#define KP_CHASSIS_FOLLOW_GIMBAL (5.3f)
+#define KI_CHASSIS_FOLLOW_GIMBAL (0.0f)
+#define KD_CHASSIS_FOLLOW_GIMBAL (4.0f)
 #define MAX_IOUT_CHASSIS_FOLLOW_GIMBAL (0.0f)
-#define MAX_OUT_CHASSIS_FOLLOW_GIMBAL (20.0f)
+#define MAX_OUT_CHASSIS_FOLLOW_GIMBAL (5.0f)
 
 //RC parametes ---------------------
 //遥控器相关参数
@@ -120,16 +120,16 @@
 
 //电机角度中值设置
 #define GIMBAL_DIRECT_PITCH_MID (0.94f)  //云台初始化正对齐的时候使用的pitch轴正中心量
-#define GIMBAL_DIRECT_YAW_MID (0.52f)   //云台初始化正对齐的时候使用的yaw轴正中心量
+#define GIMBAL_DIRECT_YAW_MID (0.41f)   //云台初始化正对齐的时候使用的yaw轴正中心量
 //PID parameters ---------------------
 //YAW ANGLE
-#define KP_GIMBAL_YAW_ANGLE (35.0f)//60
+#define KP_GIMBAL_YAW_ANGLE (30.0f)//60
 #define KI_GIMBAL_YAW_ANGLE (0.00f)//0.02
 #define KD_GIMBAL_YAW_ANGLE (0.0f)
 #define MAX_IOUT_GIMBAL_YAW_ANGLE (0.0f)//2
 #define MAX_OUT_GIMBAL_YAW_ANGLE (7.0f)
 //VELOCITY:角速度
-#define KP_GIMBAL_YAW_VELOCITY (12000.0f)//23000
+#define KP_GIMBAL_YAW_VELOCITY (11000.0f)//23000
 #define KI_GIMBAL_YAW_VELOCITY (7.0f)//8.0
 #define KD_GIMBAL_YAW_VELOCITY (4.0f)//5.0
 #define MAX_IOUT_GIMBAL_YAW_VELOCITY (6000.0f)//6000
@@ -175,7 +175,7 @@
 #define TRIGGER_SPEED (-7.0f)
 //摩擦轮速度
 #define FRIC_R_SPEED (1000.0f)
-#define FRIC_L_SPEED (-995.0f)
+#define FRIC_L_SPEED (-1000.0f)
 #define FRIC_SPEED_LIMIT (800.0f)
 
 /*ECD parameters------------*/
@@ -194,7 +194,7 @@
 #define BLOCK_TRIGGER_SPEED 0.1f
 #define BLOCK_TIME 1000
 #define REVERSE_TIME 700
-#define REVERSE_SPEED (1.0f)  // (rad/s)
+#define REVERSE_SPEED (2.0f)  // (rad/s)
 
 /*MIT parameters ---------------------*/
 

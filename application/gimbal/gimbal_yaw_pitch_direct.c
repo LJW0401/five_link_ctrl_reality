@@ -239,7 +239,7 @@ void GimbalSetMode(void)
 
   else if (switch_is_up(gimbal_direct.rc->rc.s[0]))
   {
-    gimbal_direct.mode=GIMBAL_AUTO_AIM;
+    gimbal_direct.mode=GIMBAL_IMU;
   }
 }
 /*-------------------- Observe --------------------*/
@@ -374,12 +374,10 @@ void GimbalConsole(void)
 void GimbalSendCmd(void) 
 {
     CanCmdDjiMotor(2,0x1FF,0,gimbal_direct.pitch.set.curr,0,gimbal_direct.yaw.set.curr);
-    ModifyDebugDataPackage(1,gimbal_direct.reference.yaw,"set_pos");
-    ModifyDebugDataPackage(2,gimbal_direct.feedback_pos.yaw,"fdb_pos"); 
-    ModifyDebugDataPackage(3,gimbal_direct.yaw.set.vel,"set_vel");
-    ModifyDebugDataPackage(4,gimbal_direct.feedback_vel.yaw,"fdb_vel");
-    ModifyDebugDataPackage(5,gimbal_direct.yaw.set.curr,"set_curr");
-    ModifyDebugDataPackage(6,gimbal_direct.yaw.fdb.pos,"pos_ECD");
+    ModifyDebugDataPackage(1,gimbal_direct.yaw.fdb.pos,"fdb_yaw");
+    ModifyDebugDataPackage(3,gimbal_direct.reference.yaw,"set_pos");
+    ModifyDebugDataPackage(4,gimbal_direct.feedback_pos.yaw,"fed_pos");
+    ModifyDebugDataPackage(2,GIMBAL_DIRECT_YAW_MID,"mid_yaw");
     
 }
 
