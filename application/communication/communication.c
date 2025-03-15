@@ -41,7 +41,7 @@ uint8_t BOARD_RX_DATA[DATA_NUM][DATA_LEN + 1];  //第一位存放数据长度信
 uint8_t usart1_buf[2][USART_RX_BUF_LENGHT];
 fifo_s_t usart1_fifo;
 uint8_t usart1_fifo_buf[USART1_FIFO_BUF_LENGTH];
-// unpack_data_t referee_unpack_obj;
+UnpackData_t usart1_unpack_obj;
 
 /**
  * @brief 数据包初始化宏定义
@@ -173,36 +173,125 @@ void DataPack(uint8_t * data, uint8_t data_lenth, uint8_t data_id)
     append_CRC16_check_sum((uint8_t *)(&BOARD_TX_DATA), sizeof(BOARD_TX_DATA));
 }
 
+void Uart2DataSolve(uint8_t * frame){
+    uint32_t time_stamp = 0;
+
+    uint8_t index = 0;
+
+    FrameHeader_t frame_header;
+
+    memcpy(&frame_header, frame, sizeof(FrameHeader_t));
+    index += sizeof(FrameHeader_t);
+
+    memcpy(&time_stamp, frame + index, sizeof(uint32_t));
+    index += sizeof(uint32_t);
+
+    switch (frame_header.id)
+    {
+    case Uart1_Test_ID:
+        memcpy(&Uart1_Test, frame, sizeof(Uart1_Test_s));
+        break;
+    
+    default:
+        break;
+    }
+}
+
+/**
+  * @brief          单字节解包
+  * @param[in]      void
+  * @retval         none
+  */
 void DataUnpack(void)
 {
     uint8_t byte = 0;
-    uint8_t frame_header[FRAME_HEADER_LEN] = {0};
+    UnpackData_t *p_obj = &usart1_unpack_obj;
 
     while (fifo_s_used(&usart1_fifo)) {
         byte = fifo_s_get(&usart1_fifo);
-        if (byte == FRAME_HEADER_SOF) {
-            frame_header[0] = byte;
-            fifo_s_gets(&usart1_fifo, (char *)(frame_header + 1), FRAME_HEADER_LEN - 1);
-            uint8_t header_crc_ok = verify_CRC8_check_sum(frame_header, FRAME_HEADER_LEN);
-            if (header_crc_ok) {
-                uint8_t data_len = frame_header[FRAME_HEADER_LEN_OFFEST];
-                uint8_t data_id = frame_header[FRAME_HEADER_ID_OFFEST];
-                // uint8_t data_type = frame_header[FRAME_HEADER_TYPE_OFFEST];
-                uint8_t received[256] = {0};
-                memcpy(received, frame_header, FRAME_HEADER_LEN);  //转移帧头信息
-
-                fifo_s_gets(&usart1_fifo, (char *)(received + FRAME_HEADER_LEN), data_len + 6);
-                
-                switch (data_id)
-                {
-                case Uart1_Test_ID:
-                    UART1DataSave(Uart1_Test);
-                    break;
-                
-                default:
-                    break;
-                }
+        switch(p_obj->unpack_step)
+        {
+          case STEP_HEADER_SOF:
+          {
+            if(byte == FRAME_HEADER_SOF)
+            {
+              p_obj->unpack_step = STEP_LENGTH;
+              p_obj->protocol_packet[p_obj->index++] = byte;
             }
+            else
+            {
+              p_obj->index = 0;
+            }
+          }break;
+          
+          case STEP_LENGTH:
+          {
+            p_obj->data_len = byte;
+            p_obj->protocol_packet[p_obj->index++] = byte;
+            p_obj->unpack_step = STEP_ID;
+          }break;
+          
+          case STEP_ID:
+          {
+            p_obj->protocol_packet[p_obj->index++] = byte;
+    
+            if(p_obj->data_len < (UART2_FRAME_MAX_SIZE - UART2_HEADER_CRC_TIMESTAMP_LEN))
+            {
+              p_obj->unpack_step = STEP_TYPE;
+            }
+            else
+            {
+              p_obj->unpack_step = STEP_HEADER_SOF;
+              p_obj->index = 0;
+            }
+          }break;
+          case STEP_TYPE:
+          {
+            p_obj->protocol_packet[p_obj->index++] = byte;
+            p_obj->unpack_step = STEP_HEADER_CRC8;
+          }break;
+    
+          case STEP_HEADER_CRC8:
+          {
+            p_obj->protocol_packet[p_obj->index++] = byte;
+    
+            if (p_obj->index == UART2_FRAME_HEADER_SIZE)
+            {
+              if ( verify_CRC8_check_sum(p_obj->protocol_packet, UART2_FRAME_HEADER_SIZE) )
+              {
+                p_obj->unpack_step = STEP_DATA_CRC16;
+              }
+              else
+              {
+                p_obj->unpack_step = STEP_HEADER_SOF;
+                p_obj->index = 0;
+              }
+            }
+          }break;  
+          
+          case STEP_DATA_CRC16:
+          {
+            if (p_obj->index < UART2_HEADER_CRC_TIMESTAMP_LEN + p_obj->data_len)
+            {
+               p_obj->protocol_packet[p_obj->index++] = byte;  
+            }
+            if (p_obj->index >= UART2_HEADER_CRC_TIMESTAMP_LEN + p_obj->data_len)
+            {
+              p_obj->unpack_step = STEP_HEADER_SOF;
+              p_obj->index = 0;
+    
+              if ( verify_CRC16_check_sum(p_obj->protocol_packet, UART2_HEADER_CRC_TIMESTAMP_LEN + p_obj->data_len) )
+              {
+                Uart2DataSolve(p_obj->protocol_packet);
+              }
+            }
+          }break;
+    
+          default:
+          {
+            p_obj->unpack_step = STEP_HEADER_SOF;
+            p_obj->index = 0;
+          }break;
         }
     }
 }
