@@ -2,6 +2,7 @@
 #define __COMMUNICATION_H
 
 #include "struct_typedef.h"
+#include "uart2_typedef.h"
 
 #define FRAME_HEADER_SOF 0xA5
 #define FRAME_HEADER_LEN 5  // （字节）数据帧头部长度
@@ -14,7 +15,7 @@
 
 typedef struct
 {
-    struct frame_header
+    struct 
     {
         uint8_t sof;   // 数据帧起始字节，固定值为 0xA5
         uint8_t len;   // 数据段长度
@@ -27,12 +28,19 @@ typedef struct
     uint16_t crc;
 } __attribute__((packed)) BoardCommunicateData_s;
 
+/*-------------------- Data --------------------*/
 extern BoardCommunicateData_s BOARD_TX_DATA;
-
+extern Uart1_Test_s Uart1_Test;
+/*-------------------- funtions --------------------*/
 extern void Usart1Init(void);
+
+extern void UART1_task(void);
 
 extern void DataPack(uint8_t * data, uint8_t data_lenth, uint8_t data_id);
 
 extern void DataUnpack(void);
+
+
+extern uint8_t GetUART1TestValue(void);
 
 #endif  // __COMMUNICATION_H

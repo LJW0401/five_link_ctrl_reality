@@ -272,8 +272,8 @@ void ChassisSendCmd(void)
     CHASSIS.wheel_motor[0].set.curr, CHASSIS.wheel_motor[1].set.curr,
     CHASSIS.wheel_motor[2].set.curr, CHASSIS.wheel_motor[3].set.curr);
 
-  //ModifyDebugDataPackage(4, CHASSIS.vx_set, "CHASSIS.vx_set");
-  //ModifyDebugDataPackage(5, CHASSIS.vy_set, "CHASSIS.vy_set");
+  ////ModifyDebugDataPackage(4, CHASSIS.vx_set, "CHASSIS.vx_set");
+  ////ModifyDebugDataPackage(5, CHASSIS.vy_set, "CHASSIS.vy_set");
 }
 
 #endif //CHASSIS_OMNI_WHEEL

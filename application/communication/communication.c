@@ -23,13 +23,17 @@
 #include "bsp_uart.h"
 #include "bsp_usart.h"
 #include "fifo.h"
+#include "robot_param.h"
+#include "usb_debug.h"
 
 #define USART_RX_BUF_LENGHT 512
 #define USART1_FIFO_BUF_LENGTH 1024
 
+// data send time
+LastSendTime_t LastSendTime;
 // send data
 BoardCommunicateData_s BOARD_TX_DATA;
-
+Uart1_Test_s Uart1_Test;
 // receive data
 uint8_t BOARD_RX_DATA[DATA_NUM][DATA_LEN + 1];  //第一位存放数据长度信息
 
@@ -39,11 +43,86 @@ fifo_s_t usart1_fifo;
 uint8_t usart1_fifo_buf[USART1_FIFO_BUF_LENGTH];
 // unpack_data_t referee_unpack_obj;
 
+/**
+ * @brief 数据包初始化宏定义
+ */
+#define UART1DataInit(data_name)                                                    \
+{                                                                                   \
+    memset (&(##data_name##) , 0 , sizeof(##data_name##_s));                        \
+    ##data_name##.frame_header.sof = FRAME_HEADER_SOF;                              \
+    ##data_name##.frame_header.len = sizeof(##data_name##.data);                              \
+    ##data_name##.frame_header.id  = ##data_name##_ID;                                             \
+    ##data_name##.frame_header.type  = 0;                                           \
+    append_CRC8_check_sum((uint8_t*)(&(##data_name##.frame_header)) , sizeof(##data_name##.frame_header));                                             \
+    LastSendTime.##data_name## = 0 ;                                                \
+}                                                                                   \
+
+/**
+ * @brief 数据发送进行宏定义
+ */
+#define UART1DataPack(data_name)                                                    \
+{                                                   \
+    ##data_name##DataRenew();                       \
+    UartSendTxMessage(&huart1, (uint8_t *)(&(##data_name##)), sizeof(##data_name##), ##data_name##_Duration);\
+}    \
+
+/**
+ * @brief 对于发送以及取数据进行宏定义
+ */
+#define Uart1CheckDurationAndSend(data_name)                                       \
+{                                                                                  \
+    if (HAL_GetTick() - LastSendTime.##data_name## >= LastSendTime.##data_name## ) \
+    {                                                                              \
+        LastSendTime.##data_name## = HAL_GetTick();                                \
+        UART1DataPack(##data_name##);                                                  \
+    }                                                                              \
+}                                                                                  \
+                                        
+/**
+ * @brief 对于接收数据进行存储
+ */
+#define UART1DataSave(data_name)                                                   \
+{                                                                                   \
+    uint16_t crc_ok = verify_CRC16_check_sum(received, sizeof(##data_name##_s));    \
+    if (crc_ok) {                                                                       \
+        BOARD_RX_DATA[##data_name##.frame_header.id][0] = data_len;                 \
+        memcpy(&##data_name##, received, sizeof(##data_name##_s));    \
+    }                                                                                                                   \
+}                                    \
+
+
+
+void Uart1_TestDataRenew()
+{
+    Uart1_Test.data.test_data =HAL_GetTick();
+    append_CRC16_check_sum((uint8_t *)(&Uart1_Test), sizeof(Uart1_Test));
+    ModifyDebugDataPackage(0,Uart1_Test.data.test_data,"vel");
+}
+
+
+
+
+
 // 4pin Uart串口初始化
 void Usart1Init(void)
 {
     fifo_s_init(&usart1_fifo, usart1_fifo_buf, USART1_FIFO_BUF_LENGTH);
     usart1_init(usart1_buf[0], usart1_buf[1], USART_RX_BUF_LENGHT);
+
+    UART1DataInit(Uart1_Test);
+}
+
+void UART1_task(void)
+{
+    if (__SELF_BOARD_ID == 1)
+    {
+        Uart1CheckDurationAndSend(Uart1_Test);
+    }
+    
+    else if (__SELF_BOARD_ID == 2)
+    {
+        DataUnpack();
+    }
 }
 
 // 4pin Uart口中断处理函数
@@ -116,12 +195,22 @@ void DataUnpack(void)
                 // uint8_t data_type = frame_header[FRAME_HEADER_TYPE_OFFEST];
 
                 fifo_s_gets(&usart1_fifo, (char *)(received + FRAME_HEADER_LEN), DATA_LEN + 2);
-                uint16_t crc_ok = verify_CRC16_check_sum(received, sizeof(BoardCommunicateData_s));
-                if (crc_ok) {
-                    BOARD_RX_DATA[data_id][0] = data_len;
-                    memcpy(&BOARD_RX_DATA[data_id][1], received + FRAME_HEADER_LEN, data_len);
+                
+                switch (data_id)
+                {
+                case Uart1_Test_ID:
+                    UART1DataSave(Uart1_Test);
+                    break;
+                
+                default:
+                    break;
                 }
             }
         }
     }
+}
+
+uint8_t GetUART1TestValue(void)
+{
+    return Uart1_Test.data.test_data;
 }
