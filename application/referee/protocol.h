@@ -18,25 +18,32 @@
 
 typedef enum
 {
-    GAME_STATE_CMD_ID                 = 0x0001,
+    GAME_STATUS_CMD_ID                = 0x0001,
     GAME_RESULT_CMD_ID                = 0x0002,
     GAME_ROBOT_HP_CMD_ID              = 0x0003,
-    FIELD_EVENTS_CMD_ID               = 0x0101,
-    SUPPLY_PROJECTILE_ACTION_CMD_ID   = 0x0102,
-    SUPPLY_PROJECTILE_BOOKING_CMD_ID  = 0x0103,
+
+    EVENT_DATA_CMD_ID                 = 0x0101,
     REFEREE_WARNING_CMD_ID            = 0x0104,
-    ROBOT_STATE_CMD_ID                = 0x0201,
+    DART_INFO_CMD_ID                  = 0x0105,
+
+    ROBOT_STATUS_CMD_ID               = 0x0201,
     POWER_HEAT_DATA_CMD_ID            = 0x0202,
     ROBOT_POS_CMD_ID                  = 0x0203,
-    BUFF_MUSK_CMD_ID                  = 0x0204,
-    AERIAL_ROBOT_ENERGY_CMD_ID        = 0x0205,
-    ROBOT_HURT_CMD_ID                 = 0x0206,
+    BUFF_CMD_ID                       = 0x0204,
+    HURT_DATA_CMD_ID                  = 0x0206,
     SHOOT_DATA_CMD_ID                 = 0x0207,
-    BULLET_REMAINING_CMD_ID           = 0x0208,
-    STUDENT_INTERACTIVE_DATA_CMD_ID   = 0x0301,
-    CUSTOM_CONTROLLER_CMD_ID          = 0x0302, //自定义控制器数据
-	  ROBOT_COMMAND_CMD_ID              = 0x0304,
-    IDCustomData,
+    PROJECTILE_ALLOWANCE_CMD_ID       = 0x0208,
+    RFID_STATUS_CMD_ID                = 0x0209,
+    DART_CLIENT_CMD_CMD_ID            = 0x020A,
+    GROUND_ROBOT_POSITION_CMD_ID      = 0x020B,
+    RADAR_MARK_DATA_CMD_ID            = 0x020C,
+    SENTRY_INFO_CMD_ID                = 0x020D,
+    RADAR_INFO_CMD_ID                 = 0x020E,
+
+    ROBOT_INTERACTION_DATA_CMD_ID     = 0x0301,
+    CUSTOM_ROBOT_DATA_CMD_ID          = 0x0302, //自定义控制器数据
+	  MAP_COMMAND_CMD_ID                = 0x0303,
+    REMOTE_CONTROL_CMD_ID             = 0x0304,
 }referee_cmd_id_t;
 typedef  struct
 {
