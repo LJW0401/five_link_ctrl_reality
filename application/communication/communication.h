@@ -41,6 +41,6 @@ extern void DataPack(uint8_t * data, uint8_t data_lenth, uint8_t data_id);
 extern void DataUnpack(void);
 
 
-extern uint8_t GetUART1TestValue(void);
+extern uint32_t GetUART1TestValue(void);
 
 #endif  // __COMMUNICATION_H

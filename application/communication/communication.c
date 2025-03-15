@@ -71,7 +71,7 @@ uint8_t usart1_fifo_buf[USART1_FIFO_BUF_LENGTH];
  */
 #define Uart1CheckDurationAndSend(data_name)                                       \
 {                                                                                  \
-    if (HAL_GetTick() - LastSendTime.##data_name## >= LastSendTime.##data_name## ) \
+    if (HAL_GetTick() - LastSendTime.##data_name## >= ##data_name##_Gap ) \
     {                                                                              \
         LastSendTime.##data_name## = HAL_GetTick();                                \
         UART1DataPack(##data_name##);                                                  \
@@ -84,8 +84,7 @@ uint8_t usart1_fifo_buf[USART1_FIFO_BUF_LENGTH];
 #define UART1DataSave(data_name)                                                   \
 {                                                                                   \
     uint16_t crc_ok = verify_CRC16_check_sum(received, sizeof(##data_name##_s));    \
-    if (crc_ok) {                                                                       \
-        BOARD_RX_DATA[##data_name##.frame_header.id][0] = data_len;                 \
+    if (crc_ok) {                                                                                     \
         memcpy(&##data_name##, received, sizeof(##data_name##_s));    \
     }                                                                                                                   \
 }                                    \
@@ -96,7 +95,6 @@ void Uart1_TestDataRenew()
 {
     Uart1_Test.data.test_data =HAL_GetTick();
     append_CRC16_check_sum((uint8_t *)(&Uart1_Test), sizeof(Uart1_Test));
-    ModifyDebugDataPackage(0,Uart1_Test.data.test_data,"vel");
 }
 
 
@@ -179,22 +177,21 @@ void DataUnpack(void)
 {
     uint8_t byte = 0;
     uint8_t frame_header[FRAME_HEADER_LEN] = {0};
-    uint8_t received[FRAME_HEADER_LEN + DATA_LEN + 2] = {0};
 
     while (fifo_s_used(&usart1_fifo)) {
         byte = fifo_s_get(&usart1_fifo);
         if (byte == FRAME_HEADER_SOF) {
             frame_header[0] = byte;
             fifo_s_gets(&usart1_fifo, (char *)(frame_header + 1), FRAME_HEADER_LEN - 1);
-
             uint8_t header_crc_ok = verify_CRC8_check_sum(frame_header, FRAME_HEADER_LEN);
             if (header_crc_ok) {
-                memcpy(received, frame_header, FRAME_HEADER_LEN);  //转移帧头信息
                 uint8_t data_len = frame_header[FRAME_HEADER_LEN_OFFEST];
                 uint8_t data_id = frame_header[FRAME_HEADER_ID_OFFEST];
                 // uint8_t data_type = frame_header[FRAME_HEADER_TYPE_OFFEST];
+                uint8_t received[256] = {0};
+                memcpy(received, frame_header, FRAME_HEADER_LEN);  //转移帧头信息
 
-                fifo_s_gets(&usart1_fifo, (char *)(received + FRAME_HEADER_LEN), DATA_LEN + 2);
+                fifo_s_gets(&usart1_fifo, (char *)(received + FRAME_HEADER_LEN), data_len + 6);
                 
                 switch (data_id)
                 {
@@ -210,7 +207,7 @@ void DataUnpack(void)
     }
 }
 
-uint8_t GetUART1TestValue(void)
+uint32_t GetUART1TestValue(void)
 {
     return Uart1_Test.data.test_data;
 }

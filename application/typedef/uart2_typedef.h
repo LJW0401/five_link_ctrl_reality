@@ -28,6 +28,8 @@
 
 #define Uart1_Test_Duration ((uint8_t)100)
 
+#define Uart1_Test_Gap ((uint32_t)100)
+
 /*-------------------- Send & Receive --------------------*/
 typedef struct 
 {
@@ -47,13 +49,14 @@ typedef struct
     uint8_t crc;   // 数据帧头的 CRC8 
   } __attribute__((packed)) frame_header;  
 
-  uint8_t time_stamp;  //数据段时间戳
-  uint8_t crc16;       //crc16校验
-
+  uint32_t time_stamp;  //数据段时间戳
+  
   struct
   {
-    uint8_t test_data;
+    uint32_t test_data;
   } __attribute__((packed)) data;
+
+  uint16_t crc16;       //crc16校验
 } __attribute__((packed)) Uart1_Test_s;
 
 #endif
