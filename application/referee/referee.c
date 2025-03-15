@@ -234,6 +234,48 @@ void get_shoot_heat1_limit_and_heat1(uint16_t * heat1_limit, uint16_t * heat1)
 }
 
 
+void get_shoot_heat42_limit_and_heat42(uint16_t *heat_limit, uint16_t *heat)
+{
+    *heat_limit = robot_status.shooter_barrel_heat_limit;
+    *heat = power_heat_data.shooter_42mm_barrel_heat;
+}
+
+/**
+ * @brief 反馈机器人颜色
+ * @param  none
+ * @return 0为红色,1为蓝色,2为未知
+ */
+uint8_t get_team_color(void)  // 谨防“哨兵在打我”
+{
+    switch (robot_status.robot_id) {
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+        case 7:
+        case 8:
+        case 9:
+        case 10:
+        case 11:
+            return 0;
+        case 101:
+        case 102:
+        case 103:
+        case 104:
+        case 105:
+        case 106:
+        case 107:
+        case 108:
+        case 109:
+        case 110:
+        case 111:
+            return 1;
+        default:
+            return 2;
+    }
+}
 
 uint16_t get_shoot_heat(void)  // 双枪管哨兵
 {
