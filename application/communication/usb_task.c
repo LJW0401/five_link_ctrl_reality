@@ -733,6 +733,8 @@ static void GetCmdData(void)
     ROBOT_CMD_DATA.gimbal.yaw = RECEIVE_ROBOT_CMD_DATA.data.gimbal.yaw;
     ROBOT_CMD_DATA.gimbal.pitch = RECEIVE_ROBOT_CMD_DATA.data.gimbal.pitch;
 
+    ROBOT_CMD_DATA.tracking.tracking = RECEIVE_ROBOT_CMD_DATA.data.tracking.tracking;
+
     ROBOT_CMD_DATA.shoot.fire = RECEIVE_ROBOT_CMD_DATA.data.shoot.fire;
     ROBOT_CMD_DATA.shoot.fric_on = RECEIVE_ROBOT_CMD_DATA.data.shoot.fric_on;
 }
