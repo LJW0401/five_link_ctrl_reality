@@ -1,6 +1,10 @@
 /**
   * @file       robot_param_omni_infantry.h
   * @brief      这里是全向轮步兵机器人参数配置文件，包括物理参数、PID参数等
+  * @history
+  *  Version    Date            Author          Modification
+  *  V1.1.0     2024-11-3     Harry_Wong        1. 完成云台所有基本控制
+  *  V1.1.1     2025-1-15     CJH               1. 完成射击基本功能
   */
 
 #ifndef INCLUDED_ROBOT_PARAM_H
@@ -61,18 +65,18 @@
 
 //PID parameters ---------------------
 //驱动轮速度环PID参数
-#define KP_OMNI_VEL (20.0f)
-#define KI_OMNI_VEL (0.3f)
-#define KD_OMNI_VEL (0.3f)
-#define MAX_IOUT_OMNI_VEL (10000.0f)
-#define MAX_OUT_OMNI_VEL (30000.0f)
+#define KP_OMNI_VEL (15.0f)
+#define KI_OMNI_VEL (0.1f)
+#define KD_OMNI_VEL (0.8f)
+#define MAX_IOUT_OMNI_VEL (1000.0f)
+#define MAX_OUT_OMNI_VEL (16000.0f)
 
 //云台跟随角度环PID参数
-#define KP_CHASSIS_FOLLOW_GIMBAL (2.0f)
-#define KI_CHASSIS_FOLLOW_GIMBAL (0.01f)
-#define KD_CHASSIS_FOLLOW_GIMBAL (0.5f)
-#define MAX_IOUT_CHASSIS_FOLLOW_GIMBAL (1.0f)
-#define MAX_OUT_CHASSIS_FOLLOW_GIMBAL (3.0f)
+#define KP_CHASSIS_FOLLOW_GIMBAL (7.0f)
+#define KI_CHASSIS_FOLLOW_GIMBAL (0.0f)
+#define KD_CHASSIS_FOLLOW_GIMBAL (1.0f)
+#define MAX_IOUT_CHASSIS_FOLLOW_GIMBAL (0.0f)
+#define MAX_OUT_CHASSIS_FOLLOW_GIMBAL (5.0f)
 
 //RC parametes ---------------------
 //遥控器相关参数
@@ -90,7 +94,7 @@
 #define GIMBAL_INIT_TIME (uint32_t)1000
 
 //mouse sensitivity ---------------------
-#define MOUSE_SENSITIVITY (200000.0f)
+#define MOUSE_SENSITIVITY (60000.0f)
 //remote controller sensitivity ---------------------
 #define REMOTE_CONTROLLER_SENSITIVITY (100000.0f)
 #define REMOTE_CONTROLLER_MAX_DEADLINE (20.0f)
@@ -143,13 +147,13 @@
 #define MAX_OUT_GIMBAL_YAW_VELOCITY (30000.0f)
 
 //PITCH ANGLE
-#define KP_GIMBAL_PITCH_ANGLE (4.5f)
+#define KP_GIMBAL_PITCH_ANGLE (5.5f)  //4.5
 #define KI_GIMBAL_PITCH_ANGLE (0.0001f)
-#define KD_GIMBAL_PITCH_ANGLE (3.0f)
+#define KD_GIMBAL_PITCH_ANGLE (1.0f)  //3.0
 #define MAX_IOUT_GIMBAL_PITCH_ANGLE (1.0f)
 #define MAX_OUT_GIMBAL_PITCH_ANGLE (10.0f)
 //VELOCITY:角速度
-#define KP_GIMBAL_PITCH_VELOCITY (1200.0f)
+#define KP_GIMBAL_PITCH_VELOCITY (1500.0f)  //1200
 #define KI_GIMBAL_PITCH_VELOCITY (30.0f)
 #define KD_GIMBAL_PITCH_VELOCITY (100.0f)
 #define MAX_IOUT_GIMBAL_PITCH_VELOCITY (10000.0f)
@@ -189,13 +193,13 @@
 
 /*ECD parameters------------*/
 //电机反馈码盘值范围
-#define HALF_ECD_RANGE 4096
-#define ECD_RANGE 8191
+#define HALF_ECD_RANGE              4096
+#define ECD_RANGE                   8191
 
 //电机rpm 变化成 旋转速度的比例
-#define MOTOR_RPM_TO_SPEED 0.00290888208665721596153948461415f
-#define MOTOR_ECD_TO_ANGLE 0.000021305288720633905968306772076277f
-#define FULL_COUNT 18
+#define MOTOR_RPM_TO_SPEED          0.00290888208665721596153948461415f
+#define MOTOR_ECD_TO_ANGLE          0.000021305288720633905968306772076277f
+#define FULL_COUNT                  18
 
 /*BLOCK&REVERSE parameters------------*/
 
@@ -212,20 +216,20 @@
 /*PID parameters ---------------------*/
 
 //拨弹轮电机PID速度环
-#define TRIGGER_SPEED_PID_KP (100.0f)
+#define TRIGGER_SPEED_PID_KP (300.0f)
 #define TRIGGER_SPEED_PID_KI (0.5f)
-#define TRIGGER_SPEED_PID_KD (0.1f)
+#define TRIGGER_SPEED_PID_KD (0.2f)
 
 #define TRIGGER_SPEED_PID_MAX_OUT (10000.0f)
-#define TRIGGER_SPEED_PID_MAX_IOUT (1000.0f)
+#define TRIGGER_SPEED_PID_MAX_IOUT (2000.0f)
 
 //拨弹轮电机PID角度环
-#define TRIGGER_ANGEL_PID_KP (25.0f)
-#define TRIGGER_ANGEL_PID_KI (0.05f)
+#define TRIGGER_ANGEL_PID_KP (300.0f)
+#define TRIGGER_ANGEL_PID_KI (0.5f)
 #define TRIGGER_ANGEL_PID_KD (0.05f)
 
-#define TRIGGER_ANGEL_PID_MAX_OUT (300.0f)
-#define TRIGGER_ANGEL_PID_MAX_IOUT (30.0f)
+#define TRIGGER_ANGEL_PID_MAX_OUT (800.0f)
+#define TRIGGER_ANGEL_PID_MAX_IOUT (300.0f)
 
 //摩擦轮电机PID
 #define FRIC_SPEED_PID_KP (666.0f)

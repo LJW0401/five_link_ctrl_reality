@@ -82,7 +82,7 @@ void ChassisSetMode(void)
     }
     else if (switch_is_up(chassis.rc->rc.s[0]))
     {
-        chassis.mode = CHASSIS_FOLLOW;
+        chassis.mode = CHASSIS_SPIN;
     }
 }
 
@@ -161,6 +161,16 @@ void ChassisReference(void)
 
         chassis.reference.wz=PID_calc(&chassis_pid.follow,0,chassis.yaw_delta);
     }
+    else if (chassis.mode == CHASSIS_SPIN )
+    {
+        chassis.reference_rc.vx=fp32_deadline(chassis.rc->rc.ch[3],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_SPEED;
+        chassis.reference_rc.vy=fp32_deadline(-chassis.rc->rc.ch[2],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_SPEED;
+
+        chassis.reference.vx =  chassis.reference_rc.vx * cosf(chassis.yaw_delta) - chassis.reference_rc.vy * sinf(chassis.yaw_delta);
+        chassis.reference.vy =  chassis.reference_rc.vx * sinf(chassis.yaw_delta) + chassis.reference_rc.vy * cos(chassis.yaw_delta);
+
+        chassis.reference.wz=4.0f;
+    }
 }
 
 /*-------------------- Console --------------------*/
@@ -193,8 +203,6 @@ void ChassisConsole(void)
 
 void ChassisSendCmd(void){
     CanCmdDjiMotor(CHASSIS_CAN,CHASSIS_STDID,chassis.wheel[3].set.curr,chassis.wheel[0].set.curr,chassis.wheel[1].set.curr,chassis.wheel[2].set.curr);
-
-    ModifyDebugDataPackage(0,chassis.yaw_delta,"del");
 }
 
 #endif
