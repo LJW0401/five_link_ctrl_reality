@@ -195,7 +195,9 @@ void ChassisReference(void)
 
         chassis.reference.wz=PID_calc(&chassis_pid.follow,0,chassis.yaw_delta);
     }
-    else if (chassis.mode == CHASSIS_SPIN)
+		
+
+    else if (chassis.mode == CHASSIS_SPIN )
     {
         chassis.reference_rc.vx=fp32_deadline(chassis.rc->rc.ch[3],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_SPEED;
         chassis.reference_rc.vy=fp32_deadline(-chassis.rc->rc.ch[2],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_SPEED;
@@ -223,9 +225,9 @@ void ChassisReference(void)
         chassis.reference.vx =  chassis.reference_rc.vx * cosf(chassis.yaw_delta) - chassis.reference_rc.vy * sinf(chassis.yaw_delta);
         chassis.reference.vy =  chassis.reference_rc.vx * sinf(chassis.yaw_delta) + chassis.reference_rc.vy * cos(chassis.yaw_delta);
 
-        chassis.reference.wz =  4.0f;
-    }
-
+        chassis.reference.wz=4.0f;
+		}
+		
     else if (chassis.mode == CHASSIS_NAVI)
     {
         chassis.reference.vx =  GetScCmdChassisSpeed(AX_X) * cosf(chassis.yaw_delta) - GetScCmdChassisSpeed(AX_Y) * sinf(chassis.yaw_delta);
@@ -262,7 +264,8 @@ void ChassisConsole(void)
  * @retval         none
  */
 
-void ChassisSendCmd(void){
+void ChassisSendCmd(void)
+{
     CanCmdDjiMotor(CHASSIS_CAN,CHASSIS_STDID,chassis.wheel[0].set.curr,chassis.wheel[1].set.curr,chassis.wheel[2].set.curr,chassis.wheel[3].set.curr);
 }
 
