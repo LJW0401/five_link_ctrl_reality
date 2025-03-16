@@ -82,7 +82,7 @@ void ChassisSetMode(void)
     }
     else if (switch_is_up(chassis.rc->rc.s[0]))
     {
-        chassis.mode = CHASSIS_FOLLOW;
+        chassis.mode = CHASSIS_NAVI;
     }
 }
 
@@ -160,6 +160,13 @@ void ChassisReference(void)
         chassis.reference.vy =  chassis.reference_rc.vx * sinf(chassis.yaw_delta) + chassis.reference_rc.vy * cos(chassis.yaw_delta);
 
         chassis.reference.wz=PID_calc(&chassis_pid.follow,0,chassis.yaw_delta);
+    }
+
+    else if (chassis.mode == CHASSIS_NAVI)
+    {
+        chassis.reference.vx =  GetScCmdChassisSpeed(AX_X) * cosf(chassis.yaw_delta) - GetScCmdChassisSpeed(AX_Y) * sinf(chassis.yaw_delta);
+        chassis.reference.vy =  GetScCmdChassisSpeed(AX_X) * sinf(chassis.yaw_delta) + GetScCmdChassisSpeed(AX_Y) * cos(chassis.yaw_delta);
+        chassis.reference.wz=   GetScCmdChassisVelocity(AX_Z);
     }
 }
 
