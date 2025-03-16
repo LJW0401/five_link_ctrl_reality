@@ -28,6 +28,7 @@
 #include "struct_typedef.h"
 #include  "user_lib.h"
 #include "CAN_cmd_dji.h"
+#include "supervisory_computer_cmd.h"
 
 
 
@@ -37,6 +38,7 @@ typedef enum {
     CHASSIS_SINGLE,    //只有底盘的模式
     CHASSIS_FOLLOW,    //云台跟随模式
     CHASSIS_SPIN  ,    //云台小陀螺模式
+    CHASSIS_NAVI,      //底盘导航模式
 } ChassisMode_e;
 
 /**
