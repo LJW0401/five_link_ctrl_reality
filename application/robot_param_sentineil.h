@@ -48,10 +48,10 @@
 #define WHEEL_4_DIRECTION (-1)
 
 //电机减速比
-#define WHEEL_1_RATIO (19)
-#define WHEEL_2_RATIO (19)
-#define WHEEL_3_RATIO (19)
-#define WHEEL_4_RATIO (19)
+#define WHEEL_1_RATIO (14)
+#define WHEEL_2_RATIO (14)
+#define WHEEL_3_RATIO (14)
+#define WHEEL_4_RATIO (14)
 
 //电机模式
 #define WHEEL_1_MODE (0)
@@ -121,22 +121,22 @@
 #define GIMBAL_DIRECT_PITCH_MODE (0)
 
 //physical parameters ---------------------
-#define GIMBAL_UPPER_LIMIT_PITCH (0.54f)
+#define GIMBAL_UPPER_LIMIT_PITCH (0.24f)
 #define GIMBAL_LOWER_LIMIT_PITCH (-0.66f)
 
 //电机角度中值设置
 #define GIMBAL_DIRECT_PITCH_MID (2.732f)  //云台初始化正对齐的时候使用的pitch轴正中心量
-#define GIMBAL_DIRECT_YAW_MID (-1.6f)    //云台初始化正对齐的时候使用的yaw轴正中心量
+#define GIMBAL_DIRECT_YAW_MID (1.542f)    //云台初始化正对齐的时候使用的yaw轴正中心量
 
 //PID parameters ---------------------
 //YAW ANGLE
-#define KP_GIMBAL_YAW_ANGLE (20.00f)
+#define KP_GIMBAL_YAW_ANGLE (20.50f)
 #define KI_GIMBAL_YAW_ANGLE (0.003f)
 #define KD_GIMBAL_YAW_ANGLE (0.35f)
 #define MAX_IOUT_GIMBAL_YAW_ANGLE (0.05f)
 #define MAX_OUT_GIMBAL_YAW_ANGLE (13.0f)
 //VELOCITY:角速度
-#define KP_GIMBAL_YAW_VELOCITY (18000.0f)
+#define KP_GIMBAL_YAW_VELOCITY (19000.0f)
 #define KI_GIMBAL_YAW_VELOCITY (1.0f)
 #define KD_GIMBAL_YAW_VELOCITY (0.0f)
 #define MAX_IOUT_GIMBAL_YAW_VELOCITY (7000.0f)
@@ -149,7 +149,7 @@
 #define MAX_IOUT_GIMBAL_PITCH_ANGLE (1.0f)
 #define MAX_OUT_GIMBAL_PITCH_ANGLE (15.0f)
 //VELOCITY:角速度
-#define KP_GIMBAL_PITCH_VELOCITY (3500.0f)  //1200
+#define KP_GIMBAL_PITCH_VELOCITY (3600.0f)  //1200
 #define KI_GIMBAL_PITCH_VELOCITY (30.0f)
 #define KD_GIMBAL_PITCH_VELOCITY (50.0f)
 #define MAX_IOUT_GIMBAL_PITCH_VELOCITY (10000.0f)

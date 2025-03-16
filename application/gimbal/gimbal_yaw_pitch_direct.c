@@ -374,10 +374,7 @@ void GimbalConsole(void)
 void GimbalSendCmd(void) 
 {
     CanCmdDjiMotor(GIMBAL_CAN,GIMBAL_STDID,gimbal_direct.yaw.set.curr,gimbal_direct.pitch.set.curr,0,0);
-    ModifyDebugDataPackage(0,gimbal_direct.pitch.fdb.pos,"p");
-    ModifyDebugDataPackage(1,gimbal_direct.pitch.set.curr,"y");
-    ModifyDebugDataPackage(2,gimbal_direct.reference.pitch,"ps");
-    ModifyDebugDataPackage(3,gimbal_direct.pitch.fdb.pos,"yfdbp");
+    ModifyDebugDataPackage(0,gimbal_direct.feedback_pos.pitch,"p");
 }
 
 
