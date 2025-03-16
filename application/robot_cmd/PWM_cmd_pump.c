@@ -20,7 +20,7 @@
 #include "main.h"
 
 #define PUMP_MIN_PWM 0
-#define PUMP_MAX_PWM 30000
+#define PUMP_MAX_PWM 20000
 /*-------------------- Public functions --------------------*/
 
 /**

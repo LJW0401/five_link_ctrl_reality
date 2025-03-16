@@ -262,9 +262,12 @@ void CustomControllerSendCmd(void)
         CUSTOM_CONTROLLER.joint_motor[5].set.value, 0);
     // clang-format on
 
-    ModifyDebugDataPackage(0, CUSTOM_CONTROLLER.fdb.joint[0].pos, "j0_pos_f");
-    ModifyDebugDataPackage(1, CUSTOM_CONTROLLER.fdb.joint[1].pos, "j1_pos_f");
-    ModifyDebugDataPackage(2, CUSTOM_CONTROLLER.fdb.joint[2].pos, "j2_pos_f");
+    ModifyDebugDataPackage(0, cc_control_data.pos[0], "j0_pos_f");
+    ModifyDebugDataPackage(1, cc_control_data.pos[1], "j1_pos_f");
+    ModifyDebugDataPackage(2, cc_control_data.pos[2], "j2_pos_f");
+    ModifyDebugDataPackage(3, cc_control_data.pos[3], "j3_pos_f");
+    ModifyDebugDataPackage(4, cc_control_data.pos[4], "j4_pos_f");
+    ModifyDebugDataPackage(5, cc_control_data.pos[5], "j5_pos_f");
 }
 
 #endif  // CUSTOM_CONTROLLER_TYPE
