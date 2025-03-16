@@ -82,6 +82,8 @@ typedef struct
     fp32 set[4];
 
     fp32 yaw_delta;
+
+    bool spin_flag,shift_flag,shift_last_flag;
 } Chassis_s;
 
 
