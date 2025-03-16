@@ -51,15 +51,10 @@ typedef enum {
 
 typedef struct
 {
-    float wheel_speed[4];  // (m/s)轮子速度
-    ChassisSpeedVector_t speed_vector;
-} Values_t_chassis;
-
-// typedef struct
-// {
-//     pid_type_def wheel_pid_speed[4];
-//     pid_type_def gimbal_follow_pid_angle[4];
-// } PID_t;
+    float vx;
+    float vy;
+    float wz;
+} Reference_t;
 
 /**
  * @brief  底盘数据结构体
@@ -77,29 +72,13 @@ typedef struct
     // 定义4个麦克纳姆轮
     Motor_s wheel_motor[4];  // 驱动轮电机
     /*-------------------- Values --------------------*/
+    Reference_t reference_rc;
+    Reference_t reference; 
 
-    Values_t_chassis ref;          // 期望值
-    Values_t_chassis fdb;          // 状态值
-    Values_t_chassis upper_limit;  // 上限值
-    Values_t_chassis lower_limit;  // 下限值
-
-    pid_type_def pid;  // PID控制器
-    pid_type_def motor_chassis[4];               //chassis motor data.底盘电机数据
-    pid_type_def motor_speed_pid[4];             //motor speed PID.底盘电机速度pid
-    pid_type_def chassis_angle_pid;           //follow angle PID.底盘跟随云台角度pid
-
-    float dyaw;  // (rad)(feedback)当前位置与云台中值角度差（用于坐标转换）
-    uint16_t yaw_mid;  // (ecd)(preset)云台中值角度
-    uint16_t current_set;
-
-    fp32 vx_rc_set;                   //底盘设定速度，遥控器控制云台坐标系下前进方向
-    fp32 vy_rc_set;                   //底盘设定速度，遥控器控制云台坐标系下左右方向
-    fp32 wz_rc_set;                   //底盘设定旋转速度，遥控器控制云台坐标系下
-    fp32 vx_set;                      //底盘设定速度 前进方向 前为正，单位 m/s
-    fp32 vy_set;                      //底盘设定速度 左右方向 左为正，单位 m/s
-    fp32 wz_set;                      //底盘设定旋转角速度，逆时针为正 单位 rad/s
-
+    fp32 feedback[4];
+    fp32 set[4];
     
+    fp32 yaw_delta;
 } Chassis_s;
 
 
