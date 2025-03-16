@@ -31,7 +31,8 @@
 
 Chassis_s chassis;
 PID_t chassis_pid;
-bool spin=0,shift_pressed=0;
+bool shift_pressed=0;
+uint8_t spin_ui=0;
 
 /*-------------------- Init --------------------*/
 
@@ -79,11 +80,11 @@ void ChassisSetMode(void)
     {
         chassis.mode = CHASSIS_LOCK;
     }
-    else if (switch_is_mid(chassis.rc->rc.s[0])&&spin==0)
+    else if (switch_is_mid(chassis.rc->rc.s[0])&&spin_ui==0)
     {
         chassis.mode = CHASSIS_FOLLOW;  
     }
-    else if (switch_is_up(chassis.rc->rc.s[0])||spin==1)
+    else if (switch_is_up(chassis.rc->rc.s[0])||spin_ui==1)
     {
         chassis.mode = CHASSIS_SPIN;
 
@@ -163,7 +164,7 @@ void ChassisReference(void)
         {
             if (!shift_pressed)
             {
-                spin = 1;
+                spin_ui = 1;
                 shift_pressed = true;
             }
         }
@@ -180,6 +181,8 @@ void ChassisReference(void)
     }
     else if (chassis.mode == CHASSIS_SPIN)
     {
+        chassis.reference_rc.vx=fp32_deadline(chassis.rc->rc.ch[3],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_SPEED;
+        chassis.reference_rc.vy=fp32_deadline(-chassis.rc->rc.ch[2],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_SPEED;
         if (chassis.rc->key.v & KEY_PRESSED_OFFSET_W) 
         {
             chassis.reference_rc.vx += CHASSIS_RC_MAX_SPEED;
@@ -203,7 +206,7 @@ void ChassisReference(void)
         {
             if (!shift_pressed)
             {
-                spin = 0;
+                spin_ui = 0;
                 shift_pressed = true;
             }
         }
@@ -212,13 +215,17 @@ void ChassisReference(void)
             shift_pressed = false;
         }
 
-        chassis.reference_rc.vx=fp32_deadline(chassis.rc->rc.ch[3],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_SPEED;
-        chassis.reference_rc.vy=fp32_deadline(-chassis.rc->rc.ch[2],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_SPEED;
 
         chassis.reference.vx =  chassis.reference_rc.vx * cosf(chassis.yaw_delta) - chassis.reference_rc.vy * sinf(chassis.yaw_delta);
         chassis.reference.vy =  chassis.reference_rc.vx * sinf(chassis.yaw_delta) + chassis.reference_rc.vy * cos(chassis.yaw_delta);
-
-        chassis.reference.wz=8;
+        if(chassis.reference.vx>0 || chassis.reference.vy>0)
+        {
+            chassis.reference.wz=3;
+        }
+        else
+        {
+            chassis.reference.wz=8;
+        }
     }
     
 }

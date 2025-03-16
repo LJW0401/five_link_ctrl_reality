@@ -81,7 +81,7 @@ typedef struct
     
     fp32 yaw_delta;
 } Chassis_s;
-
+extern uint8_t spin_ui;
 
 extern void ChassisInit(void);
 

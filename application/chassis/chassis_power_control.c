@@ -26,7 +26,9 @@
  #define OMEGA_TO_RPM 9.55f
  void Power_control(Motor_s *motor)
  { 
-   float initial_power[4],initial_total_power=0,scale_power[4];
+   float initial_power[4];
+   float initial_total_power=0;
+   float scale_power[4];
    for(int i=0;i<4;i++)
    {
     initial_power[i]=motor[i].set.curr*motor[i].fdb.vel*OMEGA_TO_RPM*TORQUE_DETA +K1*motor[i].set.curr*motor[i].set.curr+K2*motor[i].fdb.vel*OMEGA_TO_RPM*motor[i].fdb.vel*OMEGA_TO_RPM+Constant;

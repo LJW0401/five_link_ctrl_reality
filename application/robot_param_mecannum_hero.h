@@ -11,7 +11,7 @@
 
 #define CHASSIS_TYPE CHASSIS_MECANUM_WHEEL      // 选择底盘类型
 #define GIMBAL_TYPE GIMBAL_YAW_PITCH_DIRECT      // 选择云台类型
-#define SHOOT_TYPE SHOOT_NONE                    // 选择发射机构类型
+#define SHOOT_TYPE SHOOT_FRIC_TRIGGER                    // 选择发射机构类型
 #define CONTROL_TYPE CHASSIS_AND_GIMBAL          // 选择控制类型
 #define MECHANICAL_ARM_TYPE MECHANICAL_ARM_NONE  //选择机械臂类型
 
@@ -136,7 +136,7 @@
 #define MAX_OUT_GIMBAL_YAW_VELOCITY (30000.0f)//30000
 
 //PITCH ANGLE
-#define KP_GIMBAL_PITCH_ANGLE (50.0f)  //90
+#define KP_GIMBAL_PITCH_ANGLE (45.0f)  //90
 #define KI_GIMBAL_PITCH_ANGLE (0.0f)  //0.02
 #define KD_GIMBAL_PITCH_ANGLE (0.0f)   //50
 #define MAX_IOUT_GIMBAL_PITCH_ANGLE (0.0f)
