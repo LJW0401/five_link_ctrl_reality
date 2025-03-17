@@ -89,13 +89,14 @@
 #define J2_KP_FOLLOW 0
 #define J2_KD_FOLLOW 10
 
-#define INIT_2006_SET_VALUE (-1000)  // 2006电机在进行初始化时的电流设置值
+#define INIT_2006_SET_VALUE (-5000)  // 2006电机在进行初始化时的电流设置值
 #define INIT_2006_MIN_VEL 1          // 2006电机初始化完成的速度阈值
 
 // 气泵相关
-#define PUMP_ON_PWM 30000
+#define PUMP_ON_PWM 20000
 #define PUMP_OFF_PWM 0
 #define PUMP_PWM_CHANNEL 1
+#define PUMP_PWM_CHENNEL2 2
 
 #define JointMotorInit(index)                                                                    \
     MotorInit(                                                                                   \
@@ -397,7 +398,6 @@ static void JointStateObserve(void)
     last_angle[J5] = angle_fdb[J5];
     MA.fdb.joint[J5].angle =
         (angle_fdb[J5] + M_PI * 2 * MA.fdb.joint[J5].round) / MA.joint_motor[J5].reduction_ratio;
-
 #undef dangle
 }
 
@@ -441,12 +441,12 @@ void MechanicalArmReference(void)
                 MA.ref.joint[J3].angle = fp32_constrain(
                     MA.ref.joint[J3].angle, MA.limit.min.pos[J3], MA.limit.max.pos[J3]);
 
-                MA.ref.joint[J4].angle = 0;
-                MA.ref.joint[J5].angle = 0;
+                // MA.ref.joint[J4].angle = 0;
+                // MA.ref.joint[J5].angle = 0;
             } else if (switch_is_up(MECHANICAL_ARM.rc->rc.s[MECHANICAL_ARM_MODE_CHANNEL])) {
                 // j4
                 MA.ref.joint[J4].angle += GetDt7RcCh(DT7_CH_RV) * 0.002f;
-                // MA.ref.joint[J4].angle = GenerateSinWave(1, 0, 3);
+                // MA.ref.joint[J4].angle = GenerateSinWave(1, 0, 3);                                                                                 
                 // MA.ref.joint[J4].angle =
                 //     fp32_constrain(MA.ref.joint[J4].angle, MA.limit.min.pos[J4], MA.limit.max.pos[J4]);
 
@@ -510,6 +510,29 @@ void MechanicalArmReference(void)
                 MA.ref.joint[J4].angle = vj4_pos + vj5_pos;
                 MA.ref.joint[J5].angle = -(vj4_pos - vj5_pos);
             }
+
+            // j4
+            // MA.ref.joint[J4].angle += GetDt7RcCh(DT7_CH_RV) * 0.002f;
+            // // MA.ref.joint[J4].angle = GenerateSinWave(1, 0, 3);                                                                                 
+            // // MA.ref.joint[J4].angle =
+            // // fp32_constrain(MA.ref.joint[J4].angle, MA.limit.min.pos[J4], MA.limit.max.pos[J4]);
+
+            //  // j5
+            //  MA.ref.joint[J5].angle += GetDt7RcCh(DT7_CH_LV) * 0.002f;
+            //  // MA.ref.joint[J5].angle = GenerateSinWave(1, 0, 3);
+            //  // MA.ref.joint[J5].angle =
+            //  // fp32_constrain(MA.ref.joint[J5].angle, MA.limit.min.pos[J5], MA.limit.max.pos[J5]);
+            // float virtual_j4_pos = (MA.ref.joint[J4].angle - MA.ref.joint[J5].angle) / 2;
+            // float delta = 0;
+            // if (virtual_j4_pos > MA.limit.max.vj4_pos) {
+            //     delta = virtual_j4_pos - MA.limit.max.vj4_pos;
+            // } else if (virtual_j4_pos < MA.limit.min.vj4_pos) {
+            //     delta = virtual_j4_pos - MA.limit.min.vj4_pos;
+            // }
+            // MA.ref.joint[J4].angle -= delta;
+            // MA.ref.joint[J5].angle += delta;
+
+
         } break;
         case MECHANICAL_ARM_CALIBRATE:
         case MECHANICAL_ARM_SAFE:
@@ -679,17 +702,14 @@ void MechanicalArmSendCmd(void)
             ArmSendCmdSafe();
         }
     }
-    ModifyDebugDataPackage(0, MA.limit.max.vj4_pos, "Vj4PosMax");
-    ModifyDebugDataPackage(1, MA.limit.min.vj4_pos, "Vj4PosMin");
-    ModifyDebugDataPackage(2, MA.ref.joint[J2].angle, "j2_pos_r");
-    ModifyDebugDataPackage(3, MA.ref.joint[J3].angle, "j3_pos_r");
-    ModifyDebugDataPackage(4, (MA.ref.joint[J4].angle - MA.ref.joint[J5].angle) / 2, "Vj4PosRef");
-    ModifyDebugDataPackage(
-        5, (GetCustomControllerPos(J4) - GetCustomControllerPos(J5)) / 2, "cc_Vj4Pos");
-    ModifyDebugDataPackage(6, GetCustomControllerPos(J0), "cc_j0");
-    ModifyDebugDataPackage(7, GetCustomControllerPos(J1), "cc_j1");
-    ModifyDebugDataPackage(8, GetCustomControllerPos(J2), "cc_j2");
-    ModifyDebugDataPackage(9, GetCustomControllerPos(J3), "cc_j3");
+
+
+    ModifyDebugDataPackage(0, MA.ref.joint[J0].angle,"J0");
+    ModifyDebugDataPackage(1, MA.ref.joint[J1].angle,"J1");
+    ModifyDebugDataPackage(2, MA.ref.joint[J2].angle,"J2");
+    ModifyDebugDataPackage(3, MA.ref.joint[J3].angle,"J3");
+    ModifyDebugDataPackage(4, MA.ref.joint[J4].angle,"J4");
+    ModifyDebugDataPackage(5, MA.ref.joint[J5].angle,"J5");
 }
 
 void ArmSendCmdSafe(void)
@@ -704,6 +724,7 @@ void ArmSendCmdSafe(void)
 
     // 气泵控制
     PwmCmdPump(PUMP_PWM_CHANNEL, PUMP_OFF_PWM);
+    PwmCmdPump(PUMP_PWM_CHENNEL2, PUMP_OFF_PWM);
 }
 
 void ArmSendCmdDebug(void)
@@ -726,8 +747,10 @@ void ArmSendCmdDebug(void)
     // 气泵控制
     if (MECHANICAL_ARM.cmd.pump_on) {
         PwmCmdPump(PUMP_PWM_CHANNEL, PUMP_ON_PWM);
+        PwmCmdPump(PUMP_PWM_CHENNEL2, PUMP_ON_PWM);
     } else {
         PwmCmdPump(PUMP_PWM_CHANNEL, PUMP_OFF_PWM);
+        PwmCmdPump(PUMP_PWM_CHENNEL2, PUMP_OFF_PWM);
     }
 }
 
@@ -744,6 +767,7 @@ void ArmSendCmdInit(void)
     // clang-format on
     // 气泵控制
     PwmCmdPump(PUMP_PWM_CHANNEL, PUMP_OFF_PWM);
+    PwmCmdPump(PUMP_PWM_CHENNEL2, PUMP_OFF_PWM);
 }
 
 #endif

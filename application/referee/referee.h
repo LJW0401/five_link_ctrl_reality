@@ -26,7 +26,6 @@ typedef enum
     RED_ENGINEER    = 2,
     RED_STANDARD_1  = 3,
     RED_STANDARD_2  = 4,
-    RED_STANDARD_3  = 5,
     RED_AERIAL      = 6,
     RED_SENTRY      = 7,
     BLUE_HERO       = 11,
@@ -65,7 +64,7 @@ typedef __packed struct  //0x0003
     uint16_t red_2_robot_HP;   //红 2 工程机器人血量
     uint16_t red_3_robot_HP;   //红 3 步兵机器人血量
     uint16_t red_4_robot_HP;   //红 4 步兵机器人血量
-    uint16_t red_5_robot_HP;   //红 5 步兵机器人血量
+    uint16_t reserved1;
     uint16_t red_7_robot_HP;   //红 7 哨兵机器人血量
     uint16_t red_outpost_HP;   //红方前哨站血量
     uint16_t red_base_HP;      //红方基地血量
@@ -73,7 +72,7 @@ typedef __packed struct  //0x0003
     uint16_t blue_2_robot_HP;  //蓝 2 工程机器人血量
     uint16_t blue_3_robot_HP;  //蓝 3 步兵机器人血量
     uint16_t blue_4_robot_HP;  //蓝 4 步兵机器人血量
-    uint16_t blue_5_robot_HP;  //蓝 5 步兵机器人血量
+    uint16_t reserved2;
     uint16_t blue_7_robot_HP;  //蓝 7 哨兵机器人血量
     uint16_t blue_outpost_HP;  //蓝方前哨站血量
     uint16_t blue_base_HP;     //蓝方基地血量
@@ -83,21 +82,6 @@ typedef __packed struct  //0x0101
     uint32_t event_data;
 } event_data_t;
 
-typedef __packed struct  //0x0102
-{
-    uint8_t supply_projectile_id;
-    uint8_t supply_robot_id;
-    uint8_t supply_projectile_step;
-    uint8_t supply_projectile_num;
-} ext_supply_projectile_action_t;
-
-typedef __packed struct  //0x0103
-{
-    uint8_t reserved;
-    uint8_t supply_robot_id;
-    uint8_t supply_projectile_step;
-    uint8_t supply_projectile_num;
-} ext_supply_projectile_booking_t;
 
 typedef __packed struct  //0x0104
 {
@@ -106,7 +90,7 @@ typedef __packed struct  //0x0104
     uint8_t count;
 } referee_warning_t;
 
-typedef __packed struct  //0x105
+typedef __packed struct  //0x0105
 {
     uint8_t dart_remaining_time;
     uint16_t dart_info;
@@ -128,9 +112,9 @@ typedef __packed struct  //0x0201
 
 typedef __packed struct  //0x0202
 {
-    uint16_t chassis_voltage;  //电源管理模块的 chassis 口输出电压（单位：mV）
-    uint16_t chassis_current;  //电源管理模块的 chassis 口输出电流（单位：mA）
-    float chassis_power;       //底盘功率（单位：W）
+    uint16_t reserved1;
+    uint16_t reserved2;
+    float reserved;
     uint16_t buffer_energy;    //缓冲能量（单位：J）
     uint16_t shooter_17mm_1_barrel_heat;  //第 1 个 17mm 发射机构的枪口热量
     uint16_t shooter_17mm_2_barrel_heat;  //第 2 个 17mm 发射机构的枪口热量
@@ -151,14 +135,8 @@ typedef __packed struct  //0x0204
     uint8_t defence_buff;  //机器人防御增益（百分比，值为 50 表示 50%防御增益）
     uint8_t vulnerability_buff;  //机器人负防御增益（百分比，值为 30 表示-30%防御增益）
     uint16_t attack_buff;  //机器人攻击增益（百分比，值为 50 表示 50%攻击增益）
+    uint8_t remaining_energy;  //机器人剩余能量值（百分比，值为 10 表示剩余能量为 10%）
 } buff_t;
-
-typedef __packed struct  //0x0205
-{
-    uint8_t airforce_status;  //空中机器人状态（0 为正在冷却，1 为冷却完毕，2 为正在空中支援）
-    uint8_t
-        time_remain;  //此状态的剩余时间（单位为：秒，向下取整，即冷却时间剩余 1.9 秒时，此值为 1）若冷却时间为 0，但未呼叫空中支援，则该值为 0
-} air_support_data_t;
 
 typedef __packed struct  //0x0206
 {
@@ -174,20 +152,20 @@ typedef __packed struct  //0x0207
     uint8_t launching_frequency;  //弹丸射速（单位：Hz）
     float initial_speed;          //弹丸初速度（单位：m/s）
 } shoot_data_t;
+
 typedef __packed struct  //0x0208
 {
     uint16_t projectile_allowance_17mm;  //17mm 弹丸允许发弹量
     uint16_t projectile_allowance_42mm;  //42mm 弹丸允许发弹量
     uint16_t remaining_gold_coin;        //剩余金币数量
 } projectile_allowance_t;
+
 typedef __packed struct  //0x0209
 {
     uint32_t rfid_status;
 } rfid_status_t;
-typedef __packed struct
-{
-    uint8_t bullet_remaining_num;
-} ext_bullet_remaining_t;
+
+
 typedef __packed struct  //0x020A
 {
     uint8_t dart_launch_opening_status;
@@ -195,6 +173,7 @@ typedef __packed struct  //0x020A
     uint16_t target_change_time;
     uint16_t latest_launch_cmd_time;
 } dart_client_cmd_t;
+
 typedef __packed struct  //0x020B
 {
     float hero_x;        //己方英雄机器人位置 x 轴坐标，单位：m
@@ -205,61 +184,52 @@ typedef __packed struct  //0x020B
     float standard_3_y;  //己方 3 号步兵机器人位置 y 轴坐标，单位：m
     float standard_4_x;  //己方 4 号步兵机器人位置 x 轴坐标，单位：m
     float standard_4_y;  //己方 4 号步兵机器人位置 x 轴坐标，单位：m
-    float standard_5_x;  //己方 5 号步兵机器人位置 x 轴坐标，单位：m
-    float standard_5_y;  //己方 5 号步兵机器人位置 y 轴坐标，单位：m
+    float reserved1;
+    float reserved2;
 } ground_robot_position_t;
+
 typedef __packed struct  //0x020C
 {
-    uint8_t mark_hero_progress;
-    uint8_t mark_engineer_progress;
-    uint8_t mark_standard_3_progress;
-    uint8_t mark_standard_4_progress;
-    uint8_t mark_standard_5_progress;
-    uint8_t mark_sentry_progress;
+    uint8_t mark_progress;
 } radar_mark_data_t;
+
 typedef __packed struct  //0x020D
 {
     uint32_t sentry_info;
+    uint16_t sentry_info_2;
 } sentry_info_t;
+
 typedef __packed struct  //0x020E
 {
     uint8_t radar_info;
 } radar_info_t;
+
 typedef __packed struct  //0x0301
 {
     uint16_t data_cmd_id;
     uint16_t sender_id;
     uint16_t receiver_id;
-    uint8_t user_data[113];
+    uint8_t user_data[112];
 } robot_interaction_data_t;
 
-/**
- * @brief 自定义控制器数据
- */
-typedef __packed struct __CustomControllerData  //0x0302
+
+typedef __packed struct   //0x0302
 {
     uint8_t data[30];
-} CustomControllerData_t;
+} custom_robot_data_t;
 
-typedef __packed struct
+
+
+typedef __packed struct //0x0303
 {
-    float data1;
-    float data2;
-    float data3;
-    uint8_t data4;
-} custom_data_t;
+    float target_position_x; 
+    float target_position_y; 
+    uint8_t cmd_keyboard; 
+    uint8_t target_robot_id; 
+    uint16_t cmd_source; 
+} map_command_t;
 
-typedef __packed struct
-{
-    uint8_t data[64];
-} ext_up_stream_data_t;
-
-typedef __packed struct
-{
-    uint8_t data[32];
-} ext_download_stream_data_t;
-
-typedef __packed struct
+typedef __packed struct //0x0304
 {
     uint16_t mouse_x;
     uint16_t mouse_y;
@@ -268,22 +238,31 @@ typedef __packed struct
     uint8_t right_button_down;
     uint16_t keyboard_value;
     uint16_t reserved;
-} ext_robot_command_t;
+} remote_control_t;
 
+extern event_data_t event_data;
 extern game_robot_HP_t game_robot_HP;
 extern robot_status_t robot_status;
 extern game_status_t game_status;
+extern ground_robot_position_t ground_robot_position;
+extern rfid_status_t rfid_status;
+extern power_heat_data_t power_heat_data;
+extern robot_pos_t robot_pos;
+extern hurt_data_t hurt_data;
+extern projectile_allowance_t projectile_allowance;
+extern buff_t buff;
+
 extern void init_referee_struct_data(void);
 extern void referee_data_solve(uint8_t * frame);
 
 extern void get_chassis_power_and_buffer(fp32 * power, fp32 * buffer);
 extern uint16_t get_shoot_heat(void);
 extern uint8_t get_robot_id(void);
-extern uint8_t get_team_color(void);
 extern void get_shoot_heat0_limit_and_heat0(uint16_t * heat0_limit, uint16_t * heat0);
 extern void get_shoot_heat1_limit_and_heat1(uint16_t * heat1_limit, uint16_t * heat1);
+extern void get_shoot_heat42_limit_and_heat42(uint16_t *heat_limit, uint16_t *heat);
 
-extern CustomControllerData_t * GetCustomControllerDataPoint(void);
+extern custom_robot_data_t * GetCustomControllerDataPoint(void);
 
 /*========== API ==========*/
 
