@@ -266,8 +266,8 @@ void CustomControllerSendCmd(void)
     ModifyDebugDataPackage(1, cc_control_data.pos[1], "j1_pos_f");
     ModifyDebugDataPackage(2, cc_control_data.pos[2], "j2_pos_f");
     ModifyDebugDataPackage(3, cc_control_data.pos[3], "j3_pos_f");
-    ModifyDebugDataPackage(4, cc_control_data.pos[4], "j4_pos_f");
-    ModifyDebugDataPackage(5, cc_control_data.pos[5], "j5_pos_f");
+    ModifyDebugDataPackage(4,fp32_constrain(CUSTOM_CONTROLLER.fdb.joint[J4].pos, CUSTOM_CONTROLLER.limit.min.vj4_pos, CUSTOM_CONTROLLER.limit.max.vj4_pos), "j4_pos_f");
+    ModifyDebugDataPackage(5,fp32_constrain(CUSTOM_CONTROLLER.fdb.joint[J5].pos, CUSTOM_CONTROLLER.limit.min.vj5_pos, CUSTOM_CONTROLLER.limit.max.vj5_pos), "j5_pos_f");
 }
 
 #endif  // CUSTOM_CONTROLLER_TYPE
