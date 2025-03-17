@@ -18,6 +18,7 @@
 #define CHASSIS_H
 
 #include "robot_param.h"
+#include "stdbool.h"
 
 #if CHASSIS_TYPE != CHASSIS_NONE
 
@@ -62,6 +63,8 @@ inline float ChassisGetSpeedVy(void);
  * @brief 获取底盘坐标系下的速度wz (rad/s)
  */
 inline float ChassisGetSpeedWz(void);
+
+inline bool GetChassisSpinState(void);
 
 #endif  // CHASSIS_TYPE
 #endif  // CHASSIS_H

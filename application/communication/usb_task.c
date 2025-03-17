@@ -31,6 +31,8 @@
 #include "usbd_conf.h"
 #include "supervisory_computer_cmd.h"
 #include "gimbal.h"
+#include "IMU.h"
+
 
 #if INCLUDE_uxTaskGetStackHighWaterMark
 uint32_t usb_high_water;
@@ -219,7 +221,6 @@ static void UsbInit(void)
     // 订阅数据
     IMU = Subscribe(IMU_NAME);                             // 获取IMU数据指针
     FDB_SPEED_VECTOR = Subscribe(CHASSIS_FDB_SPEED_NAME);  // 获取底盘速度矢量指针
-
     // 数据置零
     memset(&LAST_SEND_TIME, 0, sizeof(LastSendTime_t));
     memset(&RECEIVE_ROBOT_CMD_DATA, 0, sizeof(ReceiveDataRobotCmd_s));
@@ -380,6 +381,7 @@ static void UsbSendData(void)
     CheckDurationAndSend(JointState);
     // 发送Buff数据
     CheckDurationAndSend(Buff);
+    
 }
 
 /**
@@ -481,13 +483,13 @@ static void UsbSendImuData(void)
 
     SEND_DATA_IMU.time_stamp = HAL_GetTick();
 
-    SEND_DATA_IMU.data.yaw = IMU->yaw;
-    SEND_DATA_IMU.data.pitch = IMU->pitch;
-    SEND_DATA_IMU.data.roll = IMU->roll;
+    SEND_DATA_IMU.data.yaw = GetImuAngle(AX_YAW);
+    SEND_DATA_IMU.data.pitch = GetImuAngle(AX_PITCH);
+    SEND_DATA_IMU.data.roll = GetImuAngle(AX_ROLL);
 
-    SEND_DATA_IMU.data.yaw_vel = IMU->yaw_vel;
-    SEND_DATA_IMU.data.pitch_vel = IMU->pitch_vel;
-    SEND_DATA_IMU.data.roll_vel = IMU->roll_vel;
+    SEND_DATA_IMU.data.yaw_vel = GetImuVelocity(AX_YAW);
+    SEND_DATA_IMU.data.pitch_vel = GetImuVelocity(AX_PITCH);
+    SEND_DATA_IMU.data.roll_vel = GetImuVelocity(AX_ROLL);
 
     append_CRC16_check_sum((uint8_t *)&SEND_DATA_IMU, sizeof(SendDataImu_s));
     USB_Transmit((uint8_t *)&SEND_DATA_IMU, sizeof(SendDataImu_s));
@@ -514,6 +516,16 @@ static void UsbSendRobotStateInfoData(void)
 static void UsbSendEventData(void)
 {
     SEND_DATA_EVENT.time_stamp = HAL_GetTick();
+
+    SEND_DATA_EVENT.data.non_overlapping_supply_zone = (event_data.event_data >> 0) & 0x01;
+    SEND_DATA_EVENT.data.overlapping_supply_zone = (event_data.event_data >> 1) & 0x01;
+    SEND_DATA_EVENT.data.supply_zone = (event_data.event_data >> 2) & 0x01;
+    SEND_DATA_EVENT.data.small_energy = (event_data.event_data >> 3) & 0x01;
+    SEND_DATA_EVENT.data.big_energy = (event_data.event_data >> 4) & 0x01;
+    SEND_DATA_EVENT.data.central_highland = (event_data.event_data >> 5) & 0x03;
+    SEND_DATA_EVENT.data.trapezoidal_highland = (event_data.event_data >> 7) & 0X03;
+    SEND_DATA_EVENT.data.center_gain_zone = (event_data.event_data >> 21) & 0X03;
+
     append_CRC16_check_sum((uint8_t *)&SEND_DATA_EVENT, sizeof(SendDataEvent_s));
     USB_Transmit((uint8_t *)&SEND_DATA_EVENT, sizeof(SendDataEvent_s));
 }
@@ -536,20 +548,20 @@ static void UsbSendAllRobotHpData(void)
 {
     SEND_DATA_ALL_ROBOT_HP.time_stamp = HAL_GetTick();
 
-    SEND_DATA_ALL_ROBOT_HP.data.red_1_robot_hp = 1;
-    SEND_DATA_ALL_ROBOT_HP.data.red_2_robot_hp = 2;
-    SEND_DATA_ALL_ROBOT_HP.data.red_3_robot_hp = 3;
-    SEND_DATA_ALL_ROBOT_HP.data.red_4_robot_hp = 4;
-    SEND_DATA_ALL_ROBOT_HP.data.red_7_robot_hp = 7;
-    SEND_DATA_ALL_ROBOT_HP.data.red_outpost_hp = 8;
-    SEND_DATA_ALL_ROBOT_HP.data.red_base_hp = 9;
-    SEND_DATA_ALL_ROBOT_HP.data.blue_1_robot_hp = 1;
-    SEND_DATA_ALL_ROBOT_HP.data.blue_2_robot_hp = 2;
-    SEND_DATA_ALL_ROBOT_HP.data.blue_3_robot_hp = 3;
-    SEND_DATA_ALL_ROBOT_HP.data.blue_4_robot_hp = 4;
-    SEND_DATA_ALL_ROBOT_HP.data.blue_7_robot_hp = 7;
-    SEND_DATA_ALL_ROBOT_HP.data.blue_outpost_hp = 8;
-    SEND_DATA_ALL_ROBOT_HP.data.blue_base_hp = 9;
+    SEND_DATA_ALL_ROBOT_HP.data.red_1_robot_hp = game_robot_HP.red_1_robot_HP;
+    SEND_DATA_ALL_ROBOT_HP.data.red_2_robot_hp = game_robot_HP.red_2_robot_HP;
+    SEND_DATA_ALL_ROBOT_HP.data.red_3_robot_hp = game_robot_HP.red_3_robot_HP;
+    SEND_DATA_ALL_ROBOT_HP.data.red_4_robot_hp = game_robot_HP.red_4_robot_HP;
+    SEND_DATA_ALL_ROBOT_HP.data.red_7_robot_hp = game_robot_HP.red_7_robot_HP;
+    SEND_DATA_ALL_ROBOT_HP.data.red_outpost_hp = game_robot_HP.red_outpost_HP;
+    SEND_DATA_ALL_ROBOT_HP.data.red_base_hp = game_robot_HP.red_base_HP;
+    SEND_DATA_ALL_ROBOT_HP.data.blue_1_robot_hp = game_robot_HP.blue_1_robot_HP;
+    SEND_DATA_ALL_ROBOT_HP.data.blue_2_robot_hp = game_robot_HP.blue_2_robot_HP;
+    SEND_DATA_ALL_ROBOT_HP.data.blue_3_robot_hp = game_robot_HP.blue_3_robot_HP;
+    SEND_DATA_ALL_ROBOT_HP.data.blue_4_robot_hp = game_robot_HP.blue_4_robot_HP;
+    SEND_DATA_ALL_ROBOT_HP.data.blue_7_robot_hp = game_robot_HP.blue_7_robot_HP;
+    SEND_DATA_ALL_ROBOT_HP.data.blue_outpost_hp = game_robot_HP.blue_outpost_HP;
+    SEND_DATA_ALL_ROBOT_HP.data.blue_base_hp = game_robot_HP.blue_base_HP;
 
     append_CRC16_check_sum((uint8_t *)&SEND_DATA_ALL_ROBOT_HP, sizeof(SendDataAllRobotHp_s));
     USB_Transmit((uint8_t *)&SEND_DATA_ALL_ROBOT_HP, sizeof(SendDataAllRobotHp_s));
@@ -563,8 +575,8 @@ static void UsbSendGameStatusData(void)
 {
     SEND_DATA_GAME_STATUS.time_stamp = HAL_GetTick();
 
-    SEND_DATA_GAME_STATUS.data.game_progress = 1;
-    SEND_DATA_GAME_STATUS.data.stage_remain_time = 100;
+    SEND_DATA_GAME_STATUS.data.game_progress = (game_status.game_progress >> 4) & 0x15;
+    SEND_DATA_GAME_STATUS.data.stage_remain_time = game_status.stage_remain_time;
 
     append_CRC16_check_sum((uint8_t *)&SEND_DATA_GAME_STATUS, sizeof(SendDataGameStatus_s));
     USB_Transmit((uint8_t *)&SEND_DATA_GAME_STATUS, sizeof(SendDataGameStatus_s));
@@ -597,6 +609,15 @@ static void UsbSendRobotMotionData(void)
 static void UsbSendGroundRobotPositionData(void)
 {
     SEND_GROUND_ROBOT_POSITION_DATA.time_stamp = HAL_GetTick();
+
+    SEND_GROUND_ROBOT_POSITION_DATA.data.hero_x = ground_robot_position.hero_x;
+    SEND_GROUND_ROBOT_POSITION_DATA.data.hero_y = ground_robot_position.hero_y;
+    SEND_GROUND_ROBOT_POSITION_DATA.data.engineer_x = ground_robot_position.engineer_x;
+    SEND_GROUND_ROBOT_POSITION_DATA.data.engineer_y = ground_robot_position.engineer_y;
+    SEND_GROUND_ROBOT_POSITION_DATA.data.standard_3_x = ground_robot_position.standard_3_x;
+    SEND_GROUND_ROBOT_POSITION_DATA.data.standard_3_y = ground_robot_position.standard_3_y;
+    SEND_GROUND_ROBOT_POSITION_DATA.data.standard_4_x = ground_robot_position.standard_4_x;
+
     append_CRC16_check_sum((uint8_t *)&SEND_GROUND_ROBOT_POSITION_DATA, sizeof(SendDataGroundRobotPosition_s));
     USB_Transmit((uint8_t *)&SEND_GROUND_ROBOT_POSITION_DATA, sizeof(SendDataGroundRobotPosition_s));
 }
@@ -608,6 +629,32 @@ static void UsbSendGroundRobotPositionData(void)
 static void UsbSendRfidStatusData(void)
 {
     SEND_RFID_STATUS_DATA.time_stamp = HAL_GetTick();
+
+    SEND_RFID_STATUS_DATA.data.base_gain_point = (rfid_status.rfid_status >> 0) & 0x01;
+    SEND_RFID_STATUS_DATA.data.central_highland_gain_point = (rfid_status.rfid_status >> 1) & 0x01;
+    SEND_RFID_STATUS_DATA.data.enemy_central_highland_gain_point = (rfid_status.rfid_status >> 2) & 0x01;
+    SEND_RFID_STATUS_DATA.data.friendly_trapezoidal_highland_gain_point = (rfid_status.rfid_status >> 3) & 0x01;
+    SEND_RFID_STATUS_DATA.data.enemy_trapezoidal_highland_gain_point = (rfid_status.rfid_status >> 4) & 0x01;
+    SEND_RFID_STATUS_DATA.data.friendly_fly_ramp_front_gain_point = (rfid_status.rfid_status >> 5) & 0x01;
+    SEND_RFID_STATUS_DATA.data.friendly_fly_ramp_back_gain_point = (rfid_status.rfid_status >> 6) & 0x01;
+    SEND_RFID_STATUS_DATA.data.enemy_fly_ramp_front_gain_point = (rfid_status.rfid_status >> 7) & 0x01;
+    SEND_RFID_STATUS_DATA.data.enemy_fly_ramp_back_gain_point = (rfid_status.rfid_status >> 8) & 0x01;
+    SEND_RFID_STATUS_DATA.data.friendly_central_highland_lower_gain_point = (rfid_status.rfid_status >> 9) & 0x01;
+    SEND_RFID_STATUS_DATA.data.friendly_central_highland_upper_gain_point = (rfid_status.rfid_status >> 10) & 0x01;
+    SEND_RFID_STATUS_DATA.data.enemy_central_highland_lower_gain_point = (rfid_status.rfid_status >> 11) & 0x01;
+    SEND_RFID_STATUS_DATA.data.enemy_central_highland_upper_gain_point = (rfid_status.rfid_status >> 12) & 0x01;
+    SEND_RFID_STATUS_DATA.data.friendly_highway_lower_gain_point = (rfid_status.rfid_status >> 13) & 0x01;
+    SEND_RFID_STATUS_DATA.data.friendly_highway_upper_gain_point = (rfid_status.rfid_status >> 14) & 0x01;
+    SEND_RFID_STATUS_DATA.data.enemy_highway_lower_gain_point = (rfid_status.rfid_status >> 15) & 0x01;
+    SEND_RFID_STATUS_DATA.data.enemy_highway_upper_gain_point = (rfid_status.rfid_status >> 16) & 0x01;
+    SEND_RFID_STATUS_DATA.data.friendly_fortress_gain_point = (rfid_status.rfid_status >> 17) & 0x01;
+    SEND_RFID_STATUS_DATA.data.friendly_outpost_gain_point = (rfid_status.rfid_status >> 18) & 0x01;
+    SEND_RFID_STATUS_DATA.data.friendly_supply_zone_non_exchange = (rfid_status.rfid_status >> 19) & 0x01;
+    SEND_RFID_STATUS_DATA.data.friendly_supply_zone_exchange = (rfid_status.rfid_status >> 20) & 0x01;
+    SEND_RFID_STATUS_DATA.data.friendly_big_resource_island = (rfid_status.rfid_status >> 21) & 0x01;
+    SEND_RFID_STATUS_DATA.data.enemy_big_resource_island = (rfid_status.rfid_status >> 22) & 0x01;
+    SEND_RFID_STATUS_DATA.data.center_gain_point = (rfid_status.rfid_status >> 23) & 0x01;
+
     append_CRC16_check_sum((uint8_t *)&SEND_RFID_STATUS_DATA, sizeof(SendDataRfidStatus_s));
     USB_Transmit((uint8_t *)&SEND_RFID_STATUS_DATA, sizeof(SendDataRfidStatus_s));
 }
@@ -619,6 +666,21 @@ static void UsbSendRfidStatusData(void)
 static void UsbSendRobotStatusData(void)
 {
     SEND_ROBOT_STATUS_DATA.time_stamp = HAL_GetTick();
+    SEND_ROBOT_STATUS_DATA.data.robot_id = robot_status.robot_id;
+    SEND_ROBOT_STATUS_DATA.data.robot_level = robot_status.robot_level;
+    SEND_ROBOT_STATUS_DATA.data.current_up = robot_status.current_HP;
+    SEND_ROBOT_STATUS_DATA.data.maximum_hp = robot_status.maximum_HP;
+    SEND_ROBOT_STATUS_DATA.data.shooter_barrel_cooling_value = robot_status.shooter_barrel_cooling_value;
+    SEND_ROBOT_STATUS_DATA.data.shooter_barrel_heat_limit = robot_status.shooter_barrel_heat_limit;
+    SEND_ROBOT_STATUS_DATA.data.shooter_17mm_1_barrel_heat = power_heat_data.shooter_17mm_1_barrel_heat;
+    SEND_ROBOT_STATUS_DATA.data.robot_pos_x = robot_pos.x;
+    SEND_ROBOT_STATUS_DATA.data.robot_pos_y = robot_pos.y;
+    SEND_ROBOT_STATUS_DATA.data.robot_pos_angle = robot_pos.angle;
+    SEND_ROBOT_STATUS_DATA.data.armor_id = (hurt_data.armor_id >> 0) & 0x15;
+    SEND_ROBOT_STATUS_DATA.data.hp_deduction_reason = (hurt_data.HP_deduction_reason >> 0) & 0x15;
+    SEND_ROBOT_STATUS_DATA.data.projectile_allowance_17mm = projectile_allowance.projectile_allowance_17mm;
+    SEND_ROBOT_STATUS_DATA.data.remaining_gold_coin = projectile_allowance.remaining_gold_coin;
+
     append_CRC16_check_sum((uint8_t *)&SEND_ROBOT_STATUS_DATA, sizeof(SendDataRobotStatus_s));
     USB_Transmit((uint8_t *)&SEND_ROBOT_STATUS_DATA, sizeof(SendDataRobotStatus_s));
 }
@@ -643,6 +705,14 @@ static void UsbSendJointStateData(void)
 static void UsbSendBuffData(void)
 {
     SEND_BUFF_DATA.time_stamp = HAL_GetTick();
+    
+    SEND_BUFF_DATA.data.recovery_buff = buff.recovery_buff;
+    SEND_BUFF_DATA.data.cooling_buff = buff.cooling_buff;
+    SEND_BUFF_DATA.data.defence_buff = buff.defence_buff;
+    SEND_BUFF_DATA.data.vulnerability_buff = buff.vulnerability_buff;
+    SEND_BUFF_DATA.data.attack_buff = buff.attack_buff;
+    SEND_BUFF_DATA.data.remaining_energy = buff.remaining_energy;
+
     append_CRC16_check_sum((uint8_t *)&SEND_BUFF_DATA, sizeof(SendDataBuff_s));
     USB_Transmit((uint8_t *)&SEND_BUFF_DATA, sizeof(SendDataBuff_s));
 }
@@ -663,6 +733,8 @@ static void GetCmdData(void)
 
     ROBOT_CMD_DATA.gimbal.yaw = RECEIVE_ROBOT_CMD_DATA.data.gimbal.yaw;
     ROBOT_CMD_DATA.gimbal.pitch = RECEIVE_ROBOT_CMD_DATA.data.gimbal.pitch;
+
+    ROBOT_CMD_DATA.tracking.tracking = RECEIVE_ROBOT_CMD_DATA.data.tracking.tracking;
 
     ROBOT_CMD_DATA.shoot.fire = RECEIVE_ROBOT_CMD_DATA.data.shoot.fire;
     ROBOT_CMD_DATA.shoot.fric_on = RECEIVE_ROBOT_CMD_DATA.data.shoot.fric_on;

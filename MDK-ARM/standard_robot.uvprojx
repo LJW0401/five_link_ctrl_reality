@@ -3656,6 +3656,21 @@
           </Files>
         </Group>
         <Group>
+          <GroupName>ui</GroupName>
+          <Files>
+            <File>
+              <FileName>user_task.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Src\user_task.c</FilePath>
+            </File>
+            <File>
+              <FileName>RM_Cilent_UI.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Src\RM_Cilent_UI.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
           <GroupName>::CMSIS</GroupName>
         </Group>
       </Groups>

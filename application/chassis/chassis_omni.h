@@ -69,7 +69,7 @@ typedef struct
 {
     const RC_ctrl_t * rc;  // 底盘使用的遥控器指针
     const Imu_t * imu;     // imu数据
-    ChassisMode_e mode;    // 底盘模式
+    ChassisMode_e mode,last_mode;    // 底盘模式
 
     /*-------------------- Motors --------------------*/
     Motor_s wheel[4];  //底盘电机
@@ -82,6 +82,8 @@ typedef struct
     fp32 set[4];
 
     fp32 yaw_delta;
+
+    bool spin_flag,shift_flag,shift_last_flag;
 } Chassis_s;
 
 
