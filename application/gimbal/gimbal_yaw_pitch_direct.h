@@ -37,6 +37,7 @@
 #include "math.h"
 #include "macro_typedef.h"
 #include "supervisory_computer_cmd.h"
+#include "communication.h"
 
 
 /**
@@ -83,6 +84,9 @@ typedef struct
     Values_t feedback_pos,feedback_vel;     // 状态值(目前专供给IMU数据)
     Values_t upper_limit;  // 上限值
     Values_t lower_limit;  // 下限值
+    Values_t init_base;    //初始上电的imu
+
+    bool init_base_record; //是否需要记录imu初始位置
 
     PID_t pid;  // PID控制器
 

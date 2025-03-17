@@ -830,7 +830,7 @@ version: v1.0.2
 
 上位机：Supervisory Computer
 
-- `ModifyDebugDataPackage`
+- `//ModifyDebugDataPackage`
   > 修改调试数据包。
 
   | 参数 | 类型 | 备注 |
