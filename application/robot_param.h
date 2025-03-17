@@ -23,7 +23,7 @@
 #include "struct_typedef.h"
 
 //导入具体的机器人参数配置文件
-#include "robot_param_omni_infantry.h"
+#include "robot_param_sentineil.h"
 
 // 选择机器人的各种类型
 #define __RC_TYPE RC_DT7      // 遥控器类型
@@ -61,3 +61,4 @@
 #endif
 
 #endif /* ROBOT_PARAM_H */
+

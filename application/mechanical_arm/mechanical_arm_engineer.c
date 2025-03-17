@@ -93,9 +93,10 @@
 #define INIT_2006_MIN_VEL 1          // 2006电机初始化完成的速度阈值
 
 // 气泵相关
-#define PUMP_ON_PWM 30000
-#define PUMP_OFF_PWM 0
+#define PUMP_ON_PWM 0
+#define PUMP_OFF_PWM 20000
 #define PUMP_PWM_CHANNEL 1
+#define PUMP_PWM_CHENNEL2 2
 
 #define JointMotorInit(index)                                                                    \
     MotorInit(                                                                                   \
@@ -397,7 +398,6 @@ static void JointStateObserve(void)
     last_angle[J5] = angle_fdb[J5];
     MA.fdb.joint[J5].angle =
         (angle_fdb[J5] + M_PI * 2 * MA.fdb.joint[J5].round) / MA.joint_motor[J5].reduction_ratio;
-
 #undef dangle
 }
 
@@ -679,17 +679,26 @@ void MechanicalArmSendCmd(void)
             ArmSendCmdSafe();
         }
     }
-    //ModifyDebugDataPackage(0, MA.limit.max.vj4_pos, "Vj4PosMax");
-    //ModifyDebugDataPackage(1, MA.limit.min.vj4_pos, "Vj4PosMin");
-    //ModifyDebugDataPackage(2, MA.ref.joint[J2].angle, "j2_pos_r");
-    //ModifyDebugDataPackage(3, MA.ref.joint[J3].angle, "j3_pos_r");
-    //ModifyDebugDataPackage(4, (MA.ref.joint[J4].angle - MA.ref.joint[J5].angle) / 2, "Vj4PosRef");
-    //ModifyDebugDataPackage(
-        5, (GetCustomControllerPos(J4) - GetCustomControllerPos(J5)) / 2, "cc_Vj4Pos");
-    //ModifyDebugDataPackage(6, GetCustomControllerPos(J0), "cc_j0");
-    //ModifyDebugDataPackage(7, GetCustomControllerPos(J1), "cc_j1");
-    //ModifyDebugDataPackage(8, GetCustomControllerPos(J2), "cc_j2");
-    //ModifyDebugDataPackage(9, GetCustomControllerPos(J3), "cc_j3");
+    // ModifyDebugDataPackage(0, MA.limit.max.vj4_pos, "Vj4PosMax");
+    // ModifyDebugDataPackage(1, MA.limit.min.vj4_pos, "Vj4PosMin"); 
+    // ModifyDebugDataPackage(2, MA.ref.joint[J2].angle, "j2_pos_r");
+    // ModifyDebugDataPackage(3, MA.ref.joint[J3].angle, "j3_pos_r");
+    // ModifyDebugDataPackage(4, (MA.ref.joint[J4].angle - MA.ref.joint[J5].angle) / 2, "Vj4PosRef");
+    // ModifyDebugDataPackage(
+    //     5, (GetCustomControllerPos(J4) - GetCustomControllerPos(J5)) / 2, "cc_Vj4Pos");
+    // ModifyDebugDataPackage(6, GetCustomControllerPos(J0), "cc_j0");
+    // ModifyDebugDataPackage(7, GetCustomControllerPos(J1), "cc_j1");
+    // ModifyDebugDataPackage(8, GetCustomControllerPos(J2), "cc_j2");
+    // ModifyDebugDataPackage(9, GetCustomControllerPos(J3), "cc_j3");
+    ModifyDebugDataPackage(0, MA.joint_motor[0].fdb.pos, "j0");
+    ModifyDebugDataPackage(1, MA.joint_motor[1].fdb.pos, "j1");
+    ModifyDebugDataPackage(2, MA.joint_motor[2].fdb.pos, "j2");
+    ModifyDebugDataPackage(3, MA.ref.joint[0].angle, "j0_R");
+    ModifyDebugDataPackage(4, MA.ref.joint[1].angle, "j1_R");
+    ModifyDebugDataPackage(5, MA.ref.joint[2].angle, "j2_R");
+    ModifyDebugDataPackage(6, MA.fdb.joint[0].angle,"j0_z");
+    ModifyDebugDataPackage(7, MA.fdb.joint[1].angle,"j1_z");
+    ModifyDebugDataPackage(8, MA.fdb.joint[2].angle,"j2_z");
 }
 
 void ArmSendCmdSafe(void)
@@ -704,6 +713,7 @@ void ArmSendCmdSafe(void)
 
     // 气泵控制
     PwmCmdPump(PUMP_PWM_CHANNEL, PUMP_OFF_PWM);
+    PwmCmdPump(PUMP_PWM_CHENNEL2, PUMP_OFF_PWM);
 }
 
 void ArmSendCmdDebug(void)
@@ -725,9 +735,11 @@ void ArmSendCmdDebug(void)
 
     // 气泵控制
     if (MECHANICAL_ARM.cmd.pump_on) {
-        PwmCmdPump(PUMP_PWM_CHANNEL, PUMP_ON_PWM);
+        PwmCmdPump(PUMP_PWM_CHANNEL, PUMP_OFF_PWM);
+        PwmCmdPump(PUMP_PWM_CHENNEL2, PUMP_ON_PWM);
     } else {
         PwmCmdPump(PUMP_PWM_CHANNEL, PUMP_OFF_PWM);
+        PwmCmdPump(PUMP_PWM_CHENNEL2, PUMP_OFF_PWM);
     }
 }
 
@@ -744,6 +756,7 @@ void ArmSendCmdInit(void)
     // clang-format on
     // 气泵控制
     PwmCmdPump(PUMP_PWM_CHANNEL, PUMP_OFF_PWM);
+    PwmCmdPump(PUMP_PWM_CHENNEL2, PUMP_OFF_PWM);
 }
 
 #endif
