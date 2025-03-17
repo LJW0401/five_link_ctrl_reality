@@ -31,6 +31,7 @@
 #include "usbd_conf.h"
 #include "supervisory_computer_cmd.h"
 #include "gimbal.h"
+#include "IMU.h"
 
 
 #if INCLUDE_uxTaskGetStackHighWaterMark
@@ -482,13 +483,13 @@ static void UsbSendImuData(void)
 
     SEND_DATA_IMU.time_stamp = HAL_GetTick();
 
-    SEND_DATA_IMU.data.yaw = IMU->yaw;
-    SEND_DATA_IMU.data.pitch = IMU->pitch;
-    SEND_DATA_IMU.data.roll = IMU->roll;
+    SEND_DATA_IMU.data.yaw = GetImuAngle(AX_YAW);
+    SEND_DATA_IMU.data.pitch = GetImuAngle(AX_PITCH);
+    SEND_DATA_IMU.data.roll = GetImuAngle(AX_ROLL);
 
-    SEND_DATA_IMU.data.yaw_vel = IMU->yaw_vel;
-    SEND_DATA_IMU.data.pitch_vel = IMU->pitch_vel;
-    SEND_DATA_IMU.data.roll_vel = IMU->roll_vel;
+    SEND_DATA_IMU.data.yaw_vel = GetImuVelocity(AX_YAW);
+    SEND_DATA_IMU.data.pitch_vel = GetImuVelocity(AX_PITCH);
+    SEND_DATA_IMU.data.roll_vel = GetImuVelocity(AX_ROLL);
 
     append_CRC16_check_sum((uint8_t *)&SEND_DATA_IMU, sizeof(SendDataImu_s));
     USB_Transmit((uint8_t *)&SEND_DATA_IMU, sizeof(SendDataImu_s));
