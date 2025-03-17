@@ -9,9 +9,9 @@
 
 #define CHASSIS_MODE_CHANNEL 0  // 选择底盘状态 开关通道号
 
-#define CHASSIS_TYPE CHASSIS_MECANUM_WHEEL         // 选择底盘类型
+#define CHASSIS_TYPE CHASSIS_MECANUM_WHEEL       // 选择底盘类型
 #define GIMBAL_TYPE GIMBAL_YAW_PITCH_DIRECT      // 选择云台类型
-#define SHOOT_TYPE SHOOT_NONE                     // 选择发射机构类型
+#define SHOOT_TYPE SHOOT_NONE                    // 选择发射机构类型
 #define CONTROL_TYPE CHASSIS_AND_GIMBAL          // 选择控制类型
 #define MECHANICAL_ARM_TYPE MECHANICAL_ARM_NONE  //选择机械臂类型
 
@@ -120,7 +120,7 @@
 
 //电机角度中值设置
 #define GIMBAL_DIRECT_PITCH_MID (0.00f)  //云台初始化正对齐的时候使用的pitch轴正中心量
-#define GIMBAL_DIRECT_YAW_MID (-1.78f)      //云台初始化正对齐的时候使用的yaw轴正中心量
+#define GIMBAL_DIRECT_YAW_MID (-1.78f)   //云台初始化正对齐的时候使用的yaw轴正中心量
 //PID parameters ---------------------
 //YAW ANGLE
 #define KP_GIMBAL_YAW_ANGLE (20.0f)
@@ -136,9 +136,9 @@
 #define MAX_OUT_GIMBAL_YAW_VELOCITY (10000.0f)
 
 //PITCH ANGLE
-#define KP_GIMBAL_PITCH_ANGLE (150.0f) //90
-#define KI_GIMBAL_PITCH_ANGLE (0.1f) //0.02
-#define KD_GIMBAL_PITCH_ANGLE (0.0f)//50
+#define KP_GIMBAL_PITCH_ANGLE (150.0f)  //90
+#define KI_GIMBAL_PITCH_ANGLE (0.1f)    //0.02
+#define KD_GIMBAL_PITCH_ANGLE (0.0f)    //50
 #define MAX_IOUT_GIMBAL_PITCH_ANGLE (40.0f)
 #define MAX_OUT_GIMBAL_PITCH_ANGLE (500.0f)
 //VELOCITY:角速度
