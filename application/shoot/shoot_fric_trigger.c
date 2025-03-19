@@ -94,16 +94,24 @@ void ShootSetMode(void)
 
    else if (switch_is_mid(SHOOT.rc->rc.s[SHOOT_MODE_CHANNEL]))
    {
-
-      SHOOT.state = FRIC_READY;
-
-      if (GetScCmdFire())
+      if (switch_is_mid(SHOOT.rc->rc.s[0]))
       {
-        SHOOT.mode = LOAD_BURSTFIRE;
-      }
-      else
-      {
+        SHOOT.state = FRIC_NOT_READY;
         SHOOT.mode = LOAD_STOP;
+      }
+
+      else if (switch_is_up(SHOOT.rc->rc.s[0]))
+      {
+        SHOOT.state = FRIC_READY;
+
+        if (GetScCmdFire())
+        {
+          SHOOT.mode = LOAD_BURSTFIRE;
+        }
+        else
+        {
+          SHOOT.mode = LOAD_STOP;
+        }
       }
     } 
     else if (switch_is_down(SHOOT.rc->rc.s[SHOOT_MODE_CHANNEL]))
@@ -408,25 +416,7 @@ void ShootConsole(void)
  */
 void ShootSendCmd(void) 
 {
-  if (TRIGGER_MOTOR_TYPE == DJI_M2006)
-  {
-    CanCmdDjiMotor(FRIC_MOTOR_R_CAN, STD_ID , SHOOT.fric_motor[1].set.curr,SHOOT.fric_motor[0].set.curr,0, SHOOT.trigger_motor.set.curr);
-  }
-  else if (TRIGGER_MOTOR_TYPE == DM_4310)
-  {
-    if (SHOOT.trigger_motor.fdb.state == DM_STATE_DISABLE) 
-    {
-      DmEnable(&SHOOT.trigger_motor);
-    }
-    DmMitCtrlVelocity(&SHOOT.trigger_motor, TRIGGER_SPEED_MIT_KD);
-  
-    CanCmdDjiMotor(FRIC_MOTOR_R_CAN, STD_ID ,0 ,SHOOT.fric_motor[1].set.curr,SHOOT.fric_motor[0].set.curr, 0);
-  }
-
-  //ModifyDebugDataPackage(1,SHOOT.heat,"heat"); 
-  //ModifyDebugDataPackage(1,SHOOT.heat_limit,"limit"); 
-  //ModifyDebugDataPackage(1,SHOOT.fric_motor[0].set.vel,"set"); 
-  //ModifyDebugDataPackage(2,SHOOT.fric_motor[0].fdb.vel,"fb"); 
+    CanCmdDjiMotor(FRIC_MOTOR_R_CAN, STD_ID , SHOOT.fric_motor[1].set.curr,SHOOT.fric_motor[0].set.curr,SHOOT.trigger_motor.set.curr,0 );
 }
 
 #endif  // SHOOT_TYPE == SHOOT_FRIC

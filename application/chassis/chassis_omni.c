@@ -89,7 +89,20 @@ void ChassisSetMode(void)
     }
     else if (switch_is_mid(chassis.rc->rc.s[0]))
     {
+        if (switch_is_up(chassis.rc->rc.s[1]))
+        {
+            chassis.mode = CHASSIS_SPIN;
+        }
+        
+        else if (switch_is_mid(chassis.rc->rc.s[1]))
+        {
             chassis.mode = CHASSIS_FOLLOW;
+        }
+
+        else if (switch_is_down(chassis.rc->rc.s[1]))
+        {
+            chassis.mode = CHASSIS_FOLLOW;
+        }
     }
     else if (switch_is_up(chassis.rc->rc.s[0]))
     {
@@ -224,7 +237,7 @@ void ChassisReference(void)
         chassis.reference.vx =  chassis.reference_rc.vx * cosf(chassis.yaw_delta) - chassis.reference_rc.vy * sinf(chassis.yaw_delta);
         chassis.reference.vy =  chassis.reference_rc.vx * sinf(chassis.yaw_delta) + chassis.reference_rc.vy * cos(chassis.yaw_delta);
 
-        chassis.reference.wz=4.0f;
+        chassis.reference.wz=10.0f;
 		}
 		
     else if (chassis.mode == CHASSIS_NAVI)

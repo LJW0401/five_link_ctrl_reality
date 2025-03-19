@@ -35,9 +35,9 @@
     if(initial_power[i]<0)continue;
     initial_total_power+=initial_power[i];
    }
-   if(initial_total_power>robot_status.chassis_power_limit)
+   if(initial_total_power>(robot_status.chassis_power_limit-5))
    {
-     float scale=robot_status.chassis_power_limit/initial_total_power;
+     float scale=(robot_status.chassis_power_limit-5)/initial_total_power;
       for(int i=0;i<4;i++)
      {
         scale_power[i]=scale*initial_power[i];
