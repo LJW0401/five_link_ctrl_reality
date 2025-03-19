@@ -27,10 +27,8 @@
 #define Gimbal_Data_ID ((uint8_t)0x03)
 
 #define Uart1_Test_Duration ((uint8_t)100)
-#define Rc_Data_Duration ((uint8_t)100)
 
 #define Uart1_Test_Gap ((uint32_t)100)
-#define Rc_Data_Gap ((uint32_t)100)
 
 #define UART2_FRAME_MAX_SIZE              ((uint8_t) 250)
 
@@ -56,7 +54,6 @@ typedef enum
 typedef struct 
 {
   uint32_t Uart1_Test;
-  uint32_t Rc_Data;
 }LastSendTime_t;
 
 typedef  struct
@@ -92,17 +89,4 @@ typedef struct
   uint16_t crc16;       //crc16校验
 } __attribute__((packed)) Uart1_Test_s;
 
-typedef struct
-{
-  FrameHeader_t frame_header;  
-
-  uint32_t time_stamp;  //数据段时间戳
-  
-  struct
-  {
-    RC_ctrl_t rc_ctrl;
-  } __attribute__((packed)) data;
-
-  uint16_t crc16;       //crc16校验
-} __attribute__((packed)) Rc_Data_s;
 #endif
