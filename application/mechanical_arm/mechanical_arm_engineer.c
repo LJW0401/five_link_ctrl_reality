@@ -639,9 +639,9 @@ void MechanicalArmConsole(void)
 
             // 气泵
             if (switch_is_up(GetDt7RcSw(PUMP_CHANNEL))) {
-                MA.cmd.pump_on = 1;
+                MA.cmd.pump_on = 2;
             } else if(switch_is_mid(GetDt7RcSw(PUMP_CHANNEL))){
-                MA.cmd.pump_on = -1;
+                MA.cmd.pump_on = 1;
             } else{
                 MA.cmd.pump_on = 0;
             }
@@ -749,11 +749,11 @@ void ArmSendCmdDebug(void)
     // clang-format on
 
     // 气泵控制
-    if (MECHANICAL_ARM.cmd.pump_on == 1) {
+    if (MECHANICAL_ARM.cmd.pump_on == 2) {
         PwmCmdPump(PUMP_PWM_CHANNEL2, PUMP_ON_PWM);
         PwmCmdPump(PUMP_PWM_CHANNEL3,PUMP_OFF_PWM);
         PwmCmdPump(PUMP_EN_CHANNEL,0);
-    } else if(MECHANICAL_ARM.cmd.pump_on == -1)
+    } else if(MECHANICAL_ARM.cmd.pump_on == 1)
     {
         PwmCmdPump(PUMP_PWM_CHANNEL2, PUMP_OFF_PWM);
         PwmCmdPump(PUMP_PWM_CHANNEL3,PUMP_ON_PWM);
