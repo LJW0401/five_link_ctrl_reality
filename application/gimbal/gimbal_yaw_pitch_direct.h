@@ -37,6 +37,7 @@
 #include "math.h"
 #include "macro_typedef.h"
 #include "supervisory_computer_cmd.h"
+#include "signal_generator.h"
 
 
 /**
@@ -49,6 +50,7 @@ typedef enum {
     GIMBAL_DBUS_ERR,    //遥控器断联相关处理任务
     GIMBAL_GAP,         //跳出矫正进入IMU/AUTO_AIM模式之前的存储数据模式
     GIMBAL_AUTO_AIM,    //自瞄模式
+    GIMBAL_TEST,
 } GimbalMode_e;
 
 

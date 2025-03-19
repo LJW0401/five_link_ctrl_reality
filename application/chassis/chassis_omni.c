@@ -26,6 +26,7 @@
 #include "gimbal.h"
 #include "math.h"
 #include "usb_debug.h"
+#include "chassis_power_control.h"
 
 Chassis_s chassis;
 PID_t chassis_pid;
@@ -263,6 +264,7 @@ void ChassisConsole(void)
     {
         chassis.wheel[i].set.curr = PID_calc(&chassis_pid.wheel_velocity[i], chassis.feedback[i], chassis.set[i]);
     }
+    Power_control(chassis.wheel);
 }
 
 /*-------------------- Cmd --------------------*/
@@ -276,9 +278,6 @@ void ChassisConsole(void)
 void ChassisSendCmd(void)
 {
     CanCmdDjiMotor(CHASSIS_CAN,CHASSIS_STDID,chassis.wheel[0].set.curr,chassis.wheel[1].set.curr,chassis.wheel[2].set.curr,chassis.wheel[3].set.curr);
-    ModifyDebugDataPackage(0,GetScCmdChassisSpeed(AX_X),"x");
-    ModifyDebugDataPackage(1,GetScCmdChassisSpeed(AX_Y),"y");
-    ModifyDebugDataPackage(2,GetScCmdChassisVelocity(AX_Z),"z");
 }
 
 #endif
