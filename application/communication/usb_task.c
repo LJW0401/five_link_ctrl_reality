@@ -854,4 +854,14 @@ inline bool GetScCmdFricOn(void)
 {
     return ROBOT_CMD_DATA.shoot.fric_on;
 }
+
+/**
+ * @brief 获取上位机状态：发现敌方装甲板
+ * @param void
+ * @return bool 是否发现
+ */
+inline bool GetSCcmdtracking(void)
+{
+    return ROBOT_CMD_DATA.tracking.tracking;
+}
 /*------------------------------ End of File ------------------------------*/

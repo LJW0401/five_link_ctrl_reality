@@ -171,6 +171,10 @@ void GimbalInit(void)
    gimbal_direct.init_base.pitch = 0.0f;
    gimbal_direct.init_base.yaw   = 0.0f;
    gimbal_direct.init_base_record = false;
+
+   //step8 自瞄行为状态记录初始化
+   gimbal_direct.aim_mode = SEARCHING;
+   gimbal_direct.last_aim_mode = TRACKING;
 }
 /*-------------------- Set mode --------------------*/
 
@@ -273,6 +277,28 @@ void GimbalObserver(void)
       gimbal_direct.init_base_record= true ;
     }
   }
+
+  if (gimbal_direct.mode == GIMBAL_AUTO_AIM)
+  {
+    if (gimbal_direct.last_mode != GIMBAL_AUTO_AIM)
+    {
+      gimbal_direct.aim_mode = SEARCHING;
+      gimbal_direct.last_aim_mode = TRACKING;
+    }
+
+    else 
+    {
+      gimbal_direct.last_aim_mode = gimbal_direct.aim_mode;
+      if (GetSCcmdtracking() == true)
+      {
+        gimbal_direct.aim_mode = TRACKING;
+      }
+      else
+      {
+        gimbal_direct.aim_mode = SEARCHING;
+      }
+    }
+  }
 }
 
 /*-------------------- Reference --------------------*/
@@ -319,8 +345,25 @@ void GimbalReference(void)
 
   else if (gimbal_direct.mode == GIMBAL_AUTO_AIM)
   {
-    gimbal_direct.reference.pitch = fp32_constrain(GetScCmdGimbalAngle(AX_PITCH), GIMBAL_LOWER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu  , GIMBAL_UPPER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu );
-    gimbal_direct.reference.yaw   = loop_fp32_constrain(GetScCmdGimbalAngle(AX_YAW), -M_PI , M_PI );
+      if (gimbal_direct.aim_mode == SEARCHING)
+      {
+        if (gimbal_direct.last_aim_mode != SEARCHING)
+        {
+          gimbal_direct.reference.pitch = 0.0f;
+          gimbal_direct.reference.yaw   = gimbal_direct.reference.yaw;
+        }
+
+        else
+        {
+          gimbal_direct.reference.pitch = 0.0f;
+          gimbal_direct.reference.yaw   = loop_fp32_constrain(gimbal_direct.reference.yaw + SEARCHING_RATE,-M_PI,M_PI);
+        }
+      }
+      else if (gimbal_direct.aim_mode == TRACKING)
+      {
+        gimbal_direct.reference.pitch = fp32_constrain(GetScCmdGimbalAngle(AX_PITCH), GIMBAL_LOWER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu  , GIMBAL_UPPER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu );
+        gimbal_direct.reference.yaw   = loop_fp32_constrain(GetScCmdGimbalAngle(AX_YAW), -M_PI , M_PI );
+      }
   }
 
   else if (gimbal_direct.mode == GIMBAL_TEST)
@@ -357,8 +400,6 @@ void GimbalConsole(void)
   else if (gimbal_direct.mode == GIMBAL_TEST)
   {
     gimbal_direct.pitch.set.vel=PID_calc(&gimbal_direct_pid.pitch_angle,gimbal_direct.feedback_pos.pitch,gimbal_direct.reference.pitch);
-
-    //gimbal_direct.pitch.set.vel = GenerateSinWave(2,0,1);
     gimbal_direct.pitch.set.curr=gimbal_direct.pitch.direction * PID_calc(&gimbal_direct_pid.pitch_velocity,gimbal_direct.feedback_vel.pitch,gimbal_direct.pitch.set.vel);
 
     fp32 delta_yaw=loop_fp32_constrain(gimbal_direct.reference.yaw-gimbal_direct.feedback_pos.yaw,-M_PI,M_PI);

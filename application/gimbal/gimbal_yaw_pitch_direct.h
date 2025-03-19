@@ -53,6 +53,10 @@ typedef enum {
     GIMBAL_TEST,
 } GimbalMode_e;
 
+typedef enum{
+    SEARCHING,          //搜索模式
+    TRACKING,           //跟踪模式
+}GimbalAutoAimMode_e;
 
 /**
  * @brief 状态、期望和限制值
@@ -77,7 +81,7 @@ typedef struct
 {
     const RC_ctrl_t * rc;  // 遥控器指针
     GimbalMode_e mode,last_mode,mode_before_rc_err;  // 模式
-
+    GimbalAutoAimMode_e aim_mode,last_aim_mode;  //自瞄模式以及其记录
     /*-------------------- Motors --------------------*/
     Motor_s yaw,pitch;
     /*-------------------- Values --------------------*/

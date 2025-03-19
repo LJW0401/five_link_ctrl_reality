@@ -155,6 +155,9 @@
 #define MAX_IOUT_GIMBAL_PITCH_VELOCITY (22000.0f)
 #define MAX_OUT_GIMBAL_PITCH_VELOCITY (30000.0f)
 
+//AUTO_AIM Searching parameters ---------------------
+#define SEARCHING_RATE (0.002f)
+
 /*-------------------- Shoot --------------------*/
 //physical parameters ---------------------
 #define FRIC_RADIUS 0.03f              // (m)摩擦轮半径
