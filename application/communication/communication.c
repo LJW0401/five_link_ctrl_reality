@@ -26,6 +26,7 @@
 #include "robot_param.h"
 #include "usb_debug.h"
 #include "signal_generator.h"
+#include "detect_task.h"
 
 #define USART_RX_BUF_LENGHT 512
 #define USART1_FIFO_BUF_LENGTH 1024
@@ -101,7 +102,15 @@ void Uart1_TestDataRenew()
 
 void Rc_DataDataRenew()
 {
-    Rc_Data.data.rc_ctrl.rc.ch[0] = GenerateSinWave(10,0,4);
+    if (toe_is_error(DBUS_TOE)){
+      memset(&Rc_Data.data.rc_ctrl,0,sizeof(RC_ctrl_t));
+      Rc_Data.data.rc_ctrl.rc.s[0] = RC_SW_DOWN;
+      Rc_Data.data.rc_ctrl.rc.s[1] = RC_SW_UP;
+      Rc_Data.data.rc_toe_error = true;
+    }else{
+      Rc_Data.data.rc_ctrl.rc.ch[0] = GenerateSinWave(10,0,4);
+      Rc_Data.data.rc_toe_error = false;
+    }
     append_CRC16_check_sum((uint8_t *)(&Rc_Data), sizeof(Rc_Data_s));
 }
 
@@ -313,4 +322,9 @@ void DataUnpack(void)
 uint32_t GetUART1TestValue(void)
 {
     return Uart1_Test.data.test_data;
+}
+
+bool GetUartRcToeError(void)
+{
+    return Rc_Data.data.rc_toe_error;
 }
