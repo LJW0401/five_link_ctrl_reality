@@ -201,6 +201,8 @@ void Uart2DataSolve(uint8_t * frame){
         } break;
     case Rc_Data_ID:{
         memcpy(&Rc_Data, frame, sizeof(Rc_Data_s));
+        const RC_ctrl_t * rc_ctrl = get_remote_control_point();
+        memcpy((RC_ctrl_t *)rc_ctrl, &Rc_Data.data.rc_ctrl, sizeof(RC_ctrl_t));
         
     
     } break;
