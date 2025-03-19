@@ -95,8 +95,9 @@
 // 气泵相关
 #define PUMP_ON_PWM 20000
 #define PUMP_OFF_PWM 0
-#define PUMP_PWM_CHANNEL 1
-#define PUMP_PWM_CHENNEL2 2
+#define PUMP_PWM_CHANNEL2 2
+#define PUMP_PWM_CHANNEL3 3
+#define PUMP_EN_CHANNEL 4
 
 #define JointMotorInit(index)                                                                    \
     MotorInit(                                                                                   \
@@ -467,70 +468,70 @@ void MechanicalArmReference(void)
             MA.ref.joint[J5].angle += delta;
         } break;
         case MECHANICAL_ARM_FOLLOW: {
-            if (MA.custom_controller_ready) {
-                float pos[6] = {0};
-                pos[J0] = GetCustomControllerPos(J0);
-                pos[J1] = GetCustomControllerPos(J1);
-                pos[J2] = GetCustomControllerPos(J2);
-                pos[J3] = GetCustomControllerPos(J3);
-                pos[J4] = GetCustomControllerPos(J4);
-                pos[J5] = GetCustomControllerPos(J5);
+            // if (MA.custom_controller_ready) {
+            //     float pos[6] = {0};
+            //     pos[J0] = GetCustomControllerPos(J0);
+            //     pos[J1] = GetCustomControllerPos(J1);
+            //     pos[J2] = GetCustomControllerPos(J2);
+            //     pos[J3] = GetCustomControllerPos(J3);
+            //     pos[J4] = GetCustomControllerPos(J4);
+            //     pos[J5] = GetCustomControllerPos(J5);
 
-                if (fabsf(pos[J0] - MA.ref.joint[J0].angle) > 1.5f ||
-                    fabsf(pos[J1] - MA.ref.joint[J1].angle) > 1.5f ||
-                    fabsf(pos[J2] - MA.ref.joint[J2].angle) > 1.5f) {  // 位置突变
-                    MECHANICAL_ARM.error_code |= CUSTOM_CONTROLLER_DATA_ERROR_OFFSET;
-                    return;
-                }
+            //     if (fabsf(pos[J0] - MA.ref.joint[J0].angle) > 1.5f ||
+            //         fabsf(pos[J1] - MA.ref.joint[J1].angle) > 1.5f ||
+            //         fabsf(pos[J2] - MA.ref.joint[J2].angle) > 1.5f) {  // 位置突变
+            //         MECHANICAL_ARM.error_code |= CUSTOM_CONTROLLER_DATA_ERROR_OFFSET;
+            //         return;
+            //     }
 
-                MA.ref.joint[J0].angle =
-                    fp32_constrain(pos[J0], MA.limit.min.pos[J0], MA.limit.max.pos[J0]);
-                MA.ref.joint[J1].angle =
-                    fp32_constrain(pos[J1], MA.limit.min.pos[J1], MA.limit.max.pos[J1]);
-                MA.ref.joint[J2].angle =
-                    fp32_constrain(pos[J2], MA.limit.min.pos[J2], MA.limit.max.pos[J2]);
-                MA.ref.joint[J3].angle =
-                    fp32_constrain(pos[J3], MA.limit.min.pos[J3], MA.limit.max.pos[J3]);
+            //     MA.ref.joint[J0].angle =
+            //         fp32_constrain(pos[J0], MA.limit.min.pos[J0], MA.limit.max.pos[J0]);
+            //     MA.ref.joint[J1].angle =
+            //         fp32_constrain(pos[J1], MA.limit.min.pos[J1], MA.limit.max.pos[J1]);
+            //     MA.ref.joint[J2].angle =
+            //         fp32_constrain(pos[J2], MA.limit.min.pos[J2], MA.limit.max.pos[J2]);
+            //     MA.ref.joint[J3].angle =
+            //         fp32_constrain(pos[J3], MA.limit.min.pos[J3], MA.limit.max.pos[J3]);
 
-                // 自定义控制器传过来的虚拟J4 J5位置以0为中心
-                float vj4_pos = (pos[J4] - pos[J5]) / 2;
-                float vj5_pos = (pos[J4] + pos[J5]) / 2;
+            //     // 自定义控制器传过来的虚拟J4 J5位置以0为中心
+            //     float vj4_pos = (pos[J4] - pos[J5]) / 2;
+            //     float vj5_pos = (pos[J4] + pos[J5]) / 2;
 
-                // 机械臂J4关节以((MA.limit.max.vj4_pos + MA.limit.min.vj4_pos) / 2)为中心
-                // 机械臂J5关节以((MA.limit.max.vj5_pos + MA.limit.min.vj5_pos) / 2)为中心
-                float vj4_pos_mid = (MA.limit.max.vj4_pos + MA.limit.min.vj4_pos) / 2;
-                float vj5_pos_mid = (MA.limit.max.vj5_pos + MA.limit.min.vj5_pos) / 2;
+            //     // 机械臂J4关节以((MA.limit.max.vj4_pos + MA.limit.min.vj4_pos) / 2)为中心
+            //     // 机械臂J5关节以((MA.limit.max.vj5_pos + MA.limit.min.vj5_pos) / 2)为中心
+            //     float vj4_pos_mid = (MA.limit.max.vj4_pos + MA.limit.min.vj4_pos) / 2;
+            //     float vj5_pos_mid = (MA.limit.max.vj5_pos + MA.limit.min.vj5_pos) / 2;
 
-                vj4_pos += vj4_pos_mid;
-                vj5_pos += vj5_pos_mid;
+            //     vj4_pos += vj4_pos_mid;
+            //     vj5_pos += vj5_pos_mid;
 
-                vj4_pos = fp32_constrain(vj4_pos, MA.limit.min.vj4_pos, MA.limit.max.vj4_pos);
-                // vj5_pos = fp32_constrain(vj5_pos, MA.limit.min.vj5_pos, MA.limit.max.vj5_pos);
+            //     vj4_pos = fp32_constrain(vj4_pos, MA.limit.min.vj4_pos, MA.limit.max.vj4_pos);
+            //     // vj5_pos = fp32_constrain(vj5_pos, MA.limit.min.vj5_pos, MA.limit.max.vj5_pos);
 
-                MA.ref.joint[J4].angle = vj4_pos + vj5_pos;
-                MA.ref.joint[J5].angle = -(vj4_pos - vj5_pos);
-            }
+            //     MA.ref.joint[J4].angle = vj4_pos + vj5_pos;
+            //     MA.ref.joint[J5].angle = -(vj4_pos - vj5_pos);
+            // }
 
             // j4
-            // MA.ref.joint[J4].angle += GetDt7RcCh(DT7_CH_RV) * 0.002f;
-            // // MA.ref.joint[J4].angle = GenerateSinWave(1, 0, 3);                                                                                 
-            // // MA.ref.joint[J4].angle =
-            // // fp32_constrain(MA.ref.joint[J4].angle, MA.limit.min.pos[J4], MA.limit.max.pos[J4]);
+            MA.ref.joint[J4].angle += GetDt7RcCh(DT7_CH_RV) * 0.002f;
+            // MA.ref.joint[J4].angle = GenerateSinWave(1, 0, 3);                                                                                 
+            // MA.ref.joint[J4].angle =
+            // fp32_constrain(MA.ref.joint[J4].angle, MA.limit.min.pos[J4], MA.limit.max.pos[J4]);
 
-            //  // j5
-            //  MA.ref.joint[J5].angle += GetDt7RcCh(DT7_CH_LV) * 0.002f;
-            //  // MA.ref.joint[J5].angle = GenerateSinWave(1, 0, 3);
-            //  // MA.ref.joint[J5].angle =
-            //  // fp32_constrain(MA.ref.joint[J5].angle, MA.limit.min.pos[J5], MA.limit.max.pos[J5]);
-            // float virtual_j4_pos = (MA.ref.joint[J4].angle - MA.ref.joint[J5].angle) / 2;
-            // float delta = 0;
-            // if (virtual_j4_pos > MA.limit.max.vj4_pos) {
-            //     delta = virtual_j4_pos - MA.limit.max.vj4_pos;
-            // } else if (virtual_j4_pos < MA.limit.min.vj4_pos) {
-            //     delta = virtual_j4_pos - MA.limit.min.vj4_pos;
-            // }
-            // MA.ref.joint[J4].angle -= delta;
-            // MA.ref.joint[J5].angle += delta;
+             // j5
+             MA.ref.joint[J5].angle += GetDt7RcCh(DT7_CH_LV) * 0.002f;
+             // MA.ref.joint[J5].angle = GenerateSinWave(1, 0, 3);
+             // MA.ref.joint[J5].angle =
+             // fp32_constrain(MA.ref.joint[J5].angle, MA.limit.min.pos[J5], MA.limit.max.pos[J5]);
+            float virtual_j4_pos = (MA.ref.joint[J4].angle - MA.ref.joint[J5].angle) / 2;
+            float delta = 0;
+            if (virtual_j4_pos > MA.limit.max.vj4_pos) {
+                delta = virtual_j4_pos - MA.limit.max.vj4_pos;
+            } else if (virtual_j4_pos < MA.limit.min.vj4_pos) {
+                delta = virtual_j4_pos - MA.limit.min.vj4_pos;
+            }
+            MA.ref.joint[J4].angle -= delta;
+            MA.ref.joint[J5].angle += delta;
 
 
         } break;
@@ -638,9 +639,11 @@ void MechanicalArmConsole(void)
 
             // 气泵
             if (switch_is_up(GetDt7RcSw(PUMP_CHANNEL))) {
-                MA.cmd.pump_on = true;
-            } else {
-                MA.cmd.pump_on = false;
+                MA.cmd.pump_on = 2;
+            } else if(switch_is_mid(GetDt7RcSw(PUMP_CHANNEL))){
+                MA.cmd.pump_on = 1;
+            } else{
+                MA.cmd.pump_on = 0;
             }
         } break;
         case MECHANICAL_ARM_INIT: {
@@ -723,8 +726,9 @@ void ArmSendCmdSafe(void)
     CanCmdDjiMotor(ARM_DJI_CAN, 0x1FF, 0, 0, 0, 0);  // J3 J4 J5
 
     // 气泵控制
-    PwmCmdPump(PUMP_PWM_CHANNEL, PUMP_OFF_PWM);
-    PwmCmdPump(PUMP_PWM_CHENNEL2, PUMP_OFF_PWM);
+    PwmCmdPump(PUMP_PWM_CHANNEL2, PUMP_OFF_PWM);
+    PwmCmdPump(PUMP_PWM_CHANNEL3, PUMP_OFF_PWM);
+    PwmCmdPump(PUMP_EN_CHANNEL,0);
 }
 
 void ArmSendCmdDebug(void)
@@ -745,12 +749,20 @@ void ArmSendCmdDebug(void)
     // clang-format on
 
     // 气泵控制
-    if (MECHANICAL_ARM.cmd.pump_on) {
-        PwmCmdPump(PUMP_PWM_CHANNEL, PUMP_ON_PWM);
-        PwmCmdPump(PUMP_PWM_CHENNEL2, PUMP_ON_PWM);
-    } else {
-        PwmCmdPump(PUMP_PWM_CHANNEL, PUMP_OFF_PWM);
-        PwmCmdPump(PUMP_PWM_CHENNEL2, PUMP_OFF_PWM);
+    if (MECHANICAL_ARM.cmd.pump_on == 2) {
+        PwmCmdPump(PUMP_PWM_CHANNEL2, PUMP_ON_PWM);
+        PwmCmdPump(PUMP_PWM_CHANNEL3,PUMP_OFF_PWM);
+        PwmCmdPump(PUMP_EN_CHANNEL,0);
+    } else if(MECHANICAL_ARM.cmd.pump_on == 1)
+    {
+        PwmCmdPump(PUMP_PWM_CHANNEL2, PUMP_OFF_PWM);
+        PwmCmdPump(PUMP_PWM_CHANNEL3,PUMP_ON_PWM);
+        PwmCmdPump(PUMP_EN_CHANNEL,0);
+    }else
+    {
+        PwmCmdPump(PUMP_PWM_CHANNEL2, PUMP_OFF_PWM);
+        PwmCmdPump(PUMP_PWM_CHANNEL3, PUMP_OFF_PWM);
+        PwmCmdPump(PUMP_EN_CHANNEL,0);
     }
 }
 
@@ -766,8 +778,9 @@ void ArmSendCmdInit(void)
         MA.joint_motor[J5].set.value);  // J3 JN J4 J5
     // clang-format on
     // 气泵控制
-    PwmCmdPump(PUMP_PWM_CHANNEL, PUMP_OFF_PWM);
-    PwmCmdPump(PUMP_PWM_CHENNEL2, PUMP_OFF_PWM);
+    PwmCmdPump(PUMP_PWM_CHANNEL2, PUMP_OFF_PWM);
+    PwmCmdPump(PUMP_PWM_CHANNEL3, PUMP_OFF_PWM);
+    PwmCmdPump(PUMP_EN_CHANNEL,0);
 }
 
 #endif
