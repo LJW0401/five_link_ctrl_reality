@@ -3,6 +3,7 @@
 
 #include "struct_typedef.h"
 #include "uart2_typedef.h"
+#include "remote_control.h"
 
 #define FRAME_HEADER_SOF 0xA5
 #define FRAME_HEADER_LEN 5  // （字节）数据帧头部长度
