@@ -25,6 +25,7 @@
 #include "fifo.h"
 #include "robot_param.h"
 #include "usb_debug.h"
+#include "signal_generator.h"
 
 #define USART_RX_BUF_LENGHT 512
 #define USART1_FIFO_BUF_LENGTH 1024
@@ -34,6 +35,7 @@ LastSendTime_t LastSendTime;
 // send data
 BoardCommunicateData_s BOARD_TX_DATA;
 Uart1_Test_s Uart1_Test;
+Rc_Data_s Rc_Data;
 // receive data
 uint8_t BOARD_RX_DATA[DATA_NUM][DATA_LEN + 1];  //第一位存放数据长度信息
 
@@ -94,10 +96,14 @@ UnpackData_t usart1_unpack_obj;
 void Uart1_TestDataRenew()
 {
     Uart1_Test.data.test_data =HAL_GetTick();
-    append_CRC16_check_sum((uint8_t *)(&Uart1_Test), sizeof(Uart1_Test));
+    append_CRC16_check_sum((uint8_t *)(&Uart1_Test), sizeof(Uart1_Test_s));
 }
 
-
+void Rc_DataDataRenew()
+{
+    Rc_Data.data.rc_ctrl.rc.ch[0] = GenerateSinWave(10,0,4);
+    append_CRC16_check_sum((uint8_t *)(&Rc_Data), sizeof(Rc_Data_s));
+}
 
 
 
@@ -108,6 +114,7 @@ void Usart1Init(void)
     usart1_init(usart1_buf[0], usart1_buf[1], USART_RX_BUF_LENGHT);
 
     UART1DataInit(Uart1_Test);
+    UART1DataInit(Rc_Data);
 }
 
 void UART1_task(void)
@@ -115,6 +122,7 @@ void UART1_task(void)
     if (__SELF_BOARD_ID == 1)
     {
         Uart1CheckDurationAndSend(Uart1_Test);
+        Uart1CheckDurationAndSend(Rc_Data);
     }
     
     else if (__SELF_BOARD_ID == 2)
@@ -188,10 +196,14 @@ void Uart2DataSolve(uint8_t * frame){
 
     switch (frame_header.id)
     {
-    case Uart1_Test_ID:
+    case Uart1_Test_ID:{
         memcpy(&Uart1_Test, frame, sizeof(Uart1_Test_s));
-        break;
+        } break;
+    case Rc_Data_ID:{
+        memcpy(&Rc_Data, frame, sizeof(Rc_Data_s));
+        
     
+    } break;
     default:
         break;
     }
