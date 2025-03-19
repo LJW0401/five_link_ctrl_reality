@@ -128,16 +128,15 @@ void Usart1Init(void)
 
 void UART1_task(void)
 {
-    if (__SELF_BOARD_ID == 1)
+    if (__SELF_BOARD_ID == C_BOARD_BALANCE_CHASSIS)
     {
-        Uart1CheckDurationAndSend(Uart1_Test);
         Uart1CheckDurationAndSend(Rc_Data);
     }
-    
-    else if (__SELF_BOARD_ID == 2)
+    else if (__SELF_BOARD_ID == C_BOARD_BALANCE_GIMBAL)
     {
-        DataUnpack();
+        Uart1CheckDurationAndSend(Rc_Data);
     }
+    DataUnpack();
 }
 
 // 4pin Uart口中断处理函数
