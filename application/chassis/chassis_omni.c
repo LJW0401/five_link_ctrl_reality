@@ -26,6 +26,7 @@
 #include "gimbal.h"
 #include "math.h"
 #include "usb_debug.h"
+#include "chassis_power_control.h"
 
 Chassis_s chassis;
 PID_t chassis_pid;
@@ -88,7 +89,20 @@ void ChassisSetMode(void)
     }
     else if (switch_is_mid(chassis.rc->rc.s[0]))
     {
+        if (switch_is_up(chassis.rc->rc.s[1]))
+        {
+            chassis.mode = CHASSIS_SPIN;
+        }
+        
+        else if (switch_is_mid(chassis.rc->rc.s[1]))
+        {
             chassis.mode = CHASSIS_FOLLOW;
+        }
+
+        else if (switch_is_down(chassis.rc->rc.s[1]))
+        {
+            chassis.mode = CHASSIS_FOLLOW;
+        }
     }
     else if (switch_is_up(chassis.rc->rc.s[0]))
     {
@@ -223,7 +237,7 @@ void ChassisReference(void)
         chassis.reference.vx =  chassis.reference_rc.vx * cosf(chassis.yaw_delta) - chassis.reference_rc.vy * sinf(chassis.yaw_delta);
         chassis.reference.vy =  chassis.reference_rc.vx * sinf(chassis.yaw_delta) + chassis.reference_rc.vy * cos(chassis.yaw_delta);
 
-        chassis.reference.wz=4.0f;
+        chassis.reference.wz=10.0f;
 		}
 		
     else if (chassis.mode == CHASSIS_NAVI)
@@ -263,6 +277,7 @@ void ChassisConsole(void)
     {
         chassis.wheel[i].set.curr = PID_calc(&chassis_pid.wheel_velocity[i], chassis.feedback[i], chassis.set[i]);
     }
+    Power_control(chassis.wheel);
 }
 
 /*-------------------- Cmd --------------------*/
@@ -276,9 +291,6 @@ void ChassisConsole(void)
 void ChassisSendCmd(void)
 {
     CanCmdDjiMotor(CHASSIS_CAN,CHASSIS_STDID,chassis.wheel[0].set.curr,chassis.wheel[1].set.curr,chassis.wheel[2].set.curr,chassis.wheel[3].set.curr);
-    ModifyDebugDataPackage(0,GetScCmdChassisSpeed(AX_X),"x");
-    ModifyDebugDataPackage(1,GetScCmdChassisSpeed(AX_Y),"y");
-    ModifyDebugDataPackage(2,GetScCmdChassisVelocity(AX_Z),"z");
 }
 
 #endif
