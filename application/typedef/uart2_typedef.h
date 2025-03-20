@@ -32,7 +32,7 @@
 #define Rc_Data_Duration    ((uint32_t)100)
 
 #define Uart1_Test_Gap ((uint32_t)100)
-#define Rc_Data_Gap    ((uint32_t)100)
+#define Rc_Data_Gap    ((uint32_t)15)
 
 #define UART2_FRAME_MAX_SIZE              ((uint8_t) 250)
 

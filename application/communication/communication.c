@@ -108,7 +108,8 @@ void Rc_DataDataRenew()
       Rc_Data.data.rc_ctrl.rc.s[1] = RC_SW_UP;
       Rc_Data.data.rc_toe_error = true;
     }else{
-      Rc_Data.data.rc_ctrl.rc.ch[0] = GenerateSinWave(10,0,4);
+      // Rc_Data.data.rc_ctrl.rc.ch[0] = GenerateSinWave(10,0,4);
+      memcpy(&Rc_Data.data.rc_ctrl, get_remote_control_point(),sizeof(RC_ctrl_t));
       Rc_Data.data.rc_toe_error = false;
     }
     append_CRC16_check_sum((uint8_t *)(&Rc_Data), sizeof(Rc_Data_s));
@@ -134,7 +135,7 @@ void UART1_task(void)
     }
     else if (__SELF_BOARD_ID == C_BOARD_BALANCE_GIMBAL)
     {
-        Uart1CheckDurationAndSend(Rc_Data);
+        Uart1CheckDurationAndSend(Uart1_Test);
     }
     DataUnpack();
 }
