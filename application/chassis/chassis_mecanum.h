@@ -5,8 +5,7 @@
   * @note       包括初始化，目标量更新、状态量更新、控制量计算与直接控制量的发送
   * @history
   *  Version    Date            Author          Modification
-  *  V1.0.0     Apr-1-2024      Penguin         1. done
-  *  V1.0.1     Apr-16-2024     Penguin         1. 完成基本框架
+  *  V1.0.0   2025.1.19       Harry_Wong        1.重新构建麦轮底盘代码，完成基础控制
   *
   @verbatim
   ==============================================================================
@@ -31,24 +30,27 @@
 #include "CAN_cmd_dji.h"
 
 
-/*-------------------- Structural definition --------------------*/
 
+/*-------------------- Structural definition --------------------*/
 typedef enum {
-    CHASSIS_OFF,         // 底盘关闭
-    CHASSIS_ZERO_FORCE,  // 底盘无力，所有控制量置0
-    CHASSIS_FOLLOW_GIMBAL_YAW,  // 底盘跟随云台（运动方向为云台坐标系方向，需进行坐标转换）
-    CHASSIS_STOP,  // 底盘停止运动(速度为0)
-    CHASSIS_FREE,  // 底盘不跟随云台
-    CHASSIS_SPIN,  // 底盘小陀螺模式
-    CHASSIS_AUTO,  // 底盘自动模式
-    CHASSIS_OPEN   // 遥控器的值乘以比例成电流值开环控制
+    CHASSIS_LOCK,      //底盘锁定，所有轮子速度设定为0
+    CHASSIS_SINGLE,    //只有底盘的模式
+    CHASSIS_FOLLOW,    //云台跟随模式
 } ChassisMode_e;
 
+/**
+ * @brief  底盘轮子PID
+ */
+ typedef struct
+{
+    pid_type_def wheel_velocity[4];//麦轮速度解算PID
+
+    pid_type_def follow; //云台跟随PID
+} PID_t;   
 
 /**
- * @brief 状态、期望和限制值
+ * @brief  底盘期望
  */
-
 typedef struct
 {
     float vx;
@@ -65,12 +67,10 @@ typedef struct
     const RC_ctrl_t * rc;  // 底盘使用的遥控器指针
     const Imu_t * imu;     // imu数据
     ChassisMode_e mode;    // 底盘模式
-    ChassisState_e state;  // 底盘状态
-    uint8_t error_code;    // 底盘错误代码
 
     /*-------------------- Motors --------------------*/
-    // 定义4个麦克纳姆轮
-    Motor_s wheel_motor[4];  // 驱动轮电机
+    Motor_s wheel[4];  //底盘电机
+
     /*-------------------- Values --------------------*/
     Reference_t reference_rc;
     Reference_t reference; 
@@ -94,5 +94,5 @@ extern void ChassisConsole(void);
 
 extern void ChassisSendCmd(void);
 
-#endif //CHASSIS_MECANUM_H
-#endif //CHASSIS_MECANUM_WHEEL
+#endif 
+#endif 
