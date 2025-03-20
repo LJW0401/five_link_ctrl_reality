@@ -20,7 +20,7 @@
 */
 
 #include "shoot_fric_trigger.h"
-
+#include "cmsis_os.h"
 
 #if (SHOOT_TYPE == SHOOT_FRIC_TRIGGER)
 
@@ -35,7 +35,6 @@ static Shoot_s SHOOT = {
   .heat_limit = 0,
 };
 fp32 delta;
-
 /*-------------------- Init --------------------*/
 
 /**
@@ -73,7 +72,6 @@ void ShootInit(void)
 
   PID_init(&SHOOT.trigger_angel_pid, PID_POSITION, pid_angel_trigger, TRIGGER_ANGEL_PID_MAX_OUT, TRIGGER_ANGEL_PID_MAX_IOUT); //拨弹盘初始化pid
  }
- 
 }
 
 /*-------------------- Set mode --------------------*/
@@ -256,16 +254,14 @@ void ShootObserver(void)
   //}
 
   }
-  else if (TRIGGER_MOTOR_TYPE == DM_4310)
-  {
-    SHOOT.FDB.trigger_angel_fdb = theta_format(SHOOT.trigger_motor.fdb.pos);
-  }
   
     //记录上一个拨弹盘vel,用于堵转模式判断
   SHOOT.last_trigger_vel = SHOOT.trigger_motor.fdb.vel;
 
     //记录上一个摩擦轮vel,用于过热保护
   SHOOT.last_fric_vel = SHOOT.fric_motor[0].fdb.vel;
+
+  SHOOT.last_state =SHOOT.state;
 }
 
 /*-------------------- Reference --------------------*/
@@ -285,8 +281,22 @@ void ShootReference(void)
   break;
 
   case FRIC_READY:
-  SHOOT.REF.fric_speed_ref_R=FRIC_R_SPEED;
-  SHOOT.REF.fric_speed_ref_L=FRIC_L_SPEED;
+  if (SHOOT.last_state != FRIC_READY)
+  {
+    SHOOT.begin_time = xTaskGetTickCount();
+  }
+  SHOOT.time = xTaskGetTickCount()-SHOOT.begin_time;
+  if (SHOOT.time <= 1000 )
+  {
+    SHOOT.REF.fric_speed_ref_R= (0.685f*SHOOT.time);
+    SHOOT.REF.fric_speed_ref_L=-(0.685f*SHOOT.time);
+  }
+  else 
+  {
+    SHOOT.REF.fric_speed_ref_R=FRIC_R_SPEED;
+    SHOOT.REF.fric_speed_ref_L=FRIC_L_SPEED;
+  }
+  
   break;
   
   default:

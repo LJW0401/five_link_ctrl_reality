@@ -33,6 +33,7 @@ extern inline bool GetScCmdFricOn(void);
 extern inline float GetVirtualRcCh(uint8_t channel);
 extern inline char GetVirtualRcSw(uint8_t channel);
 extern inline bool GetSCcmdtracking(void);
+extern inline bool SendScCmdWatchDogErr(void);
 
 #endif  // USB_H
 /*------------------------------ End of File ------------------------------*/

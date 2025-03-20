@@ -249,6 +249,13 @@ void ChassisReference(void)
             chassis.reference.wz =  0;
         }
 
+        // if (SendScCmdWatchDogErr() == true)
+        // {
+        //     chassis.reference.vx =  0;
+        //     chassis.reference.vy =  0;
+        //     chassis.reference.wz =  4.0f;
+        // }
+
         else 
         {
             chassis.reference.vx =  GetScCmdChassisSpeed(AX_X) * cosf(chassis.yaw_delta) - GetScCmdChassisSpeed(AX_Y) * sinf(chassis.yaw_delta);

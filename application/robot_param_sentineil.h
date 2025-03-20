@@ -156,7 +156,7 @@
 #define MAX_OUT_GIMBAL_PITCH_VELOCITY (30000.0f)
 
 //AUTO_AIM Searching parameters ---------------------
-#define SEARCHING_RATE (0.002f)
+#define SEARCHING_RATE (0.015f)
 
 /*-------------------- Shoot --------------------*/
 //physical parameters ---------------------

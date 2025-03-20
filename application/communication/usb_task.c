@@ -42,6 +42,9 @@ uint32_t usb_high_water;
 
 #define USB_OFFLINE_THRESHOLD 100  // ms
 #define USB_CONNECT_CNT 10
+#define USB_WATCHDOG_GAP 5000
+
+usb_watch_dog_t usb_watch_dog;
 
 // clang-format off
 
@@ -179,6 +182,8 @@ void usb_task(void const * argument)
     Publish(&USB_OFFLINE, USB_OFFLINE_NAME);
     Publish(&VIRTUAL_RC_CTRL, VIRTUAL_RC_NAME);
 
+    usb_watch_dog.error = false;
+    usb_watch_dog.last_time = 0.0f;
     MX_USB_DEVICE_Init();
 
     vTaskDelay(10);  //等待USB设备初始化完成
@@ -197,6 +202,15 @@ void usb_task(void const * argument)
             USB_OFFLINE = false;
         } else {
             CONTINUE_RECEIVE_CNT++;
+        }
+
+        if ( xTaskGetTickCount() - usb_watch_dog.last_time > USB_WATCHDOG_GAP)
+        {
+            usb_watch_dog.error = true;
+        }
+        else 
+        {
+            usb_watch_dog.error = false;
         }
 
         vTaskDelay(USB_TASK_CONTROL_TIME);
@@ -418,6 +432,9 @@ static void UsbReceiveData(void)
             // 检查整包CRC16校验 4: header size, 2: crc16 size
             bool crc16_ok = verify_CRC16_check_sum(sof_address, 4 + data_len + 2);
             if (crc16_ok) {
+                
+                usb_watch_dog.last_time = xTaskGetTickCount();
+
                 switch (data_id) {
                     case ROBOT_CMD_DATA_RECEIVE_ID: {
                         memcpy(&RECEIVE_ROBOT_CMD_DATA, sof_address, sizeof(ReceiveDataRobotCmd_s));
@@ -863,5 +880,10 @@ inline bool GetScCmdFricOn(void)
 inline bool GetSCcmdtracking(void)
 {
     return ROBOT_CMD_DATA.tracking.tracking;
+}
+
+inline bool SendScCmdWatchDogErr(void)
+{
+    return usb_watch_dog.error;
 }
 /*------------------------------ End of File ------------------------------*/
