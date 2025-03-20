@@ -705,14 +705,6 @@ void MechanicalArmSendCmd(void)
             ArmSendCmdSafe();
         }
     }
-
-
-    ModifyDebugDataPackage(0, MA.ref.joint[J0].angle,"J0");
-    ModifyDebugDataPackage(1, MA.ref.joint[J1].angle,"J1");
-    ModifyDebugDataPackage(2, MA.ref.joint[J2].angle,"J2");
-    ModifyDebugDataPackage(3, MA.ref.joint[J3].angle,"J3");
-    ModifyDebugDataPackage(4, MA.ref.joint[J4].angle,"J4");
-    ModifyDebugDataPackage(5, MA.ref.joint[J5].angle,"J5");
 }
 
 void ArmSendCmdSafe(void)

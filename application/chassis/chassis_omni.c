@@ -26,6 +26,7 @@
 #include "gimbal.h"
 #include "math.h"
 #include "usb_debug.h"
+#include "chassis_power_control.h"
 
 Chassis_s chassis;
 PID_t chassis_pid;
@@ -88,25 +89,24 @@ void ChassisSetMode(void)
     }
     else if (switch_is_mid(chassis.rc->rc.s[0]))
     {
-        if (chassis.spin_flag == true)
+        if (switch_is_up(chassis.rc->rc.s[1]))
         {
-            chassis.mode =CHASSIS_SPIN;
+            chassis.mode = CHASSIS_SPIN;
         }
-        else 
+        
+        else if (switch_is_mid(chassis.rc->rc.s[1]))
+        {
+            chassis.mode = CHASSIS_FOLLOW;
+        }
+
+        else if (switch_is_down(chassis.rc->rc.s[1]))
         {
             chassis.mode = CHASSIS_FOLLOW;
         }
     }
     else if (switch_is_up(chassis.rc->rc.s[0]))
     {
-        if (chassis.spin_flag == true)
-        {
-            chassis.mode =CHASSIS_SPIN;
-        }
-        else 
-        {
-            chassis.mode = CHASSIS_FOLLOW;
-        }
+        chassis.mode = CHASSIS_NAVI ;
     }
 }
 
@@ -141,6 +141,8 @@ void ChassisObserver(void)
         if (chassis.spin_flag == false) chassis.spin_flag = true;
         else chassis.spin_flag = false;
     }
+
+    chassis.last_mode = chassis.mode;
 }
 
 /*-------------------- Reference --------------------*/
@@ -166,36 +168,48 @@ void ChassisReference(void)
     }
     else if (chassis.mode == CHASSIS_FOLLOW)
     {
-        chassis.reference_rc.vx=fp32_deadline(chassis.rc->rc.ch[3],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_SPEED;
-        chassis.reference_rc.vy=fp32_deadline(-chassis.rc->rc.ch[2],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_SPEED;
-
-        if (chassis.rc->key.v & KEY_PRESSED_OFFSET_W) 
+        if (chassis.last_mode != CHASSIS_FOLLOW)
         {
-            chassis.reference_rc.vx += CHASSIS_RC_MAX_SPEED;
+            chassis.reference.vx =  0;
+            chassis.reference.vy =  0;
+            chassis.reference.wz =  0;
         }
 
-        else if (chassis.rc->key.v & KEY_PRESSED_OFFSET_S) 
+        else 
         {
-            chassis.reference_rc.vx -= CHASSIS_RC_MAX_SPEED;
+            chassis.reference_rc.vx=fp32_deadline(chassis.rc->rc.ch[3],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_SPEED;
+            chassis.reference_rc.vy=fp32_deadline(-chassis.rc->rc.ch[2],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_SPEED;
+
+            // if (chassis.rc->key.v & KEY_PRESSED_OFFSET_W) 
+            // {
+            //     chassis.reference_rc.vx += CHASSIS_RC_MAX_SPEED;
+            // }
+
+            // else if (chassis.rc->key.v & KEY_PRESSED_OFFSET_S) 
+            // {
+            //     chassis.reference_rc.vx -= CHASSIS_RC_MAX_SPEED;
+            // }
+
+            // if (chassis.rc->key.v & KEY_PRESSED_OFFSET_A) 
+            // {
+            //     chassis.reference_rc.vy += CHASSIS_RC_MAX_SPEED;
+            // }
+
+            // else if (chassis.rc->key.v & KEY_PRESSED_OFFSET_D) 
+            // {
+            //     chassis.reference_rc.vy -= CHASSIS_RC_MAX_SPEED;
+            // }
+
+
+            chassis.reference.vx =  chassis.reference_rc.vx * cosf(chassis.yaw_delta) - chassis.reference_rc.vy * sinf(chassis.yaw_delta);
+            chassis.reference.vy =  chassis.reference_rc.vx * sinf(chassis.yaw_delta) + chassis.reference_rc.vy * cos(chassis.yaw_delta);
+
+            chassis.reference.wz=PID_calc(&chassis_pid.follow,0,chassis.yaw_delta); 
         }
-
-        if (chassis.rc->key.v & KEY_PRESSED_OFFSET_A) 
-        {
-            chassis.reference_rc.vy += CHASSIS_RC_MAX_SPEED;
-        }
-
-        else if (chassis.rc->key.v & KEY_PRESSED_OFFSET_D) 
-        {
-            chassis.reference_rc.vy -= CHASSIS_RC_MAX_SPEED;
-        }
-
-
-        chassis.reference.vx =  chassis.reference_rc.vx * cosf(chassis.yaw_delta) - chassis.reference_rc.vy * sinf(chassis.yaw_delta);
-        chassis.reference.vy =  chassis.reference_rc.vx * sinf(chassis.yaw_delta) + chassis.reference_rc.vy * cos(chassis.yaw_delta);
-
-        chassis.reference.wz=PID_calc(&chassis_pid.follow,0,chassis.yaw_delta);
     }
-    else if (chassis.mode == CHASSIS_SPIN)
+		
+
+    else if (chassis.mode == CHASSIS_SPIN )
     {
         chassis.reference_rc.vx=fp32_deadline(chassis.rc->rc.ch[3],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_SPEED;
         chassis.reference_rc.vy=fp32_deadline(-chassis.rc->rc.ch[2],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_SPEED;
@@ -223,14 +237,25 @@ void ChassisReference(void)
         chassis.reference.vx =  chassis.reference_rc.vx * cosf(chassis.yaw_delta) - chassis.reference_rc.vy * sinf(chassis.yaw_delta);
         chassis.reference.vy =  chassis.reference_rc.vx * sinf(chassis.yaw_delta) + chassis.reference_rc.vy * cos(chassis.yaw_delta);
 
-        chassis.reference.wz =  4.0f;
-    }
-
+        chassis.reference.wz=10.0f;
+		}
+		
     else if (chassis.mode == CHASSIS_NAVI)
     {
-        chassis.reference.vx =  GetScCmdChassisSpeed(AX_X) * cosf(chassis.yaw_delta) - GetScCmdChassisSpeed(AX_Y) * sinf(chassis.yaw_delta);
-        chassis.reference.vy =  GetScCmdChassisSpeed(AX_X) * sinf(chassis.yaw_delta) + GetScCmdChassisSpeed(AX_Y) * cos(chassis.yaw_delta);
-        chassis.reference.wz=   GetScCmdChassisVelocity(AX_Z);
+        if (chassis.last_mode != CHASSIS_NAVI )
+        {
+            chassis.reference.vx =  0;
+            chassis.reference.vy =  0;
+            chassis.reference.wz =  0;
+        }
+
+        else 
+        {
+            chassis.reference.vx =  GetScCmdChassisSpeed(AX_X) * cosf(chassis.yaw_delta) - GetScCmdChassisSpeed(AX_Y) * sinf(chassis.yaw_delta);
+            chassis.reference.vy =  GetScCmdChassisSpeed(AX_X) * sinf(chassis.yaw_delta) + GetScCmdChassisSpeed(AX_Y) * cos(chassis.yaw_delta);
+            chassis.reference.wz =  GetScCmdChassisVelocity(AX_Z);
+        }
+        
     }
 }
 
@@ -252,6 +277,7 @@ void ChassisConsole(void)
     {
         chassis.wheel[i].set.curr = PID_calc(&chassis_pid.wheel_velocity[i], chassis.feedback[i], chassis.set[i]);
     }
+    Power_control(chassis.wheel);
 }
 
 /*-------------------- Cmd --------------------*/
@@ -262,7 +288,8 @@ void ChassisConsole(void)
  * @retval         none
  */
 
-void ChassisSendCmd(void){
+void ChassisSendCmd(void)
+{
     CanCmdDjiMotor(CHASSIS_CAN,CHASSIS_STDID,chassis.wheel[0].set.curr,chassis.wheel[1].set.curr,chassis.wheel[2].set.curr,chassis.wheel[3].set.curr);
 }
 

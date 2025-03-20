@@ -191,8 +191,12 @@ void ChassisConsole(void)
  * @retval         none
  */
 
-void ChassisSendCmd(void){
-    CanCmdDjiMotor(1,0x200,chassis.wheel[0].set.curr,chassis.wheel[1].set.curr,chassis.wheel[2].set.curr,chassis.wheel[3].set.curr);
+void ChassisSendCmd(void)
+{
+
+    CanCmdDjiMotor(1, 0x200, 
+    CHASSIS.wheel_motor[0].set.curr, CHASSIS.wheel_motor[1].set.curr,
+    CHASSIS.wheel_motor[2].set.curr, CHASSIS.wheel_motor[3].set.curr);
 }
 
 #endif

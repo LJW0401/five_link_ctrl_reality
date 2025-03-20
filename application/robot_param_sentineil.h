@@ -1,16 +1,16 @@
 /**
   * @file       robot_param_omni_infantry.h
-  * @brief      这里是全向轮步兵机器人参数配置文件，包括物理参数、PID参数等
+  * @brief      这里是全向轮哨兵机器人参数配置文件，包括物理参数、PID参数等
   */
 
 #ifndef INCLUDED_ROBOT_PARAM_H
 #define INCLUDED_ROBOT_PARAM_H
 #include "robot_typedef.h"
 
-#define CHASSIS_TYPE CHASSIS_OMNI_WHEEL          // 选择底盘类型
-#define GIMBAL_TYPE GIMBAL_YAW_PITCH_DIRECT      // 选择云台类型
-#define SHOOT_TYPE SHOOT_NONE                    // 选择发射机构类型
-#define CONTROL_TYPE CHASSIS_AND_GIMBAL          // 选择控制类型
+#define CHASSIS_TYPE  CHASSIS_OMNI_WHEEL         // 选择底盘类型
+#define GIMBAL_TYPE   GIMBAL_YAW_PITCH_DIRECT      // 选择云台类型
+#define SHOOT_TYPE    SHOOT_FRIC_TRIGGER                    // 选择发射机构类型
+#define CONTROL_TYPE  CHASSIS_AND_GIMBAL          // 选择控制类型
 #define MECHANICAL_ARM_TYPE MECHANICAL_ARM_NONE  //选择机械臂类型
 
 /*-------------------- Chassis --------------------*/
@@ -130,30 +130,33 @@
 
 //PID parameters ---------------------
 //YAW ANGLE
-#define KP_GIMBAL_YAW_ANGLE (20.50f)
-#define KI_GIMBAL_YAW_ANGLE (0.003f)
-#define KD_GIMBAL_YAW_ANGLE (0.35f)
-#define MAX_IOUT_GIMBAL_YAW_ANGLE (0.05f)
+#define KP_GIMBAL_YAW_ANGLE (11.0f) //20
+#define KI_GIMBAL_YAW_ANGLE (0.02f) //0.003
+#define KD_GIMBAL_YAW_ANGLE (0.15f)
+#define MAX_IOUT_GIMBAL_YAW_ANGLE (1.0f)
 #define MAX_OUT_GIMBAL_YAW_ANGLE (13.0f)
 //VELOCITY:角速度
-#define KP_GIMBAL_YAW_VELOCITY (19000.0f)
-#define KI_GIMBAL_YAW_VELOCITY (1.0f)
-#define KD_GIMBAL_YAW_VELOCITY (0.0f)
-#define MAX_IOUT_GIMBAL_YAW_VELOCITY (7000.0f)
+#define KP_GIMBAL_YAW_VELOCITY (18500.0f)
+#define KI_GIMBAL_YAW_VELOCITY (7.2f)
+#define KD_GIMBAL_YAW_VELOCITY (2.0f)
+#define MAX_IOUT_GIMBAL_YAW_VELOCITY (22000.0f)
 #define MAX_OUT_GIMBAL_YAW_VELOCITY (30000.0f)
 
 //PITCH ANGLE
-#define KP_GIMBAL_PITCH_ANGLE (25.0f)  //4.5
-#define KI_GIMBAL_PITCH_ANGLE (0.0f)
-#define KD_GIMBAL_PITCH_ANGLE (3.0f)  //3.0
-#define MAX_IOUT_GIMBAL_PITCH_ANGLE (1.0f)
-#define MAX_OUT_GIMBAL_PITCH_ANGLE (15.0f)
+#define KP_GIMBAL_PITCH_ANGLE (10.0f)  //4.5
+#define KI_GIMBAL_PITCH_ANGLE (0.08f)
+#define KD_GIMBAL_PITCH_ANGLE (0.5f)  //3.0
+#define MAX_IOUT_GIMBAL_PITCH_ANGLE (3.0f)
+#define MAX_OUT_GIMBAL_PITCH_ANGLE (13.0f)
 //VELOCITY:角速度
-#define KP_GIMBAL_PITCH_VELOCITY (3600.0f)  //1200
-#define KI_GIMBAL_PITCH_VELOCITY (30.0f)
-#define KD_GIMBAL_PITCH_VELOCITY (50.0f)
-#define MAX_IOUT_GIMBAL_PITCH_VELOCITY (10000.0f)
+#define KP_GIMBAL_PITCH_VELOCITY (7600.0f)  //1200
+#define KI_GIMBAL_PITCH_VELOCITY (150.0f)
+#define KD_GIMBAL_PITCH_VELOCITY (17.0f)
+#define MAX_IOUT_GIMBAL_PITCH_VELOCITY (22000.0f)
 #define MAX_OUT_GIMBAL_PITCH_VELOCITY (30000.0f)
+
+//AUTO_AIM Searching parameters ---------------------
+#define SEARCHING_RATE (0.002f)
 
 /*-------------------- Shoot --------------------*/
 //physical parameters ---------------------
@@ -169,33 +172,33 @@
 #define FRIC_MOTOR_TYPE ((MotorType_e)DJI_M3508)
 
 //电机ID
-#define TRIGGER_MOTOR_ID 8
-#define FRIC_MOTOR_R_ID 6
-#define FRIC_MOTOR_L_ID 5
+#define TRIGGER_MOTOR_ID 3
+#define FRIC_MOTOR_R_ID 2
+#define FRIC_MOTOR_L_ID 1
 
 //电机can口
-#define TRIGGER_MOTOR_CAN 1
-#define FRIC_MOTOR_R_CAN 1
-#define FRIC_MOTOR_L_CAN 1
+#define TRIGGER_MOTOR_CAN 2
+#define FRIC_MOTOR_R_CAN 2
+#define FRIC_MOTOR_L_CAN 2
 
 //电机std_id
-#define STD_ID 0x1FF
+#define STD_ID 0x200
 //单环拨弹速度
 #define TRIGGER_SPEED               (300.0f)
 //摩擦轮速度
-#define FRIC_R_SPEED                  (666.0f) 
-#define FRIC_L_SPEED                  (-666.0f) 
+#define FRIC_R_SPEED                  (685.0f) 
+#define FRIC_L_SPEED                  (-685.0f) 
 #define FRIC_SPEED_LIMIT            (600.0f) 
 
 /*ECD parameters------------*/
 //电机反馈码盘值范围
-#define HALF_ECD_RANGE 4096
-#define ECD_RANGE 8191
+#define HALF_ECD_RANGE              4096
+#define ECD_RANGE                   8191
 
 //电机rpm 变化成 旋转速度的比例
-#define MOTOR_RPM_TO_SPEED 0.00290888208665721596153948461415f
-#define MOTOR_ECD_TO_ANGLE 0.000021305288720633905968306772076277f
-#define FULL_COUNT 18
+#define MOTOR_RPM_TO_SPEED          0.00290888208665721596153948461415f
+#define MOTOR_ECD_TO_ANGLE          0.000021305288720633905968306772076277f
+#define FULL_COUNT                  18
 
 /*BLOCK&REVERSE parameters------------*/
 
@@ -212,28 +215,28 @@
 /*PID parameters ---------------------*/
 
 //拨弹轮电机PID速度环
-#define TRIGGER_SPEED_PID_KP (100.0f)
-#define TRIGGER_SPEED_PID_KI (0.5f)
-#define TRIGGER_SPEED_PID_KD (0.1f)
+#define TRIGGER_SPEED_PID_KP (320.0f)
+#define TRIGGER_SPEED_PID_KI (0.3f)
+#define TRIGGER_SPEED_PID_KD (0.5f)
 
 #define TRIGGER_SPEED_PID_MAX_OUT (10000.0f)
 #define TRIGGER_SPEED_PID_MAX_IOUT (1000.0f)
 
 //拨弹轮电机PID角度环
-#define TRIGGER_ANGEL_PID_KP (25.0f)
-#define TRIGGER_ANGEL_PID_KI (0.05f)
+#define TRIGGER_ANGEL_PID_KP (300.0f)
+#define TRIGGER_ANGEL_PID_KI (0.5f)
 #define TRIGGER_ANGEL_PID_KD (0.05f)
 
-#define TRIGGER_ANGEL_PID_MAX_OUT (300.0f)
-#define TRIGGER_ANGEL_PID_MAX_IOUT (30.0f)
+#define TRIGGER_ANGEL_PID_MAX_OUT (800.0f)
+#define TRIGGER_ANGEL_PID_MAX_IOUT (300.0f)
 
 //摩擦轮电机PID
-#define FRIC_SPEED_PID_KP (666.0f)
-#define FIRC_SPEED_PID_KI (0.6f)
-#define FRIC_SPEED_PID_KD (1.0f)
+#define FRIC_SPEED_PID_KP (620.0f)
+#define FIRC_SPEED_PID_KI (0.08f)
+#define FRIC_SPEED_PID_KD (4.1f)
 
 #define FRIC_PID_MAX_OUT (16000.0f)
-#define FRIC_PID_MAX_IOUT (1000.0f)
+#define FRIC_PID_MAX_IOUT (1100.0f)
 
 #define SHOOT_HEAT_REMAIN_VALUE     80//89
 

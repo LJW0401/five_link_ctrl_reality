@@ -38,6 +38,7 @@
 #include "macro_typedef.h"
 #include "supervisory_computer_cmd.h"
 #include "communication.h"
+#include "signal_generator.h"
 
 
 /**
@@ -50,8 +51,13 @@ typedef enum {
     GIMBAL_DBUS_ERR,    //遥控器断联相关处理任务
     GIMBAL_GAP,         //跳出矫正进入IMU/AUTO_AIM模式之前的存储数据模式
     GIMBAL_AUTO_AIM,    //自瞄模式
+    GIMBAL_TEST,
 } GimbalMode_e;
 
+typedef enum{
+    SEARCHING,          //搜索模式
+    TRACKING,           //跟踪模式
+}GimbalAutoAimMode_e;
 
 /**
  * @brief 状态、期望和限制值
@@ -76,7 +82,7 @@ typedef struct
 {
     const RC_ctrl_t * rc;  // 遥控器指针
     GimbalMode_e mode,last_mode,mode_before_rc_err;  // 模式
-
+    GimbalAutoAimMode_e aim_mode,last_aim_mode;  //自瞄模式以及其记录
     /*-------------------- Motors --------------------*/
     Motor_s yaw,pitch;
     /*-------------------- Values --------------------*/
