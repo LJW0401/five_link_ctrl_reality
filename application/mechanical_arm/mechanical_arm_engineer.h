@@ -119,7 +119,7 @@ typedef struct
 
     struct
     {
-        uint8_t pump_on;
+        bool pump_on;
     } cmd;
 
     struct
