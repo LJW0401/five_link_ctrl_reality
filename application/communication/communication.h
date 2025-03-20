@@ -42,5 +42,6 @@ extern void DataUnpack(void);
 
 
 extern uint32_t GetUART1TestValue(void);
+extern bool GetUartRcToeError(void);
 
 #endif  // __COMMUNICATION_H
