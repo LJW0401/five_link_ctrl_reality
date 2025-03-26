@@ -102,7 +102,7 @@ void ShootSetMode(void)
       {
         SHOOT.state = FRIC_READY;
 
-        if (GetSCcmdtracking())
+        if ( GetSCcmdtracking() )
         {
           SHOOT.mode = LOAD_BURSTFIRE;
         }

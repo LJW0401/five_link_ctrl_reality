@@ -839,7 +839,7 @@ inline float GetScCmdChassisHeight(void)
  * @param void
  * @return bool 是否开火
  */
-inline bool GetScCmdFire(void)
+inline uint8_t GetScCmdFire(void)
 {
     return ROBOT_CMD_DATA.shoot.fire;
 }

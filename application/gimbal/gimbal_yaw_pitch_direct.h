@@ -100,6 +100,8 @@ typedef struct
     uint32_t init_start_time,init_timer;
 
     bool init_continue; //是否继续进行校准模式
+
+    fp32 search_base_time,search_time;
 } Gimbal_s;
 
 extern void GimbalInit(void);
