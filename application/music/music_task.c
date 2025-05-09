@@ -1,4 +1,22 @@
+/**
+  ****************************(C) COPYRIGHT 2025 PolarBear****************************
+  * @file       music_task.c/h
+  * @brief      主要负责使用蜂鸣器播放各种音乐和音效
+  * @note       
+  * @history
+  *  Version    Date            Author          Modification
+  *  V1.0.0     May-20-2024     Penguin         1. done
+  *
+  @verbatim
+  ==============================================================================
+  本文件中创建一个music_task任务，用于处理音乐的播放逻辑
+  特殊内部配置
+    ENABLE_EXHIBITION_MODE 为true时启用展会模式，此时可以通过ps2手柄控制音乐的播放
 
+  ==============================================================================
+  @endverbatim
+  ****************************(C) COPYRIGHT 2025 PolarBear****************************
+*/
 
 #include "music_task.h"
 
@@ -33,6 +51,9 @@ uint32_t music_high_water;
 #endif
 
 #define ABNORMAL_WARNING_INTERVAL 5000  // ms
+
+// 启用展会模式
+#define ENABLE_EXHIBITION_MODE true  
 
 // 启用遥控器离线报警
 #define ENABLE_ALARM_RC_OFFLINE false
