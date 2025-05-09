@@ -12,6 +12,7 @@
   *
   @verbatim
   ==============================================================================
+    展览模式下的相关控制：
 
   ==============================================================================
   @endverbatim
@@ -25,23 +26,26 @@
 #include "chassis_balance.h"
 #if (CHASSIS_TYPE == CHASSIS_BALANCE)
 #include "CAN_communication.h"
+#include "IMU.h"
 #include "bsp_delay.h"
 #include "chassis.h"
 #include "chassis_balance_extras.h"
 #include "cmsis_os.h"
 #include "data_exchange.h"
 #include "detect_task.h"
+#include "gimbal.h"
 #include "kalman_filter.h"
 #include "macro_typedef.h"
+#include "ps2.h"
 #include "signal_generator.h"
 #include "stdbool.h"
 #include "string.h"
 #include "usb_debug.h"
 #include "user_lib.h"
-#include "gimbal.h"
-#include "IMU.h"
 
 // 一些内部的配置
+#define ENABLE_EXHIBITION_MODE true  // 启用展会模式
+
 #define TAKE_OFF_DETECT 0  // 启用离地检测
 #define CLOSE_LEG_LEFT 0   // 关闭左腿输出
 #define CLOSE_LEG_RIGHT 0  // 关闭右腿输出
@@ -116,6 +120,10 @@ Chassis_s CHASSIS = {
 };
 
 int8_t TRANSITION_MATRIX[10] = {0};
+
+#if ENABLE_EXHIBITION_MODE
+Ps2Buttons_t ps2_btns = {0};
+#endif
 
 /*-------------------- Publish --------------------*/
 
@@ -218,7 +226,7 @@ void ChassisInit(void)
     PID_init(
         &CHASSIS.pid.wheel_stop[1], PID_POSITION, wheel_stop_pid, MAX_OUT_CHASSIS_WHEEL_STOP,
         MAX_IOUT_CHASSIS_WHEEL_STOP);
-    
+
     float chassis_follow_gimbal_pid[3] = {
         KP_CHASSIS_FOLLOW_GIMBAL, KI_CHASSIS_FOLLOW_GIMBAL, KD_CHASSIS_FOLLOW_GIMBAL};
     PID_init(
@@ -301,6 +309,36 @@ void ChassisHandleException(void)
 /* auxiliary function: None                                       */
 /******************************************************************/
 
+#if ENABLE_EXHIBITION_MODE
+/**
+ * @brief          设置模式
+ * @note           展会模式下，使用PS2进行控制
+ * @param[in]      none
+ * @retval         none
+ */
+void ChassisSetMode(void)
+{
+    if (CHASSIS.error_code & JOINT_ERROR_OFFSET) {  // 关节电机出错时的状态处理
+        CHASSIS.mode = CHASSIS_SAFE;
+        return;
+    }
+
+    if (GetPs2Status() != PS2_OK) {  // PS2工作异常时的状态处理
+        CHASSIS.mode = CHASSIS_SAFE;
+        return;
+    }
+
+    if (CHASSIS.mode == CHASSIS_SAFE) {
+        if (ps2_btns.button[PS2_SELECT].now && PS2_BUTTON_RISE(ps2_btns.button[PS2_START])) {
+            CHASSIS.mode = CHASSIS_FOLLOW_GIMBAL_YAW;
+        }
+    } else {
+        if (ps2_btns.button[PS2_SELECT].now && PS2_BUTTON_RISE(ps2_btns.button[PS2_START])) {
+            CHASSIS.mode = CHASSIS_SAFE;
+        }
+    }
+}
+#else
 /**
  * @brief          设置模式
  * @param[in]      none
@@ -359,7 +397,7 @@ void ChassisSetMode(void)
         // CHASSIS.mode = CHASSIS_FREE;
         CHASSIS.mode = CHASSIS_SAFE;
     } else if (switch_is_mid(CHASSIS.rc->rc.s[CHASSIS_MODE_CHANNEL])) {
-        CHASSIS.mode = CHASSIS_FOLLOW_GIMBAL_YAW;;
+        CHASSIS.mode = CHASSIS_FOLLOW_GIMBAL_YAW;
     } else if (switch_is_down(CHASSIS.rc->rc.s[CHASSIS_MODE_CHANNEL])) {
         // 在安全模式时，遥控器摇杆打成左下，右上进入脱困模式
         if (CHASSIS.rc->rc.ch[0] > RC_OFF_HOOK_VALUE_HOLE &&
@@ -372,6 +410,7 @@ void ChassisSetMode(void)
         }
     }
 }
+#endif
 
 /******************************************************************/
 /* Observe                                                        */
@@ -403,6 +442,10 @@ void ChassisObserver(void)
 {
     CHASSIS.duration = xTaskGetTickCount() - CHASSIS.last_time;
     CHASSIS.last_time = xTaskGetTickCount();
+
+#if ENABLE_EXHIBITION_MODE
+    UpdatePs2Buttons(&ps2_btns);
+#endif
 
     UpdateMotorStatus();
     UpdateLegStatus();
