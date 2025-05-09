@@ -42,6 +42,7 @@
 #include "music_typedef.h"
 #include "music_unity.h"
 #include "music_you.h"
+#include "ps2.h"
 #include "referee.h"
 #include "remote_control.h"
 #include "stm32f4xx_hal.h"
@@ -53,7 +54,7 @@ uint32_t music_high_water;
 #define ABNORMAL_WARNING_INTERVAL 5000  // ms
 
 // 启用展会模式
-#define ENABLE_EXHIBITION_MODE true  
+#define ENABLE_EXHIBITION_MODE true
 
 // 启用遥控器离线报警
 #define ENABLE_ALARM_RC_OFFLINE false
@@ -124,6 +125,12 @@ static uint32_t last_abnormal_warning_time = 0;
 // static uint32_t last_task_time = 0;
 // static uint32_t task_duration = 0;
 
+#if ENABLE_EXHIBITION_MODE
+Ps2Button_t ps2_btn_select = {.last = false, .now = false};
+Ps2Button_t ps2_btn_l1 = {.last = false, .now = false};
+bool play_default_music = false;
+#endif
+
 /**
  * @brief 播放音乐
  * @param  none
@@ -170,7 +177,17 @@ void music_task(void const * pvParameters)
 
     while (1) {
         task_count++;
+
+#if ENABLE_EXHIBITION_MODE
+        UpdatePs2Button(&ps2_btn_select, PS2_SELECT);
+        UpdatePs2Button(&ps2_btn_l1, PS2_L1);
+        if (ps2_btn_select.now && PS2_BUTTON_RISE(ps2_btn_l1)) {
+            play_default_music = !play_default_music;
+        }
+#endif
+
         MusicPlay();
+
         // 系统延时
         vTaskDelay(MUSIC_TASK_TIME_MS);
 
@@ -190,13 +207,13 @@ static void MusicInit(void)
     MUSICS[start]             = MusicStartInit();
     MUSICS[motor_offline]     = MusicMotorOfflineInit();
     MUSICS[rc_offline]        = MusicRcOfflineInit();
-    // MUSICS[you]               = MusicYouInit();
+    MUSICS[you]               = MusicYouInit();
     // MUSICS[unity]             = MusicUnityInit();
     // MUSICS[canon]             = MusicCanonInit();
     // MUSICS[castle_in_the_sky] = MusicCastleInTheSkyInit();
     // MUSICS[see_you_again]     = MusicSeeYouAgainInit();
-    MUSICS[hao_yun_lai]       = MusicHaoYunLaiInit();
-    MUSICS[gong_xi_fa_cai]    = MusicGongXiFaCaiInit();
+    // MUSICS[hao_yun_lai]       = MusicHaoYunLaiInit();
+    // MUSICS[gong_xi_fa_cai]    = MusicGongXiFaCaiInit();
     // MUSICS[deja_vu]           = MusicDejaVuInit();
     // clang-format on
 }
@@ -240,13 +257,23 @@ static void MusicPlay(void)
                 if (PlayMusic(&MUSICS[rc_offline], 0.5f)) is_play = PLAY_NONE;
             } break;
 
+#if ENABLE_EXHIBITION_MODE
             default: {
-                if ((!ENABLE_CHECK_REFEREE_OFFLINE) || (!GetRefereeOffline())) {
-                    PlayMusic(&MUSICS[hao_yun_lai], 0.1f);
+                if (play_default_music) {
+                    PlayMusic(&MUSICS[you], 0.1f);
                 } else {
                     buzzer_off();
                 }
-            } break;
+            }
+#else
+            default: {
+                if ((!ENABLE_CHECK_REFEREE_OFFLINE) || (!GetRefereeOffline())) {
+                    PlayMusic(&MUSICS[you], 0.1f);
+                } else {
+                    buzzer_off();
+                }
+            }
+#endif
         }
     }
 }
