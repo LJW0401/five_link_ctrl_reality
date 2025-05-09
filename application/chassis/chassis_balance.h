@@ -47,6 +47,7 @@ typedef enum {
     CHASSIS_STAND_UP,   // 底盘起立，从倒地状态到站立状态的中间过程
     CHASSIS_CALIBRATE,  // 底盘校准
     CHASSIS_FOLLOW_GIMBAL_YAW,  // 底盘跟随云台（运动方向为云台坐标系方向，需进行坐标转换）
+    CHASSIS_MOONWALK,   // 底盘太空步行走
     CHASSIS_FLOATING,   // 底盘悬空状态
     CHASSIS_CRASHING,   // 底盘接地状态，进行缓冲
     CHASSIS_FREE,       // 底盘不跟随云台

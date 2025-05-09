@@ -750,6 +750,108 @@ static void BodyMotionObserve(void)
 /* auxiliary function: None                                       */
 /******************************************************************/
 
+#if ENABLE_EXHIBITION_MODE
+/**
+ * @brief          更新目标量
+ * @note           展会模式下，使用PS2进行控制
+ * @param[in]      none
+ * @retval         none
+ */
+void ChassisReference(void)
+{
+    // 计算速度向量
+    ChassisSpeedVector_t v_set = {0.0f, 0.0f, 0.0f};
+    v_set.vx = GetPs2Joystick(PS2_LX) * (0.5f + ps2_btns.button[PS2_LSTICK].now * 1.5f);
+    v_set.vy = 0;
+    v_set.wz = GetPs2Joystick(PS2_RX) * 0.5f;
+    switch (CHASSIS.mode) {
+        case CHASSIS_FREE: {  // 底盘自由模式下，控制量为底盘坐标系下的速度
+            CHASSIS.ref.speed_vector.vx = v_set.vx;
+            CHASSIS.ref.speed_vector.vy = 0;
+            CHASSIS.ref.speed_vector.wz = v_set.wz;
+
+        } break;
+
+        case CHASSIS_CUSTOM: {
+            CHASSIS.ref.speed_vector.vx = v_set.vx;
+            CHASSIS.ref.speed_vector.vy = 0;
+            CHASSIS.ref.speed_vector.wz = v_set.wz;
+
+        } break;
+
+        case CHASSIS_FOLLOW_GIMBAL_YAW: {  // 云台跟随模式下，控制量为云台坐标系下的速度，需要进行坐标转换
+            float delta_yaw = GetGimbalDeltaYawMid();
+
+            CHASSIS.ref.speed_vector.vx = v_set.vx * cosf(delta_yaw);
+            CHASSIS.ref.speed_vector.vy = 0;
+
+            if (GetGimbalInitJudgeReturn()) {
+                CHASSIS.ref.speed_vector.wz = 0;
+            } else {
+                CHASSIS.ref.speed_vector.wz =
+                    PID_calc(&CHASSIS.pid.chassis_follow_gimbal, -delta_yaw, 0);
+            }
+        } break;
+
+        default:
+            CHASSIS.ref.speed_vector.vx = 0;
+            CHASSIS.ref.speed_vector.vy = 0;
+            CHASSIS.ref.speed_vector.wz = 0;
+            break;
+    }
+
+    // 计算期望状态
+    // clang-format off
+    for (uint8_t i = 0; i < 2; i++) {
+        CHASSIS.ref.leg_state[i].theta     =  0;
+        CHASSIS.ref.leg_state[i].theta_dot =  0;
+        CHASSIS.ref.leg_state[i].x         =  0;
+        CHASSIS.ref.leg_state[i].x_dot     =  CHASSIS.ref.speed_vector.vx;
+        CHASSIS.ref.leg_state[i].phi       =  0;
+        CHASSIS.ref.leg_state[i].phi_dot   =  0;
+    }
+    // clang-format on
+    if (CHASSIS.mode == CHASSIS_MOONWALK) {  //太空行走模式下腿部摆动
+        CHASSIS.ref.leg_state[0].theta = GenerateSinWave(0.5f, 0.0f, 4.0f);
+        CHASSIS.ref.leg_state[1].theta = -GenerateSinWave(0.5f, 0.0f, 4.0f);
+    }
+
+    // 腿部控制
+    static float angle = M_PI_2;
+    static float length = 0.12f;
+    switch (CHASSIS.mode) {
+        case CHASSIS_FREE:
+        case CHASSIS_FOLLOW_GIMBAL_YAW:
+        case CHASSIS_CUSTOM:
+        case CHASSIS_POS_DEBUG: {
+            length += ps2_btns.button[PS2_UP].now * 0.001f;
+            length -= ps2_btns.button[PS2_DOWN].now * 0.001f;
+        } break;
+
+        default: {
+            angle = M_PI_2;
+            length = 0.12f;
+        }
+    }
+    // 对长度和角度范围进行限制
+    length = fp32_constrain(length, MIN_LEG_LENGTH, MAX_LEG_LENGTH);
+    angle = fp32_constrain(angle, MIN_LEG_ANGLE, MAX_LEG_ANGLE);
+    // 给腿部目标赋值
+    CHASSIS.ref.rod_L0[0] = length;
+    CHASSIS.ref.rod_L0[1] = length;
+    CHASSIS.ref.rod_Angle[0] = angle;
+    CHASSIS.ref.rod_Angle[1] = angle;
+
+    // 目标roll角度
+    if (ps2_btns.button[PS2_LEFT].now) {
+        CHASSIS.ref.body.roll = 0.2f;
+    } else if (ps2_btns.button[PS2_RIGHT].now) {
+        CHASSIS.ref.body.roll = -0.2f;
+    } else {
+        CHASSIS.ref.body.roll = 0.0f;
+    }
+}
+#else
 /**
  * @brief          更新目标量
  * @param[in]      none
@@ -869,6 +971,7 @@ void ChassisReference(void)
 
     CHASSIS.ref.body.roll = fp32_constrain(-rc_roll * RC_TO_ONE * MAX_ROLL, MIN_ROLL, MAX_ROLL);
 }
+#endif
 
 /******************************************************************/
 /* Console                                                        */
