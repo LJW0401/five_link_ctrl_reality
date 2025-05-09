@@ -6,6 +6,7 @@
   * @history
   *  Version    Date            Author          Modification
   *  V1.0.0     May-20-2024     Penguin         1. done
+  *  V1.0.1     May-09-2025     Penguin         1. 添加展览模式，可以用ps2控制音乐的播放
   *
   @verbatim
   ==============================================================================
