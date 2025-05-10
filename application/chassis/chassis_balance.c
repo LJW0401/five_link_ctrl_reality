@@ -328,13 +328,23 @@ void ChassisSetMode(void)
         return;
     }
 
-    if (CHASSIS.mode == CHASSIS_SAFE) {
+    if (ps2_btns.button[PS2_SELECT].now && PS2_BUTTON_RISE(ps2_btns.button[PS2_START]) &&
+        CHASSIS.mode != CHASSIS_SAFE) {  // 非安全模式下，按下SELECT+START键切换到安全模式
+        CHASSIS.mode = CHASSIS_SAFE;
+        return;
+    }
+
+    if (CHASSIS.mode == CHASSIS_SAFE) {  //安全模式
         if (ps2_btns.button[PS2_SELECT].now && PS2_BUTTON_RISE(ps2_btns.button[PS2_START])) {
             CHASSIS.mode = CHASSIS_MOVE;
         }
-    } else {
-        if (ps2_btns.button[PS2_SELECT].now && PS2_BUTTON_RISE(ps2_btns.button[PS2_START])) {
-            CHASSIS.mode = CHASSIS_SAFE;
+    } else if (CHASSIS.mode == CHASSIS_MOVE) {  // 展会模式下的运动模式，为各种模式切换的基底模式
+        if (ps2_btns.button[PS2_SELECT].now && PS2_BUTTON_RISE(ps2_btns.button[PS2_SQUARE])) {
+            CHASSIS.mode = CHASSIS_MOONWALK;
+        }
+    } else if (CHASSIS.mode == CHASSIS_MOONWALK) {
+        if (ps2_btns.button[PS2_SELECT].now && PS2_BUTTON_RISE(ps2_btns.button[PS2_CROSS])) {
+            CHASSIS.mode = CHASSIS_MOVE;
         }
     }
 }
@@ -771,6 +781,7 @@ void ChassisReference(void)
             CHASSIS.ref.speed_vector.wz = v_set.wz;
         } break;
 
+        case CHASSIS_MOONWALK:
         case CHASSIS_MOVE:
         case CHASSIS_CUSTOM: {
             CHASSIS.ref.speed_vector.vx = v_set.vx;
@@ -819,6 +830,7 @@ void ChassisReference(void)
     static float angle = M_PI_2;
     static float length = 0.12f;
     switch (CHASSIS.mode) {
+        case CHASSIS_MOONWALK:
         case CHASSIS_MOVE:
         case CHASSIS_FREE:
         case CHASSIS_FOLLOW_GIMBAL_YAW:
@@ -1020,6 +1032,7 @@ void ChassisConsole(void)
         } break;
         case CHASSIS_FOLLOW_GIMBAL_YAW:
         case CHASSIS_CUSTOM:
+        case CHASSIS_MOONWALK:
         case CHASSIS_MOVE:
         case CHASSIS_FREE: {
             ConsoleNormal();
@@ -1409,6 +1422,7 @@ static void SendJointMotorCmd(void)
             case CHASSIS_FOLLOW_GIMBAL_YAW:
             case CHASSIS_DEBUG:
             case CHASSIS_CUSTOM:
+            case CHASSIS_MOONWALK:
             case CHASSIS_MOVE:
             case CHASSIS_FREE: {
                 DmMitCtrlTorque(&CHASSIS.joint_motor[0]);
@@ -1488,6 +1502,7 @@ static void SendWheelMotorCmd(void)
     switch (CHASSIS.mode) {
         case CHASSIS_FOLLOW_GIMBAL_YAW:
         case CHASSIS_CUSTOM:
+        case CHASSIS_MOONWALK:
         case CHASSIS_MOVE:
         case CHASSIS_FREE: {
             LkMultipleTorqueControl(
