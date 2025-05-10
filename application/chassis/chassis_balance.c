@@ -330,7 +330,7 @@ void ChassisSetMode(void)
 
     if (CHASSIS.mode == CHASSIS_SAFE) {
         if (ps2_btns.button[PS2_SELECT].now && PS2_BUTTON_RISE(ps2_btns.button[PS2_START])) {
-            CHASSIS.mode = CHASSIS_FOLLOW_GIMBAL_YAW;
+            CHASSIS.mode = CHASSIS_FREE;
         }
     } else {
         if (ps2_btns.button[PS2_SELECT].now && PS2_BUTTON_RISE(ps2_btns.button[PS2_START])) {
@@ -824,8 +824,8 @@ void ChassisReference(void)
         case CHASSIS_FOLLOW_GIMBAL_YAW:
         case CHASSIS_CUSTOM:
         case CHASSIS_POS_DEBUG: {
-            length += ps2_btns.button[PS2_UP].now * 0.001f;
-            length -= ps2_btns.button[PS2_DOWN].now * 0.001f;
+            length += ps2_btns.button[PS2_UP].now * 0.0001f;
+            length -= ps2_btns.button[PS2_DOWN].now * 0.0001f;
         } break;
 
         default: {
