@@ -11,7 +11,7 @@
 
 // clang-format off
 #define __SELF_BOARD_ID C_BOARD_BALANCE_CHASSIS // 本板ID
-#define __GYRO_BIAS_YAW  0.003096855f           // 陀螺仪零飘，单位rad/s
+#define __GYRO_BIAS_YAW  0.00430967f           // 陀螺仪零飘，单位rad/s
 
 #define __CONTROL_LINK_RC  CL_RC_DIRECT  // 控制链路选择：RC遥控器
 #define __CONTROL_LINK_KM  CL_KM_RC      // 控制链路选择：键鼠数据
@@ -109,7 +109,7 @@
 #define MAX_J2_ANGLE  (0.6f) // (rad)关节角度上限
 #define MAX_J3_ANGLE  (1.8f) // (rad)关节角度上限
 
-#define MAX_LEG_LENGTH       (0.35f)
+#define MAX_LEG_LENGTH       (0.41f)
 #define MAX_LEG_ANGLE        (M_PI_2 + MAX_DELTA_ROD_ANGLE)
 #define MAX_SPEED            (3.5f)
 #define MAX_SPEED_VECTOR_VX  (3.5f)

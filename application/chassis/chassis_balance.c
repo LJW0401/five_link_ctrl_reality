@@ -773,7 +773,7 @@ void ChassisReference(void)
     ChassisSpeedVector_t v_set = {0.0f, 0.0f, 0.0f};
     v_set.vx = -GetPs2Joystick(PS2_LY) * (0.5f + ps2_btns.button[PS2_LSTICK].now * 1.0f);
     v_set.vy = 0;
-    v_set.wz = GetPs2Joystick(PS2_RX) * 0.5f;
+    v_set.wz = -GetPs2Joystick(PS2_LX) * 2.0f;
     switch (CHASSIS.mode) {
         case CHASSIS_FREE: {  // 底盘自由模式下，控制量为底盘坐标系下的速度
             CHASSIS.ref.speed_vector.vx = v_set.vx;
@@ -822,8 +822,8 @@ void ChassisReference(void)
     }
     // clang-format on
     if (CHASSIS.mode == CHASSIS_MOONWALK) {  //太空行走模式下腿部摆动
-        CHASSIS.ref.leg_state[0].theta = GenerateSinWave(0.2f, 0.0f, 4.0f);
-        CHASSIS.ref.leg_state[1].theta = -GenerateSinWave(0.2f, 0.0f, 4.0f);
+        CHASSIS.ref.leg_state[0].theta = GenerateSinWave(0.2f, 0.0f, 2.0f);
+        CHASSIS.ref.leg_state[1].theta = -GenerateSinWave(0.2f, 0.0f, 2.0f);
     }
 
     // 腿部控制
@@ -836,13 +836,13 @@ void ChassisReference(void)
         case CHASSIS_FOLLOW_GIMBAL_YAW:
         case CHASSIS_CUSTOM:
         case CHASSIS_POS_DEBUG: {
-            length += ps2_btns.button[PS2_UP].now * 0.0001f;
-            length -= ps2_btns.button[PS2_DOWN].now * 0.0001f;
+            length += ps2_btns.button[PS2_UP].now * 0.0008f;
+            length -= ps2_btns.button[PS2_DOWN].now * 0.0008f;
         } break;
 
         default: {
             angle = M_PI_2;
-            length = 0.12f;
+            length = 0.14f;
         }
     }
     // 对长度和角度范围进行限制
@@ -856,9 +856,9 @@ void ChassisReference(void)
 
     // 目标roll角度
     if (ps2_btns.button[PS2_LEFT].now) {
-        CHASSIS.ref.body.roll = 0.2f;
+        CHASSIS.ref.body.roll = 0.1f;
     } else if (ps2_btns.button[PS2_RIGHT].now) {
-        CHASSIS.ref.body.roll = -0.2f;
+        CHASSIS.ref.body.roll = -0.1f;
     } else {
         CHASSIS.ref.body.roll = 0.0f;
     }
