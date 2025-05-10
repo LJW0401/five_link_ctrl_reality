@@ -769,14 +769,12 @@ void ChassisReference(void)
             CHASSIS.ref.speed_vector.vx = v_set.vx;
             CHASSIS.ref.speed_vector.vy = 0;
             CHASSIS.ref.speed_vector.wz = v_set.wz;
-
         } break;
 
         case CHASSIS_CUSTOM: {
             CHASSIS.ref.speed_vector.vx = v_set.vx;
             CHASSIS.ref.speed_vector.vy = 0;
             CHASSIS.ref.speed_vector.wz = v_set.wz;
-
         } break;
 
         case CHASSIS_FOLLOW_GIMBAL_YAW: {  // 云台跟随模式下，控制量为云台坐标系下的速度，需要进行坐标转换
@@ -793,11 +791,11 @@ void ChassisReference(void)
             }
         } break;
 
-        default:
+        default:{
             CHASSIS.ref.speed_vector.vx = 0;
             CHASSIS.ref.speed_vector.vy = 0;
             CHASSIS.ref.speed_vector.wz = 0;
-            break;
+        }
     }
 
     // 计算期望状态
