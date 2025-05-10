@@ -42,20 +42,22 @@
 /*-------------------- Structural definition --------------------*/
 
 typedef enum {
-    CHASSIS_OFF,        // 底盘关闭
-    CHASSIS_SAFE,       // 底盘无力，所有控制量置0
-    CHASSIS_STAND_UP,   // 底盘起立，从倒地状态到站立状态的中间过程
-    CHASSIS_CALIBRATE,  // 底盘校准
+    CHASSIS_OFF,                // 底盘关闭
+    CHASSIS_SAFE,               // 底盘无力，所有控制量置0
+    CHASSIS_STAND_UP,           // 底盘起立，从倒地状态到站立状态的中间过程
+    CHASSIS_CALIBRATE,          // 底盘校准
     CHASSIS_FOLLOW_GIMBAL_YAW,  // 底盘跟随云台（运动方向为云台坐标系方向，需进行坐标转换）
-    CHASSIS_MOONWALK,   // 底盘太空步行走
-    CHASSIS_FLOATING,   // 底盘悬空状态
-    CHASSIS_CRASHING,   // 底盘接地状态，进行缓冲
-    CHASSIS_FREE,       // 底盘不跟随云台
-    CHASSIS_AUTO,       // 底盘自动模式
-    CHASSIS_OFF_HOOK,   // 底盘脱困模式
-    CHASSIS_DEBUG,      // 调试模式
-    CHASSIS_POS_DEBUG,  // 位控调试模式
-    CHASSIS_CUSTOM      // 自定义模式
+    CHASSIS_FLOATING,           // 底盘悬空状态
+    CHASSIS_CRASHING,           // 底盘接地状态，进行缓冲
+    CHASSIS_FREE,               // 底盘不跟随云台
+    CHASSIS_AUTO,               // 底盘自动模式
+    CHASSIS_OFF_HOOK,           // 底盘脱困模式
+    CHASSIS_DEBUG,              // 调试模式
+    CHASSIS_POS_DEBUG,          // 位控调试模式
+    CHASSIS_CUSTOM,             // 自定义模式
+    // 展览用到的特别模式
+    CHASSIS_MOVE,      // 底盘运动模式
+    CHASSIS_MOONWALK,  // 底盘太空步行走
 } ChassisMode_e;
 
 typedef struct Leg
@@ -214,7 +216,7 @@ typedef struct
 
     pid_type_def stand_up;
     pid_type_def wheel_stop[2];
-    
+
     pid_type_def chassis_follow_gimbal;
 } PID_t;
 
@@ -255,8 +257,8 @@ typedef struct
 
     uint32_t last_time;  // (ms)上一次更新时间
     uint32_t duration;   // (ms)任务周期
-    float dyaw;  // (rad)(feedback)当前位置与云台中值角度差（用于坐标转换）
-    uint16_t yaw_mid;  // (ecd)(preset)云台中值角度
+    float dyaw;          // (rad)(feedback)当前位置与云台中值角度差（用于坐标转换）
+    uint16_t yaw_mid;    // (ecd)(preset)云台中值角度
 } Chassis_s;
 
 typedef struct Calibrate

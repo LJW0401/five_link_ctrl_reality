@@ -330,7 +330,7 @@ void ChassisSetMode(void)
 
     if (CHASSIS.mode == CHASSIS_SAFE) {
         if (ps2_btns.button[PS2_SELECT].now && PS2_BUTTON_RISE(ps2_btns.button[PS2_START])) {
-            CHASSIS.mode = CHASSIS_FREE;
+            CHASSIS.mode = CHASSIS_MOVE;
         }
     } else {
         if (ps2_btns.button[PS2_SELECT].now && PS2_BUTTON_RISE(ps2_btns.button[PS2_START])) {
@@ -771,6 +771,7 @@ void ChassisReference(void)
             CHASSIS.ref.speed_vector.wz = v_set.wz;
         } break;
 
+        case CHASSIS_MOVE:
         case CHASSIS_CUSTOM: {
             CHASSIS.ref.speed_vector.vx = v_set.vx;
             CHASSIS.ref.speed_vector.vy = 0;
@@ -791,7 +792,7 @@ void ChassisReference(void)
             }
         } break;
 
-        default:{
+        default: {
             CHASSIS.ref.speed_vector.vx = 0;
             CHASSIS.ref.speed_vector.vy = 0;
             CHASSIS.ref.speed_vector.wz = 0;
@@ -810,14 +811,15 @@ void ChassisReference(void)
     }
     // clang-format on
     if (CHASSIS.mode == CHASSIS_MOONWALK) {  //太空行走模式下腿部摆动
-        CHASSIS.ref.leg_state[0].theta = GenerateSinWave(0.5f, 0.0f, 4.0f);
-        CHASSIS.ref.leg_state[1].theta = -GenerateSinWave(0.5f, 0.0f, 4.0f);
+        CHASSIS.ref.leg_state[0].theta = GenerateSinWave(0.2f, 0.0f, 4.0f);
+        CHASSIS.ref.leg_state[1].theta = -GenerateSinWave(0.2f, 0.0f, 4.0f);
     }
 
     // 腿部控制
     static float angle = M_PI_2;
     static float length = 0.12f;
     switch (CHASSIS.mode) {
+        case CHASSIS_MOVE:
         case CHASSIS_FREE:
         case CHASSIS_FOLLOW_GIMBAL_YAW:
         case CHASSIS_CUSTOM:
@@ -1018,6 +1020,7 @@ void ChassisConsole(void)
         } break;
         case CHASSIS_FOLLOW_GIMBAL_YAW:
         case CHASSIS_CUSTOM:
+        case CHASSIS_MOVE:
         case CHASSIS_FREE: {
             ConsoleNormal();
         } break;
@@ -1406,6 +1409,7 @@ static void SendJointMotorCmd(void)
             case CHASSIS_FOLLOW_GIMBAL_YAW:
             case CHASSIS_DEBUG:
             case CHASSIS_CUSTOM:
+            case CHASSIS_MOVE:
             case CHASSIS_FREE: {
                 DmMitCtrlTorque(&CHASSIS.joint_motor[0]);
                 DmMitCtrlTorque(&CHASSIS.joint_motor[1]);
@@ -1484,6 +1488,7 @@ static void SendWheelMotorCmd(void)
     switch (CHASSIS.mode) {
         case CHASSIS_FOLLOW_GIMBAL_YAW:
         case CHASSIS_CUSTOM:
+        case CHASSIS_MOVE:
         case CHASSIS_FREE: {
             LkMultipleTorqueControl(
                 WHEEL_CAN, CHASSIS.wheel_motor[0].set.tor, CHASSIS.wheel_motor[1].set.tor, 0, 0);
