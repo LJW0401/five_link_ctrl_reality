@@ -761,7 +761,7 @@ void ChassisReference(void)
 {
     // 计算速度向量
     ChassisSpeedVector_t v_set = {0.0f, 0.0f, 0.0f};
-    v_set.vx = GetPs2Joystick(PS2_LX) * (0.5f + ps2_btns.button[PS2_LSTICK].now * 1.5f);
+    v_set.vx = -GetPs2Joystick(PS2_LY) * (0.5f + ps2_btns.button[PS2_LSTICK].now * 1.0f);
     v_set.vy = 0;
     v_set.wz = GetPs2Joystick(PS2_RX) * 0.5f;
     switch (CHASSIS.mode) {
