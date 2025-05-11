@@ -1,5 +1,5 @@
 /**
-  ****************************(C) COPYRIGHT 2024 Polarbear****************************
+  ****************************(C) COPYRIGHT 2025 Polarbear****************************
   * @file       chassis_balance.c/h
   * @brief      平衡底盘控制器。
   * @note       包括初始化，目标量更新、状态量更新、控制量计算与直接控制量的发送
@@ -7,13 +7,32 @@
   *  Version    Date            Author          Modification
   *  V1.0.0     Apr-1-2024      Penguin         1. done
   *  V1.0.1     Apr-16-2024     Penguin         1. 完成基本框架
+  *  V1.0.2     Sep-16-2024     Penguin         1. 添加速度观测器并测试效果
+  *  V1.0.3     Nov-20-2024     Penguin         1. 完善离地检测
+  *  V1.1.0     Nov-20-2024     Penguin         1. 添加了展览模式的相关控制
   *
   @verbatim
   ==============================================================================
+    展览模式下的相关控制：
+        select+start:启动/关闭
+        select+square:太空步模式
+        select+cross:回到移动模式
+        up:腿长增加
+        down:腿长减少
+        left:左探头
+        right:右探头
+        ly:底盘前后移动
+        ly+lstick:底盘前后快速移动
+        lx:底盘左右
 
   ==============================================================================
   @endverbatim
-  ****************************(C) COPYRIGHT 2024 Polarbear****************************
+  
+  @todo:
+    2.添加状态清零，当运行过程中出现异常时可以手动将底盘状态清零
+    3.在浮空时通过动量守恒维持底盘的平衡，并调整合适的触地姿态
+
+  ****************************(C) COPYRIGHT 2025 Polarbear****************************
 */
 #ifndef CHASSIS_BALANCE_H
 #define CHASSIS_BALANCE_H
@@ -42,19 +61,22 @@
 /*-------------------- Structural definition --------------------*/
 
 typedef enum {
-    CHASSIS_OFF,        // 底盘关闭
-    CHASSIS_SAFE,       // 底盘无力，所有控制量置0
-    CHASSIS_STAND_UP,   // 底盘起立，从倒地状态到站立状态的中间过程
-    CHASSIS_CALIBRATE,  // 底盘校准
+    CHASSIS_OFF,                // 底盘关闭
+    CHASSIS_SAFE,               // 底盘无力，所有控制量置0
+    CHASSIS_STAND_UP,           // 底盘起立，从倒地状态到站立状态的中间过程
+    CHASSIS_CALIBRATE,          // 底盘校准
     CHASSIS_FOLLOW_GIMBAL_YAW,  // 底盘跟随云台（运动方向为云台坐标系方向，需进行坐标转换）
-    CHASSIS_FLOATING,   // 底盘悬空状态
-    CHASSIS_CRASHING,   // 底盘接地状态，进行缓冲
-    CHASSIS_FREE,       // 底盘不跟随云台
-    CHASSIS_AUTO,       // 底盘自动模式
-    CHASSIS_OFF_HOOK,   // 底盘脱困模式
-    CHASSIS_DEBUG,      // 调试模式
-    CHASSIS_POS_DEBUG,  // 位控调试模式
-    CHASSIS_CUSTOM      // 自定义模式
+    CHASSIS_FLOATING,           // 底盘悬空状态
+    CHASSIS_CRASHING,           // 底盘接地状态，进行缓冲
+    CHASSIS_FREE,               // 底盘不跟随云台
+    CHASSIS_AUTO,               // 底盘自动模式
+    CHASSIS_OFF_HOOK,           // 底盘脱困模式
+    CHASSIS_DEBUG,              // 调试模式
+    CHASSIS_POS_DEBUG,          // 位控调试模式
+    CHASSIS_CUSTOM,             // 自定义模式
+    // 展览用到的特别模式
+    CHASSIS_MOVE,      // 底盘运动模式
+    CHASSIS_MOONWALK,  // 底盘太空步行走
 } ChassisMode_e;
 
 typedef struct Leg
@@ -213,7 +235,7 @@ typedef struct
 
     pid_type_def stand_up;
     pid_type_def wheel_stop[2];
-    
+
     pid_type_def chassis_follow_gimbal;
 } PID_t;
 
@@ -254,8 +276,8 @@ typedef struct
 
     uint32_t last_time;  // (ms)上一次更新时间
     uint32_t duration;   // (ms)任务周期
-    float dyaw;  // (rad)(feedback)当前位置与云台中值角度差（用于坐标转换）
-    uint16_t yaw_mid;  // (ecd)(preset)云台中值角度
+    float dyaw;          // (rad)(feedback)当前位置与云台中值角度差（用于坐标转换）
+    uint16_t yaw_mid;    // (ecd)(preset)云台中值角度
 } Chassis_s;
 
 typedef struct Calibrate

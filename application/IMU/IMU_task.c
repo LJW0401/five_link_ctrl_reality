@@ -248,7 +248,7 @@ static void UpdateImuData(void)
 
     IMU_DATA.gyro[AX_X] = INS_gyro[AX_X];
     IMU_DATA.gyro[AX_Y] = INS_gyro[AX_Y];
-    IMU_DATA.gyro[AX_Z] = INS_gyro[AX_Z];
+    IMU_DATA.gyro[AX_Z] = INS_gyro[AX_Z] - __GYRO_BIAS_YAW;
 
     IMU_DATA.accel[AX_X] = gVec[AX_X];
     IMU_DATA.accel[AX_Y] = gVec[AX_Y];

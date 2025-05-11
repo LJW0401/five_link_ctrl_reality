@@ -1,5 +1,5 @@
 /**
-  ****************************(C) COPYRIGHT 2024 Polarbear****************************
+  ****************************(C) COPYRIGHT 2025 Polarbear****************************
   * @file       chassis_balance.c/h
   * @brief      平衡底盘控制器。
   * @note       包括初始化，目标量更新、状态量更新、控制量计算与直接控制量的发送
@@ -9,9 +9,21 @@
   *  V1.0.1     Apr-16-2024     Penguin         1. 完成基本框架
   *  V1.0.2     Sep-16-2024     Penguin         1. 添加速度观测器并测试效果
   *  V1.0.3     Nov-20-2024     Penguin         1. 完善离地检测
+  *  V1.1.0     Nov-20-2024     Penguin         1. 添加了展览模式的相关控制
   *
   @verbatim
   ==============================================================================
+    展览模式下的相关控制：
+        select+start:启动/关闭
+        select+square:太空步模式
+        select+cross:回到移动模式
+        up:腿长增加
+        down:腿长减少
+        left:左探头
+        right:右探头
+        ly:底盘前后移动
+        ly+lstick:底盘前后快速移动
+        lx:底盘左右
 
   ==============================================================================
   @endverbatim
@@ -20,28 +32,31 @@
     2.添加状态清零，当运行过程中出现异常时可以手动将底盘状态清零
     3.在浮空时通过动量守恒维持底盘的平衡，并调整合适的触地姿态
 
-  ****************************(C) COPYRIGHT 2024 Polarbear****************************
+  ****************************(C) COPYRIGHT 2025 Polarbear****************************
 */
 #include "chassis_balance.h"
 #if (CHASSIS_TYPE == CHASSIS_BALANCE)
 #include "CAN_communication.h"
+#include "IMU.h"
 #include "bsp_delay.h"
 #include "chassis.h"
 #include "chassis_balance_extras.h"
 #include "cmsis_os.h"
 #include "data_exchange.h"
 #include "detect_task.h"
+#include "gimbal.h"
 #include "kalman_filter.h"
 #include "macro_typedef.h"
+#include "ps2.h"
 #include "signal_generator.h"
 #include "stdbool.h"
 #include "string.h"
 #include "usb_debug.h"
 #include "user_lib.h"
-#include "gimbal.h"
-#include "IMU.h"
 
 // 一些内部的配置
+#define ENABLE_EXHIBITION_MODE true  // 启用展会模式
+
 #define TAKE_OFF_DETECT 0  // 启用离地检测
 #define CLOSE_LEG_LEFT 0   // 关闭左腿输出
 #define CLOSE_LEG_RIGHT 0  // 关闭右腿输出
@@ -116,6 +131,10 @@ Chassis_s CHASSIS = {
 };
 
 int8_t TRANSITION_MATRIX[10] = {0};
+
+#if ENABLE_EXHIBITION_MODE
+Ps2Buttons_t ps2_btns = {0};
+#endif
 
 /*-------------------- Publish --------------------*/
 
@@ -218,7 +237,7 @@ void ChassisInit(void)
     PID_init(
         &CHASSIS.pid.wheel_stop[1], PID_POSITION, wheel_stop_pid, MAX_OUT_CHASSIS_WHEEL_STOP,
         MAX_IOUT_CHASSIS_WHEEL_STOP);
-    
+
     float chassis_follow_gimbal_pid[3] = {
         KP_CHASSIS_FOLLOW_GIMBAL, KI_CHASSIS_FOLLOW_GIMBAL, KD_CHASSIS_FOLLOW_GIMBAL};
     PID_init(
@@ -301,6 +320,46 @@ void ChassisHandleException(void)
 /* auxiliary function: None                                       */
 /******************************************************************/
 
+#if ENABLE_EXHIBITION_MODE
+/**
+ * @brief          设置模式
+ * @note           展会模式下，使用PS2进行控制
+ * @param[in]      none
+ * @retval         none
+ */
+void ChassisSetMode(void)
+{
+    if (CHASSIS.error_code & JOINT_ERROR_OFFSET) {  // 关节电机出错时的状态处理
+        CHASSIS.mode = CHASSIS_SAFE;
+        return;
+    }
+
+    if (GetPs2Status() != PS2_OK) {  // PS2工作异常时的状态处理
+        CHASSIS.mode = CHASSIS_SAFE;
+        return;
+    }
+
+    if (ps2_btns.button[PS2_SELECT].now && PS2_BUTTON_RISE(ps2_btns.button[PS2_START]) &&
+        CHASSIS.mode != CHASSIS_SAFE) {  // 非安全模式下，按下SELECT+START键切换到安全模式
+        CHASSIS.mode = CHASSIS_SAFE;
+        return;
+    }
+
+    if (CHASSIS.mode == CHASSIS_SAFE) {  //安全模式
+        if (ps2_btns.button[PS2_SELECT].now && PS2_BUTTON_RISE(ps2_btns.button[PS2_START])) {
+            CHASSIS.mode = CHASSIS_MOVE;
+        }
+    } else if (CHASSIS.mode == CHASSIS_MOVE) {  // 展会模式下的运动模式，为各种模式切换的基底模式
+        if (ps2_btns.button[PS2_SELECT].now && PS2_BUTTON_RISE(ps2_btns.button[PS2_SQUARE])) {
+            CHASSIS.mode = CHASSIS_MOONWALK;
+        }
+    } else if (CHASSIS.mode == CHASSIS_MOONWALK) {
+        if (ps2_btns.button[PS2_SELECT].now && PS2_BUTTON_RISE(ps2_btns.button[PS2_CROSS])) {
+            CHASSIS.mode = CHASSIS_MOVE;
+        }
+    }
+}
+#else
 /**
  * @brief          设置模式
  * @param[in]      none
@@ -359,7 +418,7 @@ void ChassisSetMode(void)
         // CHASSIS.mode = CHASSIS_FREE;
         CHASSIS.mode = CHASSIS_SAFE;
     } else if (switch_is_mid(CHASSIS.rc->rc.s[CHASSIS_MODE_CHANNEL])) {
-        CHASSIS.mode = CHASSIS_FOLLOW_GIMBAL_YAW;;
+        CHASSIS.mode = CHASSIS_FOLLOW_GIMBAL_YAW;
     } else if (switch_is_down(CHASSIS.rc->rc.s[CHASSIS_MODE_CHANNEL])) {
         // 在安全模式时，遥控器摇杆打成左下，右上进入脱困模式
         if (CHASSIS.rc->rc.ch[0] > RC_OFF_HOOK_VALUE_HOLE &&
@@ -372,6 +431,7 @@ void ChassisSetMode(void)
         }
     }
 }
+#endif
 
 /******************************************************************/
 /* Observe                                                        */
@@ -403,6 +463,10 @@ void ChassisObserver(void)
 {
     CHASSIS.duration = xTaskGetTickCount() - CHASSIS.last_time;
     CHASSIS.last_time = xTaskGetTickCount();
+
+#if ENABLE_EXHIBITION_MODE
+    UpdatePs2Buttons(&ps2_btns);
+#endif
 
     UpdateMotorStatus();
     UpdateLegStatus();
@@ -707,6 +771,110 @@ static void BodyMotionObserve(void)
 /* auxiliary function: None                                       */
 /******************************************************************/
 
+#if ENABLE_EXHIBITION_MODE
+/**
+ * @brief          更新目标量
+ * @note           展会模式下，使用PS2进行控制
+ * @param[in]      none
+ * @retval         none
+ */
+void ChassisReference(void)
+{
+    // 计算速度向量
+    ChassisSpeedVector_t v_set = {0.0f, 0.0f, 0.0f};
+    v_set.vx = -GetPs2Joystick(PS2_LY) * (0.5f + ps2_btns.button[PS2_LSTICK].now * 1.0f);
+    v_set.vy = 0;
+    v_set.wz = -GetPs2Joystick(PS2_LX) * 2.0f;
+    switch (CHASSIS.mode) {
+        case CHASSIS_FREE: {  // 底盘自由模式下，控制量为底盘坐标系下的速度
+            CHASSIS.ref.speed_vector.vx = v_set.vx;
+            CHASSIS.ref.speed_vector.vy = 0;
+            CHASSIS.ref.speed_vector.wz = v_set.wz;
+        } break;
+
+        case CHASSIS_MOONWALK:
+        case CHASSIS_MOVE:
+        case CHASSIS_CUSTOM: {
+            CHASSIS.ref.speed_vector.vx = v_set.vx;
+            CHASSIS.ref.speed_vector.vy = 0;
+            CHASSIS.ref.speed_vector.wz = v_set.wz;
+        } break;
+
+        case CHASSIS_FOLLOW_GIMBAL_YAW: {  // 云台跟随模式下，控制量为云台坐标系下的速度，需要进行坐标转换
+            float delta_yaw = GetGimbalDeltaYawMid();
+
+            CHASSIS.ref.speed_vector.vx = v_set.vx * cosf(delta_yaw);
+            CHASSIS.ref.speed_vector.vy = 0;
+
+            if (GetGimbalInitJudgeReturn()) {
+                CHASSIS.ref.speed_vector.wz = 0;
+            } else {
+                CHASSIS.ref.speed_vector.wz =
+                    PID_calc(&CHASSIS.pid.chassis_follow_gimbal, -delta_yaw, 0);
+            }
+        } break;
+
+        default: {
+            CHASSIS.ref.speed_vector.vx = 0;
+            CHASSIS.ref.speed_vector.vy = 0;
+            CHASSIS.ref.speed_vector.wz = 0;
+        }
+    }
+
+    // 计算期望状态
+    // clang-format off
+    for (uint8_t i = 0; i < 2; i++) {
+        CHASSIS.ref.leg_state[i].theta     =  0;
+        CHASSIS.ref.leg_state[i].theta_dot =  0;
+        CHASSIS.ref.leg_state[i].x         =  0;
+        CHASSIS.ref.leg_state[i].x_dot     =  CHASSIS.ref.speed_vector.vx;
+        CHASSIS.ref.leg_state[i].phi       =  0;
+        CHASSIS.ref.leg_state[i].phi_dot   =  0;
+    }
+    // clang-format on
+    if (CHASSIS.mode == CHASSIS_MOONWALK) {  //太空行走模式下腿部摆动
+        CHASSIS.ref.leg_state[0].theta = GenerateSinWave(0.2f, 0.0f, 2.0f);
+        CHASSIS.ref.leg_state[1].theta = -GenerateSinWave(0.2f, 0.0f, 2.0f);
+    }
+
+    // 腿部控制
+    static float angle = M_PI_2;
+    static float length = 0.12f;
+    switch (CHASSIS.mode) {
+        case CHASSIS_MOONWALK:
+        case CHASSIS_MOVE:
+        case CHASSIS_FREE:
+        case CHASSIS_FOLLOW_GIMBAL_YAW:
+        case CHASSIS_CUSTOM:
+        case CHASSIS_POS_DEBUG: {
+            length += ps2_btns.button[PS2_UP].now * 0.0008f;
+            length -= ps2_btns.button[PS2_DOWN].now * 0.0008f;
+        } break;
+
+        default: {
+            angle = M_PI_2;
+            length = 0.14f;
+        }
+    }
+    // 对长度和角度范围进行限制
+    length = fp32_constrain(length, MIN_LEG_LENGTH, MAX_LEG_LENGTH);
+    angle = fp32_constrain(angle, MIN_LEG_ANGLE, MAX_LEG_ANGLE);
+    // 给腿部目标赋值
+    CHASSIS.ref.rod_L0[0] = length;
+    CHASSIS.ref.rod_L0[1] = length;
+    CHASSIS.ref.rod_Angle[0] = angle;
+    CHASSIS.ref.rod_Angle[1] = angle;
+
+    // 目标roll角度
+    if (ps2_btns.button[PS2_LEFT].now) {
+        CHASSIS.ref.body.roll = 0.1f;
+    } else if (ps2_btns.button[PS2_RIGHT].now) {
+        CHASSIS.ref.body.roll = -0.1f;
+    } else {
+        CHASSIS.ref.body.roll = 0.0f;
+    }
+}
+#else
 /**
  * @brief          更新目标量
  * @param[in]      none
@@ -826,6 +994,7 @@ void ChassisReference(void)
 
     CHASSIS.ref.body.roll = fp32_constrain(-rc_roll * RC_TO_ONE * MAX_ROLL, MIN_ROLL, MAX_ROLL);
 }
+#endif
 
 /******************************************************************/
 /* Console                                                        */
@@ -874,6 +1043,8 @@ void ChassisConsole(void)
         } break;
         case CHASSIS_FOLLOW_GIMBAL_YAW:
         case CHASSIS_CUSTOM:
+        case CHASSIS_MOONWALK:
+        case CHASSIS_MOVE:
         case CHASSIS_FREE: {
             ConsoleNormal();
         } break;
@@ -1262,6 +1433,8 @@ static void SendJointMotorCmd(void)
             case CHASSIS_FOLLOW_GIMBAL_YAW:
             case CHASSIS_DEBUG:
             case CHASSIS_CUSTOM:
+            case CHASSIS_MOONWALK:
+            case CHASSIS_MOVE:
             case CHASSIS_FREE: {
                 DmMitCtrlTorque(&CHASSIS.joint_motor[0]);
                 DmMitCtrlTorque(&CHASSIS.joint_motor[1]);
@@ -1340,6 +1513,8 @@ static void SendWheelMotorCmd(void)
     switch (CHASSIS.mode) {
         case CHASSIS_FOLLOW_GIMBAL_YAW:
         case CHASSIS_CUSTOM:
+        case CHASSIS_MOONWALK:
+        case CHASSIS_MOVE:
         case CHASSIS_FREE: {
             LkMultipleTorqueControl(
                 WHEEL_CAN, CHASSIS.wheel_motor[0].set.tor, CHASSIS.wheel_motor[1].set.tor, 0, 0);
