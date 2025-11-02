@@ -31,8 +31,7 @@
 
 Chassis_s chassis;
 PID_t chassis_pid;
-bool shift_pressed=0;
-uint8_t spin_ui=0;
+
 
 /*-------------------- Init --------------------*/
 
@@ -52,10 +51,12 @@ void ChassisInit(void)
     {
         PID_init(&chassis_pid.wheel_velocity[i],PID_POSITION,wheel_vel,MAX_OUT_MECANNUM_VEL,MAX_IOUT_MECANNUM_VEL);
     }
-    
     const static fp32 gimbal_follow[3]={KP_CHASSIS_FOLLOW_GIMBAL,KI_CHASSIS_FOLLOW_GIMBAL,KD_CHASSIS_FOLLOW_GIMBAL};
     PID_init(&chassis_pid.follow,PID_POSITION,gimbal_follow,MAX_OUT_CHASSIS_FOLLOW_GIMBAL,MAX_IOUT_CHASSIS_FOLLOW_GIMBAL);
-
+    // 初始化低通滤波器
+    const static fp32  key_alpha=0.005;
+    LowPassFilterInit(&chassis.vx_flt,key_alpha);
+    LowPassFilterInit(&chassis.vy_flt,key_alpha);
     //step3 初始化电机
     MotorInit(&chassis.wheel[0],WHEEL_1_ID,WHEEL_1_CAN,WHEEL_1_MOTOR_TYPE,WHEEL_1_DIRECTION,WHEEL_1_RATIO,WHEEL_1_MODE);
     MotorInit(&chassis.wheel[1],WHEEL_2_ID,WHEEL_2_CAN,WHEEL_2_MOTOR_TYPE,WHEEL_2_DIRECTION,WHEEL_2_RATIO,WHEEL_2_MODE);
@@ -64,6 +65,9 @@ void ChassisInit(void)
 
     //step4 初始模式设置
     chassis.mode = CHASSIS_LOCK;
+    chassis.sc_flag = 0;
+    chassis.spin_flag = 0;
+    chassis.shift_pressed = false;
 }
 
 
@@ -76,15 +80,23 @@ void ChassisInit(void)
  */
 void ChassisSetMode(void)
 {
-    if ((toe_is_error(DBUS_TOE)) || switch_is_down(chassis.rc->rc.s[0]) || GetGimbalInitJudgeReturn() == false)
+    if ((toe_is_error(DBUS_TOE)) || switch_is_down(chassis.rc->rc.s[0]) || !(GetGimbalInitJudgeReturn()))
     {
         chassis.mode = CHASSIS_LOCK;
     }
-    else if (switch_is_mid(chassis.rc->rc.s[0])&&spin_ui==0)
+    else if (switch_is_mid(chassis.rc->rc.s[0]))
     {
-        chassis.mode = CHASSIS_FOLLOW;  
+        if(chassis.spin_flag==1)
+        {
+            chassis.mode= CHASSIS_SPIN;
+        }
+        else
+        {
+            chassis.mode = CHASSIS_FOLLOW; 
+        }
+         
     }
-    else if (switch_is_up(chassis.rc->rc.s[0])||spin_ui==1)
+    else if (switch_is_up(chassis.rc->rc.s[0]))
     {
         chassis.mode = CHASSIS_SPIN;
 
@@ -137,40 +149,41 @@ void ChassisReference(void)
     }
     else if (chassis.mode == CHASSIS_FOLLOW)
     {
-        chassis.reference_rc.vx=fp32_deadline(chassis.rc->rc.ch[3],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_SPEED;
-        chassis.reference_rc.vy=fp32_deadline(-chassis.rc->rc.ch[2],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_SPEED;
+        /*  获取按键状态 */
+        float req_vx = 0.0f;
+        float req_vy = 0.0f;
 
-        if (chassis.rc->key.v & KEY_PRESSED_OFFSET_W) 
-        {
-            chassis.reference_rc.vx = CHASSIS_RC_MAX_SPEED;
-            
-        }
-        else if (chassis.rc->key.v & KEY_PRESSED_OFFSET_S) 
-        {
-            chassis.reference_rc.vx = -CHASSIS_RC_MAX_SPEED;
-        }
+        if (chassis.rc->key.v & KEY_PRESSED_OFFSET_W) req_vx += 1.0f;
+        if (chassis.rc->key.v & KEY_PRESSED_OFFSET_S) req_vx -= 1.0f;
+        if (chassis.rc->key.v & KEY_PRESSED_OFFSET_A) req_vy += 1.0f;
+        if (chassis.rc->key.v & KEY_PRESSED_OFFSET_D) req_vy -= 1.0f;
 
-        if (chassis.rc->key.v & KEY_PRESSED_OFFSET_A) 
-        {
-            chassis.reference_rc.vy = CHASSIS_RC_MAX_SPEED;
-        }
+        /* 斜坡滤波 */
+        float vx_smooth = LowPassFilterCalc(&chassis.vx_flt, req_vx);
+        float vy_smooth = LowPassFilterCalc(&chassis.vy_flt, req_vy);
 
-        else if (chassis.rc->key.v & KEY_PRESSED_OFFSET_D) 
+        /* 映射到真实速度 */
+        if(req_vx==0&&req_vy==0)
         {
-            
-            chassis.reference_rc.vy = -CHASSIS_RC_MAX_SPEED;
-        }     
+            chassis.reference_rc.vx=fp32_deadline(chassis.rc->rc.ch[3],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_SPEED;
+            chassis.reference_rc.vy=fp32_deadline(-chassis.rc->rc.ch[2],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_SPEED;
+        }
+        else
+        {
+            chassis.reference_rc.vx = vx_smooth * CHASSIS_RC_MAX_SPEED;
+            chassis.reference_rc.vy = vy_smooth * CHASSIS_RC_MAX_SPEED;
+        }
         if (chassis.rc->key.v & KEY_PRESSED_OFFSET_SHIFT) 
         {
-            if (!shift_pressed)
+            if (chassis.shift_pressed==false)
             {
-                spin_ui = 1;
-                shift_pressed = true;
+                chassis.spin_flag = 1;
+                chassis.shift_pressed = true;
             }
         }
         else
         {
-            shift_pressed = false;
+            chassis.shift_pressed = false;
         }
         
 
@@ -181,38 +194,42 @@ void ChassisReference(void)
     }
     else if (chassis.mode == CHASSIS_SPIN)
     {
-        chassis.reference_rc.vx=fp32_deadline(chassis.rc->rc.ch[3],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_SPEED;
-        chassis.reference_rc.vy=fp32_deadline(-chassis.rc->rc.ch[2],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_SPEED;
-        if (chassis.rc->key.v & KEY_PRESSED_OFFSET_W) 
+         /*  获取按键状态 */
+        float req_vx = 0.0f;
+        float req_vy = 0.0f;
+
+        if (chassis.rc->key.v & KEY_PRESSED_OFFSET_W) req_vx += 1.0f;
+        if (chassis.rc->key.v & KEY_PRESSED_OFFSET_S) req_vx -= 1.0f;
+        if (chassis.rc->key.v & KEY_PRESSED_OFFSET_A) req_vy += 1.0f;
+        if (chassis.rc->key.v & KEY_PRESSED_OFFSET_D) req_vy -= 1.0f;
+
+        /* 斜坡滤波 */
+        float vx_smooth = LowPassFilterCalc(&chassis.vx_flt, req_vx);
+        float vy_smooth = LowPassFilterCalc(&chassis.vy_flt, req_vy);
+
+        /* 映射到真实速度 */
+        if(req_vx==0&&req_vy==0)
         {
-            chassis.reference_rc.vx += CHASSIS_RC_MAX_SPEED;
+            chassis.reference_rc.vx=fp32_deadline(chassis.rc->rc.ch[3],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_SPEED;
+            chassis.reference_rc.vy=fp32_deadline(-chassis.rc->rc.ch[2],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_SPEED;
+        }
+        else
+        {
+            chassis.reference_rc.vx = vx_smooth * CHASSIS_RC_MAX_SPEED;
+            chassis.reference_rc.vy = vy_smooth * CHASSIS_RC_MAX_SPEED;
         }
 
-        else if (chassis.rc->key.v & KEY_PRESSED_OFFSET_S) 
-        {
-            chassis.reference_rc.vx -= CHASSIS_RC_MAX_SPEED;
-        }
-
-        if (chassis.rc->key.v & KEY_PRESSED_OFFSET_A) 
-        {
-            chassis.reference_rc.vy += CHASSIS_RC_MAX_SPEED;
-        }
-
-        else if (chassis.rc->key.v & KEY_PRESSED_OFFSET_D) 
-        {
-            chassis.reference_rc.vy -= CHASSIS_RC_MAX_SPEED;
-        }
         if (chassis.rc->key.v & KEY_PRESSED_OFFSET_SHIFT) 
         {
-            if (!shift_pressed)
+            if (chassis.shift_pressed==false)
             {
-                spin_ui = 0;
-                shift_pressed = true;
+                chassis.spin_flag = 0;
+                chassis.shift_pressed = true;
             }
         }
         else
         {
-            shift_pressed = false;
+            chassis.shift_pressed = false;
         }
 
 
@@ -248,7 +265,20 @@ void ChassisConsole(void)
     {
         chassis.wheel[i].set.curr = PID_calc(&chassis_pid.wheel_velocity[i], chassis.feedback[i], chassis.set[i]);
     }
-    Power_control(chassis.wheel);
+    if(chassis.rc->key.v & KEY_PRESSED_OFFSET_F && !chassis.f_flag)
+    {
+        if (chassis.sc_flag)
+        {
+            chassis.sc_flag = 0;
+        }
+        else
+        {
+            chassis.sc_flag = 1;
+        }
+    }
+    chassis.f_flag = chassis.rc->key.v & KEY_PRESSED_OFFSET_F;
+    
+    // Power_control(chassis.wheel,&(chassis.sc_flag));
 }
 
 /*-------------------- Cmd --------------------*/
@@ -261,9 +291,12 @@ void ChassisConsole(void)
 
 void ChassisSendCmd(void){
     CanCmdDjiMotor(1,0x200,chassis.wheel[0].set.curr,chassis.wheel[1].set.curr,chassis.wheel[2].set.curr,chassis.wheel[3].set.curr);
-    ModifyDebugDataPackage(6,chassis.set[0],"wheel1");
-    ModifyDebugDataPackage(5,chassis.wheel[0].fdb.vel,"wheel1_fdb");
+    //  ModifyDebugDataPackage(6,chassis.set[0],"wheel1");
+    //  ModifyDebugDataPackage(5,chassis.wheel[0].fdb.vel,"wheel1_fdb");
    
 }
-
+inline int GetChassisSpinStateMEC(void)
+{
+    return chassis.spin_flag;
+}
 #endif

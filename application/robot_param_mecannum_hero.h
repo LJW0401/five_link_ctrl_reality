@@ -10,8 +10,8 @@
 #define CHASSIS_MODE_CHANNEL 0  // 选择底盘状态 开关通道号
 
 #define CHASSIS_TYPE CHASSIS_MECANUM_WHEEL      // 选择底盘类型
-#define GIMBAL_TYPE GIMBAL_YAW_PITCH_DIRECT      // 选择云台类型
-#define SHOOT_TYPE SHOOT_FRIC_TRIGGER                    // 选择发射机构类型
+#define GIMBAL_TYPE  GIMBAL_YAW_PITCH_DIRECT     // 选择云台类型
+#define SHOOT_TYPE  SHOOT_FRIC_TRIGGER          // 选择发射机构类型
 #define CONTROL_TYPE CHASSIS_AND_GIMBAL          // 选择控制类型
 #define MECHANICAL_ARM_TYPE MECHANICAL_ARM_NONE  //选择机械臂类型
 
@@ -120,7 +120,7 @@
 
 //电机角度中值设置
 #define GIMBAL_DIRECT_PITCH_MID (0.94f)  //云台初始化正对齐的时候使用的pitch轴正中心量
-#define GIMBAL_DIRECT_YAW_MID (0.41f)   //云台初始化正对齐的时候使用的yaw轴正中心量
+#define GIMBAL_DIRECT_YAW_MID (-2.089f)   //云台初始化正对齐的时候使用的yaw轴正中心量
 //PID parameters ---------------------
 //YAW ANGLE
 #define KP_GIMBAL_YAW_ANGLE (30.0f)//60
@@ -174,9 +174,9 @@
 //单环拨弹速度
 #define TRIGGER_SPEED (-7.0f)
 //摩擦轮速度
-#define FRIC_R_SPEED (1000.0f)
-#define FRIC_L_SPEED (-1000.0f)
-#define FRIC_SPEED_LIMIT (800.0f)
+#define FRIC_R_SPEED (800.0f)
+#define FRIC_L_SPEED (-800.0f)
+#define FRIC_SPEED_LIMIT (500.0f)
 
 /*ECD parameters------------*/
 //电机反馈码盘值范围(无)
@@ -219,7 +219,7 @@
 #define TRIGGER_ANGEL_PID_MAX_IOUT (2.0f)
 
 //摩擦轮电机PID
-#define FRIC_SPEED_PID_KP (1000.0f)
+#define FRIC_SPEED_PID_KP (800.0f)
 #define FIRC_SPEED_PID_KI (0.1f)
 #define FRIC_SPEED_PID_KD (233.3f)
 
