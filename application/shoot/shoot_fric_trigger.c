@@ -11,6 +11,7 @@
   *  V2.0.0     2025-3-3        CJH             1. 兼容了达妙4310拨弹盘和大疆2006拨弹盘
   *                                             2. 完善了单发功能，上位机火控功能
   *                                             3. 增加了热量限制
+  * V2.1.0     2025-11-2        LYX             1. 优化代码格式
   @verbatim
   ==============================================================================
 
@@ -234,13 +235,15 @@ void ShootSetMode(void)
     // }
 
     //安全档
-    if ((switch_is_down(SHOOT.rc->rc.s[0]))) {
+    if ((switch_is_down(SHOOT.rc->rc.s[0])))
+    {
         SHOOT.mode = LOAD_STOP;
         SHOOT.state = FRIC_NOT_READY;
     }
 
     //遥控器离线保护
-    if (toe_is_error(DBUS_TOE)) {
+    if (toe_is_error(DBUS_TOE)) 
+    {
         SHOOT.state = FRIC_NOT_READY;
         SHOOT.mode = LOAD_STOP;
     }
