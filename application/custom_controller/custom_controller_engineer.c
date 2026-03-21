@@ -260,7 +260,6 @@ void CustomControllerSendCmd(void)
         CUSTOM_CONTROLLER.joint_motor[3].set.value,
         CUSTOM_CONTROLLER.joint_motor[4].set.value, 
         CUSTOM_CONTROLLER.joint_motor[5].set.value, 0);
-    // clang-format on
 }
 
 #endif  // CUSTOM_CONTROLLER_TYPE

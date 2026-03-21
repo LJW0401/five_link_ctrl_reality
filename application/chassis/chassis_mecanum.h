@@ -80,12 +80,6 @@ typedef struct
     fp32 set[4];
     
     fp32 yaw_delta;
-    uint8_t sc_flag;
-    uint32_t f_flag;
-    bool shift_pressed;
-    uint8_t spin_flag;
-    LowPassFilter_t vx_flt;
-    LowPassFilter_t vy_flt;
 } Chassis_s;
 
 

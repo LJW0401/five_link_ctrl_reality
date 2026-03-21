@@ -81,26 +81,17 @@ void ChassisInit(void)
  */
 void ChassisSetMode(void)
 {
-    if ((toe_is_error(DBUS_TOE)) || switch_is_down(chassis.rc->rc.s[0]) || !(GetGimbalInitJudgeReturn()))
+    if ((toe_is_error(DBUS_TOE)) || switch_is_down(chassis.rc->rc.s[0]) || GetGimbalInitJudgeReturn() == false)
     {
         chassis.mode = CHASSIS_LOCK;
     }
     else if (switch_is_mid(chassis.rc->rc.s[0]))
     {
-        if(chassis.spin_flag==1)
-        {
-            chassis.mode= CHASSIS_SPIN;
-        }
-        else
-        {
-            chassis.mode = CHASSIS_FOLLOW; 
-        }
-         
+        chassis.mode = CHASSIS_FOLLOW;
     }
     else if (switch_is_up(chassis.rc->rc.s[0]))
     {
-        chassis.mode = CHASSIS_SPIN;
-
+        chassis.mode = CHASSIS_FOLLOW;
     }
 }
 
@@ -246,6 +237,71 @@ void ChassisReference(void)
         }
     }
     
+    //GimbalSpeedVectorToChassisSpeedVector();
+    fp32 sin_yaw = 0.0f, cos_yaw = 0.0f;
+	// 控制vx vy
+	sin_yaw = sinf(CHASSIS.dyaw);
+	cos_yaw = cosf(CHASSIS.dyaw);
+    CHASSIS.vy_set = cos_yaw * CHASSIS.vy_rc_set - sin_yaw * CHASSIS.vx_rc_set;
+	CHASSIS.vx_set = sin_yaw * CHASSIS.vy_rc_set + cos_yaw * CHASSIS.vx_rc_set;
+
+    //键盘控制
+    if (CHASSIS.rc->key.v & KEY_PRESSED_OFFSET_W)
+    {
+        CHASSIS.vx_rc_set = NORMAL_MAX_CHASSIS_SPEED_X;
+    }
+    else if (CHASSIS.rc->key.v & KEY_PRESSED_OFFSET_S)
+    {
+        chassis.reference_rc.vx=fp32_deadline(chassis.rc->rc.ch[3],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_SPEED;
+        chassis.reference_rc.vy=fp32_deadline(-chassis.rc->rc.ch[2],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_SPEED;
+
+        if (chassis.rc->key.v & KEY_PRESSED_OFFSET_W) 
+        {
+            chassis.reference_rc.vx += CHASSIS_RC_MAX_SPEED;
+        }
+
+        else if (chassis.rc->key.v & KEY_PRESSED_OFFSET_S) 
+        {
+            chassis.reference_rc.vx -= CHASSIS_RC_MAX_SPEED;
+        }
+
+        if (chassis.rc->key.v & KEY_PRESSED_OFFSET_A) 
+        {
+            chassis.reference_rc.vy += CHASSIS_RC_MAX_SPEED;
+        }
+
+        else if (chassis.rc->key.v & KEY_PRESSED_OFFSET_D) 
+        {
+            chassis.reference_rc.vy -= CHASSIS_RC_MAX_SPEED;
+        }
+
+
+        chassis.reference.vx =  chassis.reference_rc.vx * cosf(chassis.yaw_delta) - chassis.reference_rc.vy * sinf(chassis.yaw_delta);
+        chassis.reference.vy =  chassis.reference_rc.vx * sinf(chassis.yaw_delta) + chassis.reference_rc.vy * cos(chassis.yaw_delta);
+
+        chassis.reference.wz=PID_calc(&chassis_pid.follow,0,chassis.yaw_delta);
+    }
+
+    if (CHASSIS.rc->key.v & KEY_PRESSED_OFFSET_A)
+    {
+        CHASSIS.vy_rc_set = NORMAL_MAX_CHASSIS_SPEED_Y;
+    }
+    else if (CHASSIS.rc->key.v & KEY_PRESSED_OFFSET_D)
+    {
+        CHASSIS.vy_rc_set = -NORMAL_MAX_CHASSIS_SPEED_Y;
+    }
+    /*int spinflag = 0; //标定小陀螺状态
+    if (CHASSIS.rc->key.v & KEY_PRESSED_OFFSET_R)//按R键启用小陀螺
+    {
+        spinflag = 1;
+    }
+    else if(CHASSIS.rc->key.v & KEY_PRESSED_OFFSET_F)//按F键关闭小陀螺
+    {
+        spinflag = 0;
+    }
+    if (spinflag){
+        CHASSIS.wz_set = NORMAL_MAX_CHASSIS_SPEED_WX;
+    }*/
 }
 
 /*-------------------- Console --------------------*/
@@ -257,25 +313,14 @@ void ChassisReference(void)
  */
 void ChassisConsole(void)
 {
-    chassis.set[0] = ( sqrt(2)/2*(chassis.reference.vx - chassis.reference.vy) - WHEEL_CENTER_DISTANCE*chassis.reference.wz )/WHEEL_RADIUS*chassis.wheel[0].reduction_ratio*chassis.wheel[0].direction;
-    chassis.set[1] = ( sqrt(2)/2*(chassis.reference.vx + chassis.reference.vy) - WHEEL_CENTER_DISTANCE*chassis.reference.wz )/WHEEL_RADIUS*chassis.wheel[1].reduction_ratio*chassis.wheel[1].direction;
-    chassis.set[2] = ( sqrt(2)/2*(chassis.reference.vx - chassis.reference.vy) + WHEEL_CENTER_DISTANCE*chassis.reference.wz )/WHEEL_RADIUS*chassis.wheel[2].reduction_ratio*chassis.wheel[2].direction;
-    chassis.set[3] = ( sqrt(2)/2*(chassis.reference.vx + chassis.reference.vy) + WHEEL_CENTER_DISTANCE*chassis.reference.wz )/WHEEL_RADIUS*chassis.wheel[3].reduction_ratio*chassis.wheel[3].direction;
+    chassis.set[0] = ( sqrt(2)*(chassis.reference.vx - chassis.reference.vy) - WHEEL_CENTER_DISTANCE*chassis.reference.wz )/WHEEL_RADIUS*chassis.wheel[0].reduction_ratio*chassis.wheel[0].direction;
+    chassis.set[1] = ( sqrt(2)*(chassis.reference.vx + chassis.reference.vy) - WHEEL_CENTER_DISTANCE*chassis.reference.wz )/WHEEL_RADIUS*chassis.wheel[1].reduction_ratio*chassis.wheel[1].direction;
+    chassis.set[2] = ( sqrt(2)*(chassis.reference.vx - chassis.reference.vy) + WHEEL_CENTER_DISTANCE*chassis.reference.wz )/WHEEL_RADIUS*chassis.wheel[2].reduction_ratio*chassis.wheel[2].direction;
+    chassis.set[3] = ( sqrt(2)*(chassis.reference.vx + chassis.reference.vy) + WHEEL_CENTER_DISTANCE*chassis.reference.wz )/WHEEL_RADIUS*chassis.wheel[3].reduction_ratio*chassis.wheel[3].direction;
 
     for (int i=0;i<4;++i)
     {
         chassis.wheel[i].set.curr = PID_calc(&chassis_pid.wheel_velocity[i], chassis.feedback[i], chassis.set[i]);
-    }
-    if(chassis.rc->key.v & KEY_PRESSED_OFFSET_F && !chassis.f_flag)
-    {
-        if (chassis.sc_flag)
-        {
-            chassis.sc_flag = 0;
-        }
-        else
-        {
-            chassis.sc_flag = 1;
-        }
     }
     chassis.f_flag = chassis.rc->key.v & KEY_PRESSED_OFFSET_F;
     
@@ -290,11 +335,12 @@ void ChassisConsole(void)
  * @retval         none
  */
 
-void ChassisSendCmd(void){
-    CanCmdDjiMotor(1,0x200,chassis.wheel[0].set.curr,chassis.wheel[1].set.curr,chassis.wheel[2].set.curr,chassis.wheel[3].set.curr);
-    //  ModifyDebugDataPackage(6,chassis.set[0],"wheel1");
-    //  ModifyDebugDataPackage(5,chassis.wheel[0].fdb.vel,"wheel1_fdb");
-   
+void ChassisSendCmd(void)
+{
+
+    CanCmdDjiMotor(1, 0x200, 
+    CHASSIS.wheel_motor[0].set.curr, CHASSIS.wheel_motor[1].set.curr,
+    CHASSIS.wheel_motor[2].set.curr, CHASSIS.wheel_motor[3].set.curr);
 }
 inline int GetChassisSpinStateMEC(void)
 {

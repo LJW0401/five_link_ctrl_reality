@@ -43,7 +43,8 @@
 #include "develop_task.h"
 #include "custom_controller_task.h"
 #include "communication_task.h"
-#include "ps2_task.h"
+#include "user_task.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -99,6 +100,7 @@ osThreadId ps2_task_handle;
 
 osThreadId battery_voltage_handle;
 
+osThreadId user_task_handle;
 
 
 
@@ -260,7 +262,8 @@ void MX_FREERTOS_Init(void) {
     osThreadDef(BATTERY_VOLTAGE, battery_voltage_task, osPriorityNormal, 0, 128);
     battery_voltage_handle = osThreadCreate(osThread(BATTERY_VOLTAGE), NULL);
 
-
+    osThreadDef(UI_TASK, UserTask, osPriorityHigh, 0, 512);
+    user_task_handle = osThreadCreate(osThread(UI_TASK), NULL);
 
 
 

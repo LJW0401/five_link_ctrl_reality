@@ -590,6 +590,7 @@ static void UpdateLegStatus(void)
             CHASSIS.fdb.leg[i].touch_time += CHASSIS.duration;
             CHASSIS.fdb.leg[i].take_off_time = 0;
         }
+
     }
 }
 

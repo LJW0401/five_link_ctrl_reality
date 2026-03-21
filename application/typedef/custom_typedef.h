@@ -53,6 +53,11 @@ typedef struct
 
     struct
     {
+        bool tracking;
+    }  tracking;
+
+    struct
+    {
         bool fire;
         bool fric_on;
     } shoot;

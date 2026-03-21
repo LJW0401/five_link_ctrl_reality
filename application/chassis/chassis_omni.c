@@ -31,12 +31,11 @@
 #include "math.h"
 #include "usb_debug.h"
 #include "chassis_power_control.h"
-#include "referee.h"
 
 Chassis_s chassis;
 PID_t chassis_pid;
 
-inline int GetChassisSpinState(void)
+inline bool GetChassisSpinState(void)
 {
     return chassis.spin_flag;
 }
@@ -71,8 +70,11 @@ void ChassisInit(void)
 
     //step4 初始模式设置
     chassis.mode = CHASSIS_LOCK;
-    chassis.spin_flag = 0;
-    chassis.sc_flag = 0;
+
+    //step5 小陀螺模式初始值设置
+    chassis.shift_flag=false;
+    chassis.shift_flag=false;
+    chassis.spin_flag=false;
 }
 
 
@@ -91,29 +93,24 @@ void ChassisSetMode(void)
     }
     else if (switch_is_mid(chassis.rc->rc.s[0]))
     {
-        chassis.mode = CHASSIS_FOLLOW;
-
-        if(chassis.rc->key.v & KEY_PRESSED_OFFSET_SHIFT && !chassis.shift_flag)
-        {
-            if (chassis.spin_flag)
-            {
-                chassis.spin_flag = 0;
-            }
-            else
-            {
-                chassis.spin_flag = 1;
-            }
-        }
-        chassis.shift_flag = chassis.rc->key.v & KEY_PRESSED_OFFSET_SHIFT;         
-
-        if (chassis.spin_flag)
+        if (switch_is_up(chassis.rc->rc.s[1]))
         {
             chassis.mode = CHASSIS_SPIN;
+        }
+        
+        else if (switch_is_mid(chassis.rc->rc.s[1]))
+        {
+            chassis.mode = CHASSIS_FOLLOW;
+        }
+
+        else if (switch_is_down(chassis.rc->rc.s[1]))
+        {
+            chassis.mode = CHASSIS_FOLLOW;
         }
     }
     else if (switch_is_up(chassis.rc->rc.s[0]))
     {
-        chassis.mode = CHASSIS_FOLLOW;
+        chassis.mode = CHASSIS_NAVI ;
     }
 }
 
@@ -139,6 +136,17 @@ void ChassisObserver(void)
 
     chassis.yaw_delta = GetGimbalDeltaYawMid();
 
+    //更新小陀螺按键行为模式
+    chassis.shift_last_flag = chassis.shift_flag;
+    chassis.shift_flag  = chassis.rc->key.v & KEY_PRESSED_OFFSET_SHIFT;
+
+    if ( chassis.shift_flag == true && chassis.shift_last_flag == false )
+    {
+        if (chassis.spin_flag == false) chassis.spin_flag = true;
+        else chassis.spin_flag = false;
+    }
+
+    chassis.last_mode = chassis.mode;
 }
 
 
@@ -164,6 +172,49 @@ void ChassisReference(void)
         chassis.reference.wz=fp32_deadline(-chassis.rc->rc.ch[0],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_VELOCITY;
     }
     else if (chassis.mode == CHASSIS_FOLLOW)
+    {
+        if (chassis.last_mode != CHASSIS_FOLLOW)
+        {
+            chassis.reference.vx =  0;
+            chassis.reference.vy =  0;
+            chassis.reference.wz =  0;
+        }
+
+        else 
+        {
+            chassis.reference_rc.vx=fp32_deadline(chassis.rc->rc.ch[3],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_SPEED;
+            chassis.reference_rc.vy=fp32_deadline(-chassis.rc->rc.ch[2],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_SPEED;
+
+            // if (chassis.rc->key.v & KEY_PRESSED_OFFSET_W) 
+            // {
+            //     chassis.reference_rc.vx += CHASSIS_RC_MAX_SPEED;
+            // }
+
+            // else if (chassis.rc->key.v & KEY_PRESSED_OFFSET_S) 
+            // {
+            //     chassis.reference_rc.vx -= CHASSIS_RC_MAX_SPEED;
+            // }
+
+            // if (chassis.rc->key.v & KEY_PRESSED_OFFSET_A) 
+            // {
+            //     chassis.reference_rc.vy += CHASSIS_RC_MAX_SPEED;
+            // }
+
+            // else if (chassis.rc->key.v & KEY_PRESSED_OFFSET_D) 
+            // {
+            //     chassis.reference_rc.vy -= CHASSIS_RC_MAX_SPEED;
+            // }
+
+
+            chassis.reference.vx =  chassis.reference_rc.vx * cosf(chassis.yaw_delta) - chassis.reference_rc.vy * sinf(chassis.yaw_delta);
+            chassis.reference.vy =  chassis.reference_rc.vx * sinf(chassis.yaw_delta) + chassis.reference_rc.vy * cos(chassis.yaw_delta);
+
+            chassis.reference.wz=PID_calc(&chassis_pid.follow,0,chassis.yaw_delta); 
+        }
+    }
+		
+
+    else if (chassis.mode == CHASSIS_SPIN )
     {
         chassis.reference_rc.vx=fp32_deadline(chassis.rc->rc.ch[3],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_SPEED;
         chassis.reference_rc.vy=fp32_deadline(-chassis.rc->rc.ch[2],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_SPEED;
@@ -297,18 +348,35 @@ void ChassisReference(void)
         }
 
 
-
         chassis.reference.vx =  chassis.reference_rc.vx * cosf(chassis.yaw_delta) - chassis.reference_rc.vy * sinf(chassis.yaw_delta);
         chassis.reference.vy =  chassis.reference_rc.vx * sinf(chassis.yaw_delta) + chassis.reference_rc.vy * cos(chassis.yaw_delta);
 
-        if (chassis.reference_rc.vy > 0.4f || chassis.reference_rc.vx > 0.4f)
+        chassis.reference.wz=10.0f;
+		}
+		
+    else if (chassis.mode == CHASSIS_NAVI)
+    {
+        if (chassis.last_mode != CHASSIS_NAVI )
         {
-            chassis.reference.wz = 6.6f + robot_status.robot_level*0.5f;
+            chassis.reference.vx =  0;
+            chassis.reference.vy =  0;
+            chassis.reference.wz =  0;
         }
-        else
+
+        // if (SendScCmdWatchDogErr() == true)
+        // {
+        //     chassis.reference.vx =  0;
+        //     chassis.reference.vy =  0;
+        //     chassis.reference.wz =  4.0f;
+        // }
+
+        else 
         {
-            chassis.reference.wz = 7.6f + robot_status.robot_level*0.6f;
+            chassis.reference.vx =  GetScCmdChassisSpeed(AX_X) * cosf(chassis.yaw_delta) - GetScCmdChassisSpeed(AX_Y) * sinf(chassis.yaw_delta);
+            chassis.reference.vy =  GetScCmdChassisSpeed(AX_X) * sinf(chassis.yaw_delta) + GetScCmdChassisSpeed(AX_Y) * cos(chassis.yaw_delta);
+            chassis.reference.wz =  GetScCmdChassisVelocity(AX_Z);
         }
+        
     }
 }
 
@@ -330,19 +398,7 @@ void ChassisConsole(void)
     {
         chassis.wheel[i].set.curr = PID_calc(&chassis_pid.wheel_velocity[i], chassis.feedback[i], chassis.set[i]);
     }
-
-    if(chassis.rc->key.v & KEY_PRESSED_OFFSET_F && !chassis.f_flag)
-    {
-        if (chassis.sc_flag)
-        {
-            chassis.sc_flag = 0;
-        }
-        else
-        {
-            chassis.sc_flag = 1;
-        }
-    }
-    chassis.f_flag = chassis.rc->key.v & KEY_PRESSED_OFFSET_F;
+    Power_control(chassis.wheel);
 }
 
 /*-------------------- Cmd --------------------*/
@@ -355,16 +411,7 @@ void ChassisConsole(void)
 
 void ChassisSendCmd(void)
 {
-    CanCmdDjiMotor(CHASSIS_CAN,CHASSIS_STDID,chassis.wheel[3].set.curr,chassis.wheel[0].set.curr,chassis.wheel[1].set.curr,chassis.wheel[2].set.curr);
-
-    //ModifyDebugDataPackage(3,chassis.set[0],"set_1");
-    //ModifyDebugDataPackage(4,chassis.wheel[0].fdb.vel,"fdb_1");
-    // ModifyDebugDataPackage(3,chassis.set[1],"set_2");
-    // ModifyDebugDataPackage(4,chassis.wheel[1].fdb.vel,"fdb_2");
-    // ModifyDebugDataPackage(5,chassis.set[2],"set_3");
-    // ModifyDebugDataPackage(6,chassis.wheel[2].fdb.vel,"fdb_3");
-    // ModifyDebugDataPackage(7,chassis.set[3],"set_4");
-    // ModifyDebugDataPackage(8,chassis.wheel[3].fdb.vel,"fdb_4");
+    CanCmdDjiMotor(CHASSIS_CAN,CHASSIS_STDID,chassis.wheel[0].set.curr,chassis.wheel[1].set.curr,chassis.wheel[2].set.curr,chassis.wheel[3].set.curr);
 }
 
 #endif

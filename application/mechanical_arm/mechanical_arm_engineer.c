@@ -93,9 +93,10 @@
 #define INIT_2006_MIN_VEL 1          // 2006电机初始化完成的速度阈值
 
 // 气泵相关
-#define PUMP_ON_PWM 30000
-#define PUMP_OFF_PWM 0
+#define PUMP_ON_PWM 0
+#define PUMP_OFF_PWM 20000
 #define PUMP_PWM_CHANNEL 1
+#define PUMP_PWM_CHENNEL2 2
 
 #define JointMotorInit(index)                                                                    \
     MotorInit(                                                                                   \
@@ -397,7 +398,6 @@ static void JointStateObserve(void)
     last_angle[J5] = angle_fdb[J5];
     MA.fdb.joint[J5].angle =
         (angle_fdb[J5] + M_PI * 2 * MA.fdb.joint[J5].round) / MA.joint_motor[J5].reduction_ratio;
-
 #undef dangle
 }
 
@@ -693,6 +693,7 @@ void ArmSendCmdSafe(void)
 
     // 气泵控制
     PwmCmdPump(PUMP_PWM_CHANNEL, PUMP_OFF_PWM);
+    PwmCmdPump(PUMP_PWM_CHENNEL2, PUMP_OFF_PWM);
 }
 
 void ArmSendCmdDebug(void)
@@ -714,9 +715,11 @@ void ArmSendCmdDebug(void)
 
     // 气泵控制
     if (MECHANICAL_ARM.cmd.pump_on) {
-        PwmCmdPump(PUMP_PWM_CHANNEL, PUMP_ON_PWM);
+        PwmCmdPump(PUMP_PWM_CHANNEL, PUMP_OFF_PWM);
+        PwmCmdPump(PUMP_PWM_CHENNEL2, PUMP_ON_PWM);
     } else {
         PwmCmdPump(PUMP_PWM_CHANNEL, PUMP_OFF_PWM);
+        PwmCmdPump(PUMP_PWM_CHENNEL2, PUMP_OFF_PWM);
     }
 }
 
@@ -733,6 +736,7 @@ void ArmSendCmdInit(void)
     // clang-format on
     // 气泵控制
     PwmCmdPump(PUMP_PWM_CHANNEL, PUMP_OFF_PWM);
+    PwmCmdPump(PUMP_PWM_CHENNEL2, PUMP_OFF_PWM);
 }
 
 #endif

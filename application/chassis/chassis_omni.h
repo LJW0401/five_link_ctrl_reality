@@ -31,6 +31,7 @@
 #include "struct_typedef.h"
 #include  "user_lib.h"
 #include "CAN_cmd_dji.h"
+#include "supervisory_computer_cmd.h"
 
 
 
@@ -39,7 +40,8 @@ typedef enum {
     CHASSIS_LOCK,      //底盘锁定，所有轮子速度设定为0
     CHASSIS_SINGLE,    //只有底盘的模式
     CHASSIS_FOLLOW,    //云台跟随模式
-    CHASSIS_SPIN,
+    CHASSIS_SPIN  ,    //云台小陀螺模式
+    CHASSIS_NAVI,      //底盘导航模式
 } ChassisMode_e;
 
 /**
@@ -70,7 +72,7 @@ typedef struct
 {
     const RC_ctrl_t * rc;  // 底盘使用的遥控器指针
     const Imu_t * imu;     // imu数据
-    ChassisMode_e mode;    // 底盘模式
+    ChassisMode_e mode,last_mode;    // 底盘模式
 
     /*-------------------- Motors --------------------*/
     Motor_s wheel[4];  //底盘电机
@@ -84,13 +86,7 @@ typedef struct
 
     fp32 yaw_delta;
 
-    uint16_t x_time;
-    uint16_t y_time;
-    uint8_t spin_flag;
-    uint8_t shift_flag;
-
-    uint8_t sc_flag;
-    uint32_t f_flag;
+    bool spin_flag,shift_flag,shift_last_flag;
 } Chassis_s;
 
 

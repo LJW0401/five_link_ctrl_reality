@@ -28,10 +28,12 @@ extern inline float GetScCmdChassisVelocity(uint8_t axis);
 extern inline float GetScCmdChassisAngle(uint8_t axis);
 extern inline float GetScCmdChassisHeight(void);
 extern inline float GetScCmdGimbalAngle(uint8_t axis);
-extern inline bool GetScCmdFire(void);
+extern inline uint8_t GetScCmdFire(void);
 extern inline bool GetScCmdFricOn(void);
 extern inline float GetVirtualRcCh(uint8_t channel);
 extern inline char GetVirtualRcSw(uint8_t channel);
+extern inline bool GetSCcmdtracking(void);
+extern inline bool SendScCmdWatchDogErr(void);
 
 #endif  // USB_H
 /*------------------------------ End of File ------------------------------*/

@@ -42,7 +42,7 @@ PID_t gimbal_direct_pid;
 void Angle_solution(void)
 {
   float motor_feedback=gimbal_direct.pitch.fdb.pos,imu_feedback=gimbal_direct.feedback_pos.pitch,motor_mid=GIMBAL_DIRECT_PITCH_MID,imu_mid=0.0;
-  float motor_delta=GIMBAL_DIRECT_PITCH_DIRECTION*(motor_feedback-motor_mid),imu_delta=imu_feedback-imu_mid;
+  float motor_delta=gimbal_direct.pitch.direction*(motor_feedback-motor_mid),imu_delta=imu_feedback-imu_mid;
   gimbal_direct.angle_zero_for_imu=imu_delta-motor_delta;
 }
 
@@ -64,33 +64,6 @@ bool Gimbal_direct_init_judge (void)
     return false;
   }
 }
-
-
-/*----------------Gimbal_direct_ecd_to_imu--------------------*/
-/**
- * @brief          ecd角度值转换成imu角度值
- * @param[in]      axis 用于知道读取哪一个轴的角度转换
- * @param[in]      value 用于准换的值
- * @retval         float imu映射角度值
- */
-
- float Gimbal_direct_ecd_to_imu(uint8_t axis,float value)
- {
-  if (axis == AX_PITCH)
-  {
-    return value - CmdGimbalJointState(AX_PITCH) + gimbal_direct.feedback_pos.pitch;
-  }
-
-  else if (axis == AX_YAW)
-  {
-    return value - CmdGimbalJointState(AX_YAW) + gimbal_direct.feedback_pos.yaw;
-  }
-
-  else 
-  {
-    return 0.0f;
-  }
- }
 
 
 /*-------------------------The end of internal functions--------------------------------------*/
@@ -130,11 +103,11 @@ inline float CmdGimbalJointState(uint8_t axis)
 {
   if ( axis == AX_PITCH )
   {
-    return loop_fp32_constrain(gimbal_direct.pitch.direction * (gimbal_direct.pitch.fdb.pos - GIMBAL_DIRECT_PITCH_MID),-M_PI,M_PI);
+    return loop_fp32_constrain( -(gimbal_direct.feedback_pos.pitch - gimbal_direct.init_base.pitch) + gimbal_direct.pitch.direction * (gimbal_direct.pitch.fdb.pos - GIMBAL_DIRECT_PITCH_MID), -M_PI , M_PI);
   }
   else if ( axis == AX_YAW )
   {
-    return loop_fp32_constrain(gimbal_direct.yaw.direction * (gimbal_direct.yaw.fdb.pos - GIMBAL_DIRECT_YAW_MID),-M_PI,M_PI); 
+    return loop_fp32_constrain( -(gimbal_direct.feedback_pos.yaw - gimbal_direct.init_base.yaw) + gimbal_direct.yaw.direction * (gimbal_direct.yaw.fdb.pos - GIMBAL_DIRECT_YAW_MID) ,-M_PI , M_PI); 
   }
   else 
   {
@@ -193,6 +166,15 @@ void GimbalInit(void)
    gimbal_direct.mode=GIMBAL_ZERO_FORCE;
    gimbal_direct.last_mode = GIMBAL_ZERO_FORCE;
    gimbal_direct.mode_before_rc_err = GIMBAL_ZERO_FORCE;
+
+   //step7 云台初始上电位置校准初始化
+   gimbal_direct.init_base.pitch = 0.0f;
+   gimbal_direct.init_base.yaw   = 0.0f;
+   gimbal_direct.init_base_record = false;
+
+   //step8 自瞄行为状态记录初始化
+   gimbal_direct.aim_mode = SEARCHING;
+   gimbal_direct.last_aim_mode = TRACKING;
 }
 /*-------------------- Set mode --------------------*/
 
@@ -286,7 +268,37 @@ void GimbalObserver(void)
 
   gimbal_direct.last_mode=gimbal_direct.mode; //上一运行模式更新
 
+  if ( gimbal_direct.mode == GIMBAL_GAP )
+  {
+    if (gimbal_direct.init_base_record == false)
+    {
+      gimbal_direct.init_base.pitch = gimbal_direct.feedback_pos.pitch;
+      gimbal_direct.init_base.yaw   = gimbal_direct.feedback_pos.yaw  ;
+      gimbal_direct.init_base_record= true ;
+    }
+  }
 
+  if (gimbal_direct.mode == GIMBAL_AUTO_AIM)
+  {
+    if (gimbal_direct.last_mode != GIMBAL_AUTO_AIM)
+    {
+      gimbal_direct.aim_mode = SEARCHING;
+      gimbal_direct.last_aim_mode = TRACKING;
+    }
+
+    else 
+    {
+      gimbal_direct.last_aim_mode = gimbal_direct.aim_mode;
+      if (GetSCcmdtracking() == true)
+      {
+        gimbal_direct.aim_mode = TRACKING;
+      }
+      else
+      {
+        gimbal_direct.aim_mode = SEARCHING;
+      }
+    }
+  }
 }
 
 /*-------------------- Reference --------------------*/
@@ -323,8 +335,8 @@ void GimbalReference(void)
       // warning :不建议键鼠跟遥控器同时使用！
       //读取鼠标的移动（还未测试过鼠标）
       //暂时先屏蔽一下鼠标功能
-      gimbal_direct.reference.pitch=fp32_constrain( gimbal_direct.reference.pitch - gimbal_direct.rc->mouse.y/MOUSE_SENSITIVITY , GIMBAL_LOWER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu,GIMBAL_UPPER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu);      //GetDt7MouseSpeed(AX_YAW)
-      gimbal_direct.reference.yaw  =loop_fp32_constrain( gimbal_direct.reference.yaw - gimbal_direct.rc->mouse.x/MOUSE_SENSITIVITY,-M_PI,M_PI);//GetDt7MouseSpeed(AX_PITCH)
+      // gimbal_direct.reference.pitch=fp32_constrain( gimbal_direct.reference.pitch - gimbal_direct.rc->mouse.y/MOUSE_SENSITIVITY , GIMBAL_LOWER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu,GIMBAL_UPPER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu);      //GetDt7MouseSpeed(AX_YAW)
+      // gimbal_direct.reference.yaw  =loop_fp32_constrain( gimbal_direct.reference.yaw - gimbal_direct.rc->mouse.x/MOUSE_SENSITIVITY,-M_PI,M_PI);//GetDt7MouseSpeed(AX_PITCH)
       //读取摇杆的数据
       gimbal_direct.reference.pitch= fp32_constrain(gimbal_direct.reference.pitch-fp32_deadline(gimbal_direct.rc->rc.ch[1], REMOTE_CONTROLLER_MIN_DEADLINE,REMOTE_CONTROLLER_MAX_DEADLINE)/REMOTE_CONTROLLER_SENSITIVITY,GIMBAL_LOWER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu,GIMBAL_UPPER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu);
       gimbal_direct.reference.yaw = loop_fp32_constrain(gimbal_direct.reference.yaw-fp32_deadline(gimbal_direct.rc->rc.ch[0], REMOTE_CONTROLLER_MIN_DEADLINE,REMOTE_CONTROLLER_MAX_DEADLINE)/REMOTE_CONTROLLER_SENSITIVITY,-M_PI,M_PI);
@@ -333,8 +345,38 @@ void GimbalReference(void)
 
   else if (gimbal_direct.mode == GIMBAL_AUTO_AIM)
   {
-    gimbal_direct.reference.pitch = fp32_constrain(Gimbal_direct_ecd_to_imu(AX_PITCH,GetScCmdGimbalAngle(AX_PITCH)), GIMBAL_LOWER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu  , GIMBAL_UPPER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu );
-    gimbal_direct.reference.yaw   = loop_fp32_constrain(Gimbal_direct_ecd_to_imu(AX_YAW,GetScCmdGimbalAngle(AX_YAW)), -M_PI , M_PI );
+      if (gimbal_direct.aim_mode == SEARCHING)
+      {
+        if (gimbal_direct.last_aim_mode != SEARCHING)
+        {
+          gimbal_direct.reference.pitch = gimbal_direct.reference.pitch;
+          gimbal_direct.reference.yaw   = 0;
+          gimbal_direct.search_base_time = xTaskGetTickCount();
+        }
+
+        else if (xTaskGetTickCount() - gimbal_direct.search_base_time <=1000)
+        {
+          gimbal_direct.reference.pitch = gimbal_direct.reference.pitch;
+          gimbal_direct.reference.yaw   = 0;
+        }
+
+        else
+        {
+          gimbal_direct.reference.pitch = GenerateSinWave(0.05f,0,5)+0.15f;
+          gimbal_direct.reference.yaw   = M_PI_2-0.7f;
+        }
+      }
+      else if (gimbal_direct.aim_mode == TRACKING)
+      {
+        gimbal_direct.reference.pitch = fp32_constrain(GetScCmdGimbalAngle(AX_PITCH), GIMBAL_LOWER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu  , GIMBAL_UPPER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu );
+        gimbal_direct.reference.yaw   = loop_fp32_constrain(GetScCmdGimbalAngle(AX_YAW), -M_PI , M_PI );
+      }
+  }
+
+  else if (gimbal_direct.mode == GIMBAL_TEST)
+  {
+    gimbal_direct.reference.pitch =0.0f;
+    gimbal_direct.reference.yaw   =gimbal_direct.init_base.yaw;
   }
 }
 
@@ -352,7 +394,38 @@ void GimbalConsole(void)
     gimbal_direct.pitch.set.curr=0;
     gimbal_direct.yaw.set.curr=0;
   }
-  else if (gimbal_direct.mode == GIMBAL_IMU || gimbal_direct.mode== GIMBAL_GAP || gimbal_direct.mode == GIMBAL_AUTO_AIM || GIMBAL_INIT)
+  else if (gimbal_direct.mode == GIMBAL_IMU || gimbal_direct.mode== GIMBAL_GAP || gimbal_direct.mode == GIMBAL_INIT)
+  {
+    gimbal_direct.pitch.set.vel=PID_calc(&gimbal_direct_pid.pitch_angle,gimbal_direct.feedback_pos.pitch,gimbal_direct.reference.pitch);
+    gimbal_direct.pitch.set.curr=gimbal_direct.pitch.direction * PID_calc(&gimbal_direct_pid.pitch_velocity,gimbal_direct.feedback_vel.pitch,gimbal_direct.pitch.set.vel);
+
+    fp32 delta_yaw=loop_fp32_constrain(gimbal_direct.reference.yaw-gimbal_direct.feedback_pos.yaw,-M_PI,M_PI);
+    gimbal_direct.yaw.set.vel=PID_calc(&gimbal_direct_pid.yaw_angle,0,delta_yaw);
+    gimbal_direct.yaw.set.curr=gimbal_direct.yaw.direction * PID_calc(&gimbal_direct_pid.yaw_velocity,gimbal_direct.feedback_vel.yaw,gimbal_direct.yaw.set.vel);
+  }
+
+  else if (gimbal_direct.mode == GIMBAL_AUTO_AIM)
+  {
+    if (gimbal_direct.aim_mode == SEARCHING)
+    {
+      gimbal_direct.pitch.set.vel=PID_calc(&gimbal_direct_pid.pitch_angle,gimbal_direct.feedback_pos.pitch,gimbal_direct.reference.pitch);
+      gimbal_direct.pitch.set.curr=gimbal_direct.pitch.direction * PID_calc(&gimbal_direct_pid.pitch_velocity,gimbal_direct.feedback_vel.pitch,gimbal_direct.pitch.set.vel);
+
+      gimbal_direct.yaw.set.curr=gimbal_direct.yaw.direction * PID_calc(&gimbal_direct_pid.yaw_velocity,gimbal_direct.feedback_vel.yaw,gimbal_direct.reference.yaw);
+    }
+
+    else if (gimbal_direct.aim_mode == TRACKING)
+    {
+      gimbal_direct.pitch.set.vel=PID_calc(&gimbal_direct_pid.pitch_angle,gimbal_direct.feedback_pos.pitch,gimbal_direct.reference.pitch);
+      gimbal_direct.pitch.set.curr=gimbal_direct.pitch.direction * PID_calc(&gimbal_direct_pid.pitch_velocity,gimbal_direct.feedback_vel.pitch,gimbal_direct.pitch.set.vel);
+
+      fp32 delta_yaw=loop_fp32_constrain(gimbal_direct.reference.yaw-gimbal_direct.feedback_pos.yaw,-M_PI,M_PI);
+      gimbal_direct.yaw.set.vel=PID_calc(&gimbal_direct_pid.yaw_angle,0,delta_yaw);
+      gimbal_direct.yaw.set.curr=gimbal_direct.yaw.direction * PID_calc(&gimbal_direct_pid.yaw_velocity,gimbal_direct.feedback_vel.yaw,gimbal_direct.yaw.set.vel);
+    }
+  }
+
+  else if (gimbal_direct.mode == GIMBAL_TEST)
   {
     gimbal_direct.pitch.set.vel=PID_calc(&gimbal_direct_pid.pitch_angle,gimbal_direct.feedback_pos.pitch,gimbal_direct.reference.pitch);
     gimbal_direct.pitch.set.curr=gimbal_direct.pitch.direction * PID_calc(&gimbal_direct_pid.pitch_velocity,gimbal_direct.feedback_vel.pitch,gimbal_direct.pitch.set.vel);
