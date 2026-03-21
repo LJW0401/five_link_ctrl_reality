@@ -28,36 +28,40 @@ bool referee_is_offline = false;
 uint32_t referee_online_time = 0;
 
 
+
 frame_header_struct_t referee_receive_header;
 frame_header_struct_t referee_send_header;
 
-game_status_t game_status;                                           //0x0001
-game_result_t game_result;                                           //0x0002
-game_robot_HP_t game_robot_HP;                                       //0x0003
+game_status_t game_status;
+game_result_t game_result;
+game_robot_HP_t game_robot_HP;
 
-event_data_t event_data;                                             //0x0101
-referee_warning_t referee_warning;                                   //0x0104
-dart_info_t dart_info;                                               //0x0105
+event_data_t field_event;
+// ext_supply_projectile_action_t supply_projectile_action_t;
+// ext_supply_projectile_booking_t supply_projectile_booking_t;
+dart_info_t dart_info;
+referee_warning_t referee_warning;
 
-robot_status_t robot_status;                                         //0x0201
-power_heat_data_t power_heat_data;                                   //0x0202
-robot_pos_t robot_pos;                                               //0x0203
-buff_t buff;                                                         //0x0204
-hurt_data_t hurt_data;                                               //0x0206
-shoot_data_t shoot_data;                                             //0x0207
-projectile_allowance_t projectile_allowance;                         //0x0208
-rfid_status_t rfid_status;                                           //0x0209
-dart_client_cmd_t dart_client_cmd;                                   //0x020A
-ground_robot_position_t ground_robot_position;                       //0x020B
-radar_mark_data_t radar_mark_data;                                   //0x020C
-sentry_info_t sentry_info;                                           //0x020D
-radar_info_t radar_info;                                             //0x020E
-
-
-robot_interaction_data_t robot_interaction_data;                     //0x0301
-custom_robot_data_t custom_robot_data;                               //0x0302
-map_command_t map_command;                                           //0x0303
-remote_control_t remote_control;                                     //0x0304
+robot_status_t robot_status;
+power_heat_data_t power_heat_data;
+robot_pos_t robot_pos;
+buff_t buff;
+// air_support_data_t robot_energy_t;
+hurt_data_t hurt_data;
+shoot_data_t shoot_data;
+projectile_allowance_t projectile_allowance;
+rfid_status_t rfid_status;
+dart_client_cmd_t dart_client_cmd;
+ground_robot_position_t ground_robot_position;
+radar_mark_data_t radar_mark_data;
+sentry_info_t sentry_info;
+radar_info_t radar_info;
+// ext_bullet_remaining_t bullet_remaining_t;
+robot_interaction_data_t robot_interaction_data;
+CustomControllerData_t custom_controller_data;  //自定义控制器数据
+map_command_t map_command;
+robot_custom_data_t robot_custom_data;
+robot_custom_data_3_t robot_custom_data_3;                                   //0x0304
 
 
 
@@ -70,28 +74,37 @@ void init_referee_struct_data(void)
     memset(&game_result, 0, sizeof(game_result_t));
     memset(&game_robot_HP, 0, sizeof(game_robot_HP_t));
 
-    memset(&event_data, 0, sizeof(event_data_t));
+    memset(&field_event, 0, sizeof(event_data_t));
+    // memset(&supply_projectile_action_t, 0, sizeof(ext_supply_projectile_action_t));
+    // memset(&supply_projectile_booking_t, 0, sizeof(ext_supply_projectile_booking_t));
     memset(&referee_warning, 0, sizeof(referee_warning_t));
-    memset(&dart_info, 0 , sizeof(dart_info_t));
+    memset(&dart_info, 0, sizeof(dart_info_t));
+
 
     memset(&robot_status, 0, sizeof(robot_status_t));
     memset(&power_heat_data, 0, sizeof(power_heat_data_t));
     memset(&robot_pos, 0, sizeof(robot_pos_t));
     memset(&buff, 0, sizeof(buff_t));
+    // memset(&robot_energy_t, 0, sizeof(air_support_data_t));
     memset(&hurt_data, 0, sizeof(hurt_data_t));
     memset(&shoot_data, 0, sizeof(shoot_data_t));
     memset(&projectile_allowance, 0, sizeof(projectile_allowance_t));
+    // memset(&bullet_remaining_t, 0, sizeof(ext_bullet_remaining_t));
+
+    memset(&robot_interaction_data, 0, sizeof(robot_interaction_data_t));
+    memset(&custom_controller_data, 0, sizeof(CustomControllerData_t));
+
+    // memset(&robot_command_t, 0, sizeof(ext_robot_command_t));
+
     memset(&rfid_status, 0, sizeof(rfid_status_t));
     memset(&dart_client_cmd, 0, sizeof(dart_client_cmd_t));
     memset(&ground_robot_position, 0, sizeof(ground_robot_position_t));
     memset(&radar_mark_data, 0, sizeof(radar_mark_data_t));
     memset(&sentry_info, 0, sizeof(sentry_info_t));
     memset(&radar_info, 0, sizeof(radar_info_t));
-
-    memset(&robot_interaction_data, 0, sizeof(robot_interaction_data_t));
-    memset(&custom_robot_data, 0, sizeof(custom_robot_data_t));
     memset(&map_command, 0, sizeof(map_command_t));
-    memset(&remote_control, 0, sizeof(remote_control_t));
+    memset(&robot_custom_data, 0, sizeof(robot_custom_data_t));
+    memset(&robot_custom_data_3, 0, sizeof(robot_custom_data_3_t));
 }
 
 void referee_data_solve(uint8_t * frame)
@@ -109,7 +122,7 @@ void referee_data_solve(uint8_t * frame)
     buzzer_on(100, 300);
 
     switch (cmd_id) {
-        case GAME_STATUS_CMD_ID: {
+        case GAME_STATE_CMD_ID: {
             memcpy(&game_status, frame + index, sizeof(game_status_t));
             referee_online_time = HAL_GetTick();
         } break;
@@ -122,23 +135,30 @@ void referee_data_solve(uint8_t * frame)
             referee_online_time = HAL_GetTick();
         } break;
 
-        case EVENT_DATA_CMD_ID: {
-            memcpy(&event_data, frame + index, sizeof(event_data_t));
+        case FIELD_EVENTS_CMD_ID: {
+            memcpy(&field_event, frame + index, sizeof(event_data_t));
             referee_online_time = HAL_GetTick();
         } break;
+        // case SUPPLY_PROJECTILE_ACTION_CMD_ID: {
+        //     memcpy(
+        //         &supply_projectile_action_t, frame + index, sizeof(ext_supply_projectile_action_t));
+        //     referee_online_time = HAL_GetTick();
+        // } break;
+        // case SUPPLY_PROJECTILE_BOOKING_CMD_ID: {
+        //     memcpy(
+        //         &supply_projectile_booking_t, frame + index,
+        //         sizeof(ext_supply_projectile_booking_t));
+        //     referee_online_time = HAL_GetTick();
+        // } break;
         case REFEREE_WARNING_CMD_ID: {
-            memcpy(
-                &referee_warning, frame + index, sizeof(referee_warning_t));
+            memcpy(&referee_warning, frame + index, sizeof(referee_warning_t));
             referee_online_time = HAL_GetTick();
         } break;
         case DART_INFO_CMD_ID: {
-            memcpy(
-                &dart_info, frame + index,
-                sizeof(dart_info_t));
+            memcpy(&dart_info, frame + index, sizeof(dart_info_t));
             referee_online_time = HAL_GetTick();
         } break;
-        
-        case ROBOT_STATUS_CMD_ID: {
+        case ROBOT_STATE_CMD_ID: {
             memcpy(&robot_status, frame + index, sizeof(robot_status_t));
             referee_online_time = HAL_GetTick();
         } break;
@@ -150,11 +170,15 @@ void referee_data_solve(uint8_t * frame)
             memcpy(&robot_pos, frame + index, sizeof(robot_pos_t));
             referee_online_time = HAL_GetTick();
         } break;
-        case BUFF_CMD_ID: {
+        case BUFF_MUSK_CMD_ID: {
             memcpy(&buff, frame + index, sizeof(buff_t));
             referee_online_time = HAL_GetTick();
         } break;
-        case HURT_DATA_CMD_ID: {
+        // case AERIAL_ROBOT_ENERGY_CMD_ID: {
+        //     memcpy(&robot_energy_t, frame + index, sizeof(air_support_data_t));
+        //     referee_online_time = HAL_GetTick();
+        // } break;
+        case ROBOT_HURT_CMD_ID: {
             memcpy(&hurt_data, frame + index, sizeof(hurt_data_t));
             referee_online_time = HAL_GetTick();
         } break;
@@ -162,6 +186,10 @@ void referee_data_solve(uint8_t * frame)
             memcpy(&shoot_data, frame + index, sizeof(shoot_data_t));
             referee_online_time = HAL_GetTick();
         } break;
+        // case BULLET_REMAINING_CMD_ID: {
+        //     memcpy(&bullet_remaining_t, frame + index, sizeof(ext_bullet_remaining_t));
+        //     referee_online_time = HAL_GetTick();
+        // } break;
         case PROJECTILE_ALLOWANCE_CMD_ID: {
             memcpy(&projectile_allowance, frame + index, sizeof(projectile_allowance_t));
             referee_online_time = HAL_GetTick();
@@ -170,7 +198,7 @@ void referee_data_solve(uint8_t * frame)
             memcpy(&rfid_status, frame + index, sizeof(rfid_status_t));
             referee_online_time = HAL_GetTick();
         } break;
-        case DART_CLIENT_CMD_CMD_ID: {
+        case DART_CLIENT_CMD_ID: {
             memcpy(&dart_client_cmd, frame + index, sizeof(dart_client_cmd_t));
             referee_online_time = HAL_GetTick();
         } break;
@@ -190,21 +218,28 @@ void referee_data_solve(uint8_t * frame)
             memcpy(&radar_info, frame + index, sizeof(radar_info_t));
             referee_online_time = HAL_GetTick();
         } break;
-
-        case ROBOT_INTERACTION_DATA_CMD_ID: {
+        case STUDENT_INTERACTIVE_DATA_CMD_ID: {
             memcpy(&robot_interaction_data, frame + index, sizeof(robot_interaction_data_t));
             referee_online_time = HAL_GetTick();
         } break;
-        case CUSTOM_ROBOT_DATA_CMD_ID: {
-            memcpy(&custom_robot_data, frame + index, sizeof(custom_robot_data_t));
+        case CUSTOM_CONTROLLER_CMD_ID: {
+            memcpy(&custom_controller_data, frame + index, sizeof(CustomControllerData_t));
             referee_online_time = HAL_GetTick();
         } break;
         case MAP_COMMAND_CMD_ID: {
             memcpy(&map_command, frame + index, sizeof(map_command_t));
             referee_online_time = HAL_GetTick();
         } break;
-        case REMOTE_CONTROL_CMD_ID: {
-            memcpy(&remote_control, frame + index, sizeof(remote_control_t));
+        // case ROBOT_COMMAND_CMD_ID: {
+        //     memcpy(&robot_command_t, frame + index, sizeof(ext_robot_command_t));
+        //     referee_online_time = HAL_GetTick();
+        // } break;
+        case ROBOT_CUSTOM_DATA_CMD_ID: {
+            memcpy(&robot_custom_data, frame + index, sizeof(robot_custom_data_t));
+            referee_online_time = HAL_GetTick();
+        } break;
+        case ROBOT_CUSTOM_DATA_3_CMD_ID: {
+            memcpy(&robot_custom_data_3, frame + index, sizeof(robot_custom_data_3_t));
             referee_online_time = HAL_GetTick();
         } break;
         default: {
@@ -224,14 +259,10 @@ uint8_t get_robot_id(void) { return robot_status.robot_id; }
 void get_shoot_heat0_limit_and_heat0(uint16_t * heat0_limit, uint16_t * heat0)
 {
     *heat0_limit = robot_status.shooter_barrel_heat_limit;
-    *heat0 = power_heat_data.shooter_17mm_1_barrel_heat;
+    *heat0 = power_heat_data.shooter_17mm_barrel_heat;
 }
 
-void get_shoot_heat1_limit_and_heat1(uint16_t * heat1_limit, uint16_t * heat1)
-{
-    *heat1_limit = robot_status.shooter_barrel_heat_limit;
-    *heat1 = power_heat_data.shooter_17mm_2_barrel_heat;  // 第 2 个 17mm 发射机构的枪口热量
-}
+
 
 
 void get_shoot_heat42_limit_and_heat42(uint16_t *heat_limit, uint16_t *heat)
@@ -279,14 +310,11 @@ uint8_t get_team_color(void)  // 谨防“哨兵在打我”
 
 uint16_t get_shoot_heat(void)  // 双枪管哨兵
 {
-    if (power_heat_data.shooter_17mm_1_barrel_heat > power_heat_data.shooter_17mm_2_barrel_heat) {
-        return power_heat_data.shooter_17mm_1_barrel_heat;
-    } else {
-        return power_heat_data.shooter_17mm_2_barrel_heat;
-    }
+    return power_heat_data.shooter_17mm_barrel_heat;
+
 }
 
-custom_robot_data_t * GetCustomControllerDataPoint(void) { return &custom_robot_data; }
+robot_custom_data_t * GetCustomControllerDataPoint(void) { return &robot_custom_data; }
 
 /*========== API ==========*/
 
@@ -302,7 +330,7 @@ inline bool GetRefereeState(void) {
  */
 inline float GetCustomControllerPos(uint8_t index){
     float data = 0;
-    memcpy(&data, &custom_robot_data.data[index * 4], 4);
+    memcpy(&data, &robot_custom_data.data[index * 4], 4);
     return data;
     // return *((float *)(&custom_robot_data.data[index * 4]));
 }
