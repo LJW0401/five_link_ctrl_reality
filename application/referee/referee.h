@@ -348,7 +348,7 @@ extern robot_custom_data_t * GetCustomControllerDataPoint(void);
 
 /*========== API ==========*/
 
-extern inline bool GetRefereeState(void);
+extern inline bool GetRefereeOffline(void);
 extern inline float GetCustomControllerPos(uint8_t index);
 
 #endif

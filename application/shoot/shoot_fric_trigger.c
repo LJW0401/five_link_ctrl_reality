@@ -44,31 +44,31 @@ fp32 delta;
  */
 void ShootInit(void) 
 { 
-  //获取遥控器指针
-  SHOOT.rc = get_remote_control_point(); 
+    //获取遥控器指针
+    SHOOT.rc = get_remote_control_point(); 
 
-  //摩擦轮相关
-  MotorInit(&SHOOT.fric_motor[0],FRIC_MOTOR_R_ID, FRIC_MOTOR_R_CAN, FRIC_MOTOR_TYPE, 1, 1.0f, 0);//初始化R摩擦轮电机结构体
-  MotorInit(&SHOOT.fric_motor[1],FRIC_MOTOR_L_ID, FRIC_MOTOR_L_CAN, FRIC_MOTOR_TYPE, 1, 1.0f, 0);//初始化L摩擦轮电机结构体
+    //摩擦轮相关
+    MotorInit(&SHOOT.fric_motor[0],FRIC_MOTOR_R_ID, FRIC_MOTOR_R_CAN, FRIC_MOTOR_TYPE, 1, 1.0f, 0);//初始化R摩擦轮电机结构体
+    MotorInit(&SHOOT.fric_motor[1],FRIC_MOTOR_L_ID, FRIC_MOTOR_L_CAN, FRIC_MOTOR_TYPE, 1, 1.0f, 0);//初始化L摩擦轮电机结构体
 
-  const fp32 pid_fric[3] = {FRIC_SPEED_PID_KP, FIRC_SPEED_PID_KI, FRIC_SPEED_PID_KD};//摩擦轮速度环
+    const fp32 pid_fric[3] = {FRIC_SPEED_PID_KP, FIRC_SPEED_PID_KI, FRIC_SPEED_PID_KD};//摩擦轮速度环
 
-  PID_init(&SHOOT.fric_pid[0], PID_POSITION, pid_fric, FRIC_PID_MAX_OUT, FRIC_PID_MAX_IOUT);
-  PID_init(&SHOOT.fric_pid[1], PID_POSITION, pid_fric, FRIC_PID_MAX_OUT, FRIC_PID_MAX_IOUT);//摩擦轮初始化pid
+    PID_init(&SHOOT.fric_pid[0], PID_POSITION, pid_fric, FRIC_PID_MAX_OUT, FRIC_PID_MAX_IOUT);
+    PID_init(&SHOOT.fric_pid[1], PID_POSITION, pid_fric, FRIC_PID_MAX_OUT, FRIC_PID_MAX_IOUT);//摩擦轮初始化pid
 
-  //拨弹盘相关
-  MotorInit(&SHOOT.trigger_motor,TRIGGER_MOTOR_ID, TRIGGER_MOTOR_CAN, TRIGGER_MOTOR_TYPE, 1, 1.0f, 0);//初始化拨弹盘电机结构体
- if (TRIGGER_MOTOR_TYPE == DJI_M2006)
- {
-  const fp32 pid_angel_trigger[3] = {TRIGGER_ANGEL_PID_KP, TRIGGER_ANGEL_PID_KI, TRIGGER_ANGEL_PID_KD};//拨弹盘角度环
-  const fp32 pid_speed_trigger[3] = {TRIGGER_SPEED_PID_KP, TRIGGER_SPEED_PID_KI, TRIGGER_SPEED_PID_KD};//拨弹盘速度环
+    //拨弹盘相关
+    MotorInit(&SHOOT.trigger_motor,TRIGGER_MOTOR_ID, TRIGGER_MOTOR_CAN, TRIGGER_MOTOR_TYPE, 1, 1.0f, 0);//初始化拨弹盘电机结构体
+    if (TRIGGER_MOTOR_TYPE == DJI_M2006)
+    {
+        const fp32 pid_angel_trigger[3] = {TRIGGER_ANGEL_PID_KP, TRIGGER_ANGEL_PID_KI, TRIGGER_ANGEL_PID_KD};//拨弹盘角度环
+        const fp32 pid_speed_trigger[3] = {TRIGGER_SPEED_PID_KP, TRIGGER_SPEED_PID_KI, TRIGGER_SPEED_PID_KD};//拨弹盘速度环
 
-  PID_init(&SHOOT.trigger_angel_pid, PID_POSITION, pid_angel_trigger, TRIGGER_ANGEL_PID_MAX_OUT, TRIGGER_ANGEL_PID_MAX_IOUT);
-  PID_init(&SHOOT.trigger_speed_pid, PID_POSITION, pid_speed_trigger, TRIGGER_SPEED_PID_MAX_OUT, TRIGGER_SPEED_PID_MAX_IOUT);  //拨弹盘初始化pid
- }
- else if (TRIGGER_MOTOR_TYPE == DM_4310)
- {
-  const fp32 pid_angel_trigger[3] = {TRIGGER_ANGEL_PID_KP, TRIGGER_ANGEL_PID_KI, TRIGGER_ANGEL_PID_KD};//拨弹盘角度环
+        PID_init(&SHOOT.trigger_angel_pid, PID_POSITION, pid_angel_trigger, TRIGGER_ANGEL_PID_MAX_OUT, TRIGGER_ANGEL_PID_MAX_IOUT);
+        PID_init(&SHOOT.trigger_speed_pid, PID_POSITION, pid_speed_trigger, TRIGGER_SPEED_PID_MAX_OUT, TRIGGER_SPEED_PID_MAX_IOUT);  //拨弹盘初始化pid
+    }
+    else if (TRIGGER_MOTOR_TYPE == DM_4310)
+    {
+        const fp32 pid_angel_trigger[3] = {TRIGGER_ANGEL_PID_KP, TRIGGER_ANGEL_PID_KI, TRIGGER_ANGEL_PID_KD};//拨弹盘角度环
 
   PID_init(&SHOOT.trigger_angel_pid, PID_POSITION, pid_angel_trigger, TRIGGER_ANGEL_PID_MAX_OUT, TRIGGER_ANGEL_PID_MAX_IOUT); //拨弹盘初始化pid
  }
@@ -173,41 +173,40 @@ void ShootSetMode(void)
  */
 void ShootObserver(void) 
 {
-  GetMotorMeasure(&SHOOT.trigger_motor);
-  GetMotorMeasure(&SHOOT.fric_motor[0]);
-  GetMotorMeasure(&SHOOT.fric_motor[1]);
+    GetMotorMeasure(&SHOOT.trigger_motor);
+    GetMotorMeasure(&SHOOT.fric_motor[0]);
+    GetMotorMeasure(&SHOOT.fric_motor[1]);
 
-  SHOOT.FDB.fric_speed_fdb_R = SHOOT.fric_motor[0].fdb.vel;
-  SHOOT.FDB.fric_speed_fdb_L = SHOOT.fric_motor[1].fdb.vel;
+    SHOOT.FDB.fric_speed_fdb_R = SHOOT.fric_motor[0].fdb.vel;
+    SHOOT.FDB.fric_speed_fdb_L = SHOOT.fric_motor[1].fdb.vel;
 
-  SHOOT.FDB.trigger_speed_fdb = SHOOT.trigger_motor.fdb.vel;
+    SHOOT.FDB.trigger_speed_fdb = SHOOT.trigger_motor.fdb.vel;
 
-  if (TRIGGER_MOTOR_TYPE == DJI_M2006)
-  {
-    if (SHOOT.trigger_motor.fdb.ecd - SHOOT.last_ecd > HALF_ECD_RANGE)
+    if (TRIGGER_MOTOR_TYPE == DJI_M2006)
     {
-        SHOOT.ecd_count--;
-    }
-    else if (SHOOT.trigger_motor.fdb.ecd - SHOOT.last_ecd < -HALF_ECD_RANGE)
-    {
-        
-        SHOOT.ecd_count++;
-    }
+        if (SHOOT.trigger_motor.fdb.ecd - SHOOT.last_ecd > HALF_ECD_RANGE)
+        {
+            SHOOT.ecd_count--;
+        }
+        else if (SHOOT.trigger_motor.fdb.ecd - SHOOT.last_ecd < -HALF_ECD_RANGE)
+        {
+            SHOOT.ecd_count++;
+        }
 
-    if (SHOOT.ecd_count == FULL_COUNT)
-    {
-        SHOOT.ecd_count = -(FULL_COUNT - 1);
-    }
-    else if (SHOOT.ecd_count == -FULL_COUNT)
-    {
-        SHOOT.ecd_count = FULL_COUNT-1;
-    }
-    //计算输出轴角度
-    SHOOT.FDB.trigger_angel_fdb = (SHOOT.ecd_count * ECD_RANGE + SHOOT.trigger_motor.fdb.ecd )* MOTOR_ECD_TO_ANGLE;
+        if (SHOOT.ecd_count == FULL_COUNT)
+        {
+            SHOOT.ecd_count = -(FULL_COUNT - 1);
+        }
+        else if (SHOOT.ecd_count == -FULL_COUNT)
+        {
+            SHOOT.ecd_count = FULL_COUNT-1;
+        }
+        //计算输出轴角度
+        SHOOT.FDB.trigger_angel_fdb = (SHOOT.ecd_count * ECD_RANGE + SHOOT.trigger_motor.fdb.ecd )* MOTOR_ECD_TO_ANGLE;
 
-    //记录上一个ecd值
-   SHOOT.last_ecd = SHOOT.trigger_motor.fdb.ecd;
-
+        //记录上一个ecd值
+        SHOOT.last_ecd = SHOOT.trigger_motor.fdb.ecd;
+    }
   //电机圈数重置， 因为输出轴旋转一圈， 电机轴旋转 36圈，将电机轴数据处理成输出轴数据，用于控制输出轴角度
   //if(FULL_COUNT%2 == 0)
   //{
@@ -256,7 +255,7 @@ void ShootObserver(void)
   }
   
     //记录上一个拨弹盘vel,用于堵转模式判断
-  SHOOT.last_trigger_vel = SHOOT.trigger_motor.fdb.vel;
+    SHOOT.last_trigger_vel = SHOOT.trigger_motor.fdb.vel;
 
     //记录上一个摩擦轮vel,用于过热保护
   SHOOT.last_fric_vel = SHOOT.fric_motor[0].fdb.vel;

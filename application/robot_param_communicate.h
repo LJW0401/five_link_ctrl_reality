@@ -1,6 +1,6 @@
 /**
-  * @file       robot_param_balanced_infantry.h
-  * @brief      这里是平衡步兵机器人参数配置文件，包括物理参数、PID参数等
+  * @file       robot_param_communicate.h
+  * @brief      ...
   */
 
 #ifndef INCLUDED_ROBOT_PARAM_H
@@ -14,4 +14,8 @@
 #define MECHANICAL_ARM_TYPE  MECHANICAL_ARM_NONE  // 选择机械臂类型
 #define CONTROL_TYPE         CHASSIS_AND_GIMBAL   // 选择控制类型
 // clang-format on
+
+#define __GYRO_BIAS_YAW  0.003096855f // 陀螺仪零飘，单位rad/s
+
+
 #endif /* INCLUDED_ROBOT_PARAM_H */

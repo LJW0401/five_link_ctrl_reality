@@ -6,6 +6,10 @@
   * @history
   *  Version    Date            Author          Modification
   *  V1.0.0   2025.03.03       Harry_Wong        1.重新构建全向轮底盘，完成单底盘控制
+  *  V1.1.0   2025.11.05       CJH               1. 完成底盘与云台协同控制
+  *                                              2. 完成底盘键鼠控制
+  *                                              3. 修正全向轮解算的错误
+  * 
   @verbatim
   ==============================================================================
 
@@ -145,6 +149,7 @@ void ChassisObserver(void)
     chassis.last_mode = chassis.mode;
 }
 
+
 /*-------------------- Reference --------------------*/
 
 /**
@@ -216,23 +221,132 @@ void ChassisReference(void)
 
         if (chassis.rc->key.v & KEY_PRESSED_OFFSET_W) 
         {
-            chassis.reference_rc.vx += CHASSIS_RC_MAX_SPEED;
+            if (chassis.reference_rc.vx <= CHASSIS_RC_MAX_SPEED)
+            {
+                chassis.x_time++;
+                chassis.reference_rc.vx = 0.004f*chassis.x_time;
+            }
+            else
+            {
+                chassis.reference_rc.vx = CHASSIS_RC_MAX_SPEED;
+            }
         }
-
         else if (chassis.rc->key.v & KEY_PRESSED_OFFSET_S) 
         {
-            chassis.reference_rc.vx -= CHASSIS_RC_MAX_SPEED;
+            if (chassis.reference_rc.vx >= -CHASSIS_RC_MAX_SPEED)
+            {
+                chassis.x_time++;
+                chassis.reference_rc.vx = -0.004f*chassis.x_time;
+            }
+            else
+            {
+                chassis.reference_rc.vx = -CHASSIS_RC_MAX_SPEED;
+            }
         }
+        else
+        {
+            chassis.x_time = 0;
+        }
+
 
         if (chassis.rc->key.v & KEY_PRESSED_OFFSET_A) 
         {
-            chassis.reference_rc.vy += CHASSIS_RC_MAX_SPEED;
+            if (chassis.reference_rc.vy <= CHASSIS_RC_MAX_SPEED)
+            {
+                chassis.y_time++;
+                chassis.reference_rc.vy = 0.004f*chassis.y_time;
+            }
+            else
+            {
+                chassis.reference_rc.vy = CHASSIS_RC_MAX_SPEED;
+            }
         }
-
         else if (chassis.rc->key.v & KEY_PRESSED_OFFSET_D) 
         {
-            chassis.reference_rc.vy -= CHASSIS_RC_MAX_SPEED;
+            if (chassis.reference_rc.vy >= -CHASSIS_RC_MAX_SPEED)
+            {
+                chassis.y_time++;
+                chassis.reference_rc.vy = -0.004f*chassis.y_time;
+            }
+            else
+            {
+                chassis.reference_rc.vy = -CHASSIS_RC_MAX_SPEED;
+            }
         }
+        else
+        {
+            chassis.y_time = 0;
+        }
+
+        chassis.reference.vx =  chassis.reference_rc.vx * cosf(chassis.yaw_delta) - chassis.reference_rc.vy * sinf(chassis.yaw_delta);
+        chassis.reference.vy =  chassis.reference_rc.vx * sinf(chassis.yaw_delta) + chassis.reference_rc.vy * cos(chassis.yaw_delta);
+        chassis.reference.wz=PID_calc(&chassis_pid.follow,0,chassis.yaw_delta);
+        
+    }
+    else if (chassis.mode == CHASSIS_SPIN)
+    {
+        chassis.reference_rc.vx=fp32_deadline(-chassis.rc->rc.ch[3],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_SPEED;
+        chassis.reference_rc.vy=fp32_deadline(chassis.rc->rc.ch[2],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_SPEED;
+
+        if (chassis.rc->key.v & KEY_PRESSED_OFFSET_W) 
+        {
+            if (chassis.reference_rc.vx <= CHASSIS_RC_MAX_SPEED)
+            {
+                chassis.x_time++;
+                chassis.reference_rc.vx = 0.002f*chassis.x_time;
+            }
+            else
+            {
+                chassis.reference_rc.vx = CHASSIS_RC_MAX_SPEED;
+            }
+        }
+        else if (chassis.rc->key.v & KEY_PRESSED_OFFSET_S) 
+        {
+            if (chassis.reference_rc.vx >= -CHASSIS_RC_MAX_SPEED)
+            {
+                chassis.x_time++;
+                chassis.reference_rc.vx = -0.002f*chassis.x_time;
+            }
+            else
+            {
+                chassis.reference_rc.vx = -CHASSIS_RC_MAX_SPEED;
+            }
+        }
+        else
+        {
+            chassis.x_time = 0;
+        }
+
+
+        if (chassis.rc->key.v & KEY_PRESSED_OFFSET_A) 
+        {
+            if (chassis.reference_rc.vy <= CHASSIS_RC_MAX_SPEED)
+            {
+                chassis.y_time++;
+                chassis.reference_rc.vy = 0.002f*chassis.y_time;
+            }
+            else
+            {
+                chassis.reference_rc.vy = CHASSIS_RC_MAX_SPEED;
+            }
+        }
+        else if (chassis.rc->key.v & KEY_PRESSED_OFFSET_D) 
+        {
+            if (chassis.reference_rc.vy >= -CHASSIS_RC_MAX_SPEED)
+            {
+                chassis.y_time++;
+                chassis.reference_rc.vy = -0.002f*chassis.y_time;
+            }
+            else
+            {
+                chassis.reference_rc.vy = -CHASSIS_RC_MAX_SPEED;
+            }
+        }
+        else
+        {
+            chassis.y_time = 0;
+        }
+
 
         chassis.reference.vx =  chassis.reference_rc.vx * cosf(chassis.yaw_delta) - chassis.reference_rc.vy * sinf(chassis.yaw_delta);
         chassis.reference.vy =  chassis.reference_rc.vx * sinf(chassis.yaw_delta) + chassis.reference_rc.vy * cos(chassis.yaw_delta);
@@ -275,10 +389,10 @@ void ChassisReference(void)
  */
 void ChassisConsole(void)
 {
-    chassis.set[0] = (sqrt(2)*(  chassis.reference.vx - chassis.reference.vy ) - WHEEL_CENTER_DISTANCE * chassis.reference.wz) / WHEEL_RADIUS * chassis.wheel[0].reduction_ratio;
-    chassis.set[1] = (sqrt(2)*(  chassis.reference.vx + chassis.reference.vy ) - WHEEL_CENTER_DISTANCE * chassis.reference.wz) / WHEEL_RADIUS * chassis.wheel[1].reduction_ratio;
-    chassis.set[2] = (sqrt(2)*( -chassis.reference.vx + chassis.reference.vy ) - WHEEL_CENTER_DISTANCE * chassis.reference.wz) / WHEEL_RADIUS * chassis.wheel[2].reduction_ratio;
-    chassis.set[3] = (sqrt(2)*( -chassis.reference.vx - chassis.reference.vy ) - WHEEL_CENTER_DISTANCE * chassis.reference.wz) / WHEEL_RADIUS * chassis.wheel[3].reduction_ratio; 
+    chassis.set[0] = ((  -chassis.reference.vx + chassis.reference.vy )/ sqrt(2) - WHEEL_CENTER_DISTANCE * chassis.reference.wz) / WHEEL_RADIUS * chassis.wheel[0].reduction_ratio;
+    chassis.set[1] = ((  -chassis.reference.vx - chassis.reference.vy )/ sqrt(2) - WHEEL_CENTER_DISTANCE * chassis.reference.wz) / WHEEL_RADIUS * chassis.wheel[1].reduction_ratio;
+    chassis.set[2] = (( chassis.reference.vx - chassis.reference.vy )/ sqrt(2) - WHEEL_CENTER_DISTANCE * chassis.reference.wz) / WHEEL_RADIUS * chassis.wheel[2].reduction_ratio;
+    chassis.set[3] = (( chassis.reference.vx + chassis.reference.vy )/ sqrt(2) - WHEEL_CENTER_DISTANCE * chassis.reference.wz) / WHEEL_RADIUS * chassis.wheel[3].reduction_ratio; 
 
     for (int i=0;i<4;++i)
     {
