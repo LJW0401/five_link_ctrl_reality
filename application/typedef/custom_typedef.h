@@ -51,11 +51,17 @@ typedef struct
         float yaw;
     } gimbal;
 
+
     struct
     {
-        bool fire;
-        bool fric_on;
+        uint8_t fire;
+        uint8_t fric_on;
     } shoot;
+
+    struct
+    {
+        bool tracking;
+    }  tracking;
 
 } RobotCmdData_t;
 
