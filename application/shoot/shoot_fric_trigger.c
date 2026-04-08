@@ -220,28 +220,49 @@ void ShootSetMode(void)
     }
 
     //防堵转
-    if (SHOOT.mode == LOAD_BURSTFIRE||SHOOT.mode == LAOD_BULLET)
-    {
-        if(SHOOT.block_time >= BLOCK_TIME)
+      if(SHOOT.block_time >= BLOCK_TIME)
+      {
+        SHOOT.mode = LOAD_BLOCK;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
+      }
+
+      if(SHOOT.mode == LOAD_BURSTFIRE||SHOOT.mode == LAOD_BULLET)
+      {
+        if(fabs(SHOOT.last_trigger_vel) < BLOCK_TRIGGER_SPEED)
         {
-            SHOOT.mode = LOAD_BLOCK;
-            SHOOT.move_flag = 0;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
-        }
-  
-        if(fabs(SHOOT.last_trigger_vel)<BLOCK_TRIGGER_SPEED&&SHOOT.block_time<BLOCK_TIME)
-        {
-            SHOOT.block_time++;
-            SHOOT.reverse_time = 0;
-        }
-        else if(SHOOT.block_time== BLOCK_TIME&& SHOOT.reverse_time< REVERSE_TIME)
-        {
-            SHOOT.reverse_time++;  
+            if(SHOOT.block_time < BLOCK_TIME)
+            {
+                SHOOT.block_time += 1; 
+                if(SHOOT.block_time > BLOCK_TIME) 
+                {
+                    SHOOT.block_time = BLOCK_TIME; 
+                }
+                SHOOT.reverse_time = 0;
+            }
         }
         else
         {
             SHOOT.block_time = 0;
-        }  
-    }    
+        }
+      }
+      else if(SHOOT.block_time >= BLOCK_TIME)
+      {
+        if(SHOOT.reverse_time < REVERSE_TIME)
+        {
+          SHOOT.reverse_time++;  
+        }
+        else
+        {
+          SHOOT.block_time = 0;
+          SHOOT.reverse_time = 0;
+        }
+      }
+      else
+      {
+        if(SHOOT.block_time > 0)
+        {
+            SHOOT.block_time--;
+        }
+      }
 }
 
 /*-------------------- Observe --------------------*/
