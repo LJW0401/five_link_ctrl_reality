@@ -5,6 +5,7 @@
   * @history
   *  Version    Date            Author          Modification
   *  V1.0.0     Nov-25-2024     Penguin         1. done
+  *  V1.1.0     2026-4-8        CJH             1. done
   *
   @verbatim
   ==============================================================================
@@ -28,8 +29,8 @@ extern inline float GetScCmdChassisVelocity(uint8_t axis);
 extern inline float GetScCmdChassisAngle(uint8_t axis);
 extern inline float GetScCmdChassisHeight(void);
 extern inline float GetScCmdGimbalAngle(uint8_t axis);
-extern inline bool GetScCmdFire(void);
-extern inline bool GetScCmdFricOn(void);
+extern inline uint8_t GetScCmdFire(void);
+extern inline uint8_t GetScCmdFricOn(void);
 extern inline float GetVirtualRcCh(uint8_t channel);
 extern inline char GetVirtualRcSw(uint8_t channel);
 
