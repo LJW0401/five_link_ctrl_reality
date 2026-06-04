@@ -57,6 +57,44 @@ display_polynomial(a26, 'k[1][5]');
 
 toc
 
+%% 绘图：散点（逐点 LQR 采样）+ 3 阶多项式拟合曲线，附 R^2
+% 每个分量画一个子图，蓝色散点为逐腿长 LQR 结果，红线为多项式拟合
+K_samp = [k11; k12; k13; k14; k15; k16; k21; k22; k23; k24; k25; k26];
+K_coef = [a11; a12; a13; a14; a15; a16; a21; a22; a23; a24; a25; a26];
+K_name = {'K_{11}','K_{12}','K_{13}','K_{14}','K_{15}','K_{16}', ...
+          'K_{21}','K_{22}','K_{23}','K_{24}','K_{25}','K_{26}'};
+xf = linspace(min(leg), max(leg), 400);
+
+figure('Name','LQR 增益表拟合','Color','w','Position',[100 100 1400 600]);
+for c = 1:12
+    subplot(2, 6, c); hold on; grid on;
+
+    y_samp = K_samp(c, :);                 % 采样散点值
+    scatter(leg, y_samp, 18, 'b', 'filled');
+
+    y_fit = polyval(K_coef(c, :), xf);     % 多项式拟合曲线
+    y_hat = polyval(K_coef(c, :), leg);    % 采样腿长处拟合值，用于算 R^2
+    plot(xf, y_fit, 'r-', 'LineWidth', 1.4);
+
+    ss_res = sum((y_samp - y_hat).^2);
+    ss_tot = sum((y_samp - mean(y_samp)).^2);
+    R2 = 1 - ss_res / ss_tot;
+    title(sprintf('%s  R^2=%.4f', K_name{c}, R2));
+
+    xlabel('L_0 (m)'); ylabel(K_name{c});
+    if c == 1
+        legend({'LQR 采样点','多项式拟合'}, 'Location','best');
+    end
+    set(gca, 'GridLineStyle', ':', 'GridColor', 'k', 'GridAlpha', 0.4);
+    hold off;
+end
+sgtitle('LQR 增益表 K_{ij}(L_0)：散点 + 3 阶多项式拟合');
+
+saveas(gcf, 'K_table_fit.png');
+fprintf('拟合图已保存到 K_table_fit.png\n');
+
+toc
+
 % x0=leg;              %步长为0.1
 % y11=polyval(a11,x0);          %返回值y0是对应于x0的函数值
 % y12=polyval(a12,x0);          %返回值y0是对应于x0的函数值
