@@ -260,7 +260,9 @@ static void SpeedCtrl(hcan_t * hcan, uint16_t motor_id, float vel)
  */
 static hcan_t * GetHcanPoint(Motor_s * motor)
 {
-    if (!(motor->type == DM_8009 || motor->type == DM_4310|| motor->type == DM_4340)) return NULL;
+    if (!(motor->type == DM_8009 || motor->type == DM_4310 || motor->type == DM_4340 ||
+          motor->type == DM_2325))
+        return NULL;
 
     if (motor->can == 1)
         return &hcan1;
