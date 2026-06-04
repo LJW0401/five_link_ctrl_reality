@@ -68,14 +68,12 @@ DmRange_s DmGetRange(MotorType_e type)
     switch (type) {
         case DM_8009:
             return (DmRange_s){.p_max = 12.5f, .v_max = 45.0f, .t_max = 54.0f};
-        case DM_4310:
+        case DM_4310: // 和寄存器核对一致
             return (DmRange_s){.p_max = 12.5f, .v_max = 30.0f, .t_max = 10.0f};
         case DM_4340:
             return (DmRange_s){.p_max = 12.5f, .v_max = 10.0f, .t_max = 28.0f};
-        case DM_2325:
-            // S2325：峰值扭矩5N*m、空载最高约58.6rad/s(560rpm)，量程按能力覆盖取整；
-            // P/V/T_MAX 是 DM3520 驱动器寄存器(0x15/0x16/0x17)，须与调试助手实际值核对
-            return (DmRange_s){.p_max = 12.5f, .v_max = 60.0f, .t_max = 5.0f};
+        case DM_2325: // 和寄存器核对一致
+            return (DmRange_s){.p_max = 12.5f, .v_max = 200.0f, .t_max = 10.0f};
         default:
             return (DmRange_s){.p_max = 12.5f, .v_max = 30.0f, .t_max = 10.0f};
     }
