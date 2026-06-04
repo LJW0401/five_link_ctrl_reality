@@ -14,17 +14,16 @@ function K = get_k_length(leg_length)
     syms x(t) T R Iw mw M L LM theta(t) l phi(t) mp g Tp Ip IM
     syms f1 f2 f3 d_theta d_x d_phi theta0 x0 phi0 
 
-    R1=0.106;                         %驱动轮半径
+    R1=0.0425;                        %驱动轮半径
     L1=leg_length/2;                  %摆杆重心到驱动轮轴距离
     LM1=leg_length/2;                 %摆杆重心到其转轴距离
-    l1=0.03;                          %机体质心距离转轴距离
-    mw1=1.70;                         %驱动轮质量
-    mp1=1.80;                         %杆质量
-    M1=8.5;                           %机体质量
-    Iw1=mw1*R1^2;                     %驱动轮转动惯量
-    Ip1=mp1*((L1+LM1)^2+0.05^2)/12.0; %摆杆转动惯量
-    %IM1=M1*(0.3^2+0.12^2)/12.0;       %机体绕质心转动惯量
-    IM1=249032349.82e-9;       %机体绕质心转动惯量
+    l1=0;                             %机体质心距离转轴距离
+    mw1=0.158;                        %驱动轮质量
+    mp1=0.130;                        %杆质量
+    M1=2.250;                         %机体质量
+    Iw1=0.001188791+0.001471158;      %驱动轮转动惯量
+    Ip1=(0.000004161+0.00008696823)*2;%摆杆转动惯量
+    IM1=0.01884243947;                %机体绕质心转动惯量
 
     
     NM = M*diff(x + (L + LM )*sin(theta)-l*sin(phi),t,2);
@@ -49,8 +48,8 @@ function K = get_k_length(leg_length)
     B=subs(B,[R,L,LM,l,mw,mp,M,Iw,Ip,IM,g],[R1,L1,LM1,l1,mw1,mp1,M1,Iw1,Ip1,IM1,9.8]);
     B=double(B);
     
-    Q=diag([100 1 500 100 5000 1]);%theta d_theta x d_x phi d_phi%700 1 600 200 1000 1
-    R=[220 0;0 70];                %T Tp [240 0;0 25]
+    Q=diag([1 10 100 20 1000 1]);  %theta d_theta x d_x phi d_phi
+    R=diag([1 1]);                 %T Tp
     
     K=lqr(A,B,Q,R);
   
