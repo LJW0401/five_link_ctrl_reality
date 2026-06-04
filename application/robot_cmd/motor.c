@@ -55,6 +55,29 @@ void MotorInit(
 }
 
 /**
+ * @brief       按电机型号返回达妙 MIT 映射范围
+ * @param[in]   type 电机型号
+ * @return      该型号的 ±p_max/±v_max/±t_max
+ * @note        取值为达妙官方各型号出厂默认 MIT 范围(P_MAX/V_MAX/T_MAX)。
+ *              DM_8009 峰值扭矩 40N*m，故 t_max 远大于 4310；若在调试助手里
+ *              改过这三个值，必须同步修改这里，否则映射会按比例错位。
+ *              未知型号回退到一组保守的小范围。
+ */
+DmRange_s DmGetRange(MotorType_e type)
+{
+    switch (type) {
+        case DM_8009:
+            return (DmRange_s){.p_max = 12.5f, .v_max = 45.0f, .t_max = 54.0f};
+        case DM_4310:
+            return (DmRange_s){.p_max = 12.5f, .v_max = 30.0f, .t_max = 10.0f};
+        case DM_4340:
+            return (DmRange_s){.p_max = 12.5f, .v_max = 10.0f, .t_max = 28.0f};
+        default:
+            return (DmRange_s){.p_max = 12.5f, .v_max = 30.0f, .t_max = 10.0f};
+    }
+}
+
+/**
  * @brief          扫描所有电机，检测是否有离线电机
  * @return         true: 有离线电机 false: 全部在线
  */

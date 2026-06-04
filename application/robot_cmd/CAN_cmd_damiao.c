@@ -159,19 +159,22 @@ void SavePosZero(hcan_t * hcan, uint16_t motor_id, uint16_t mode_id)
 ************************************************************************
 **/
 static void MitCtrl(
-    hcan_t * hcan, uint16_t motor_id, float pos, float vel, float kp, float kd, float torq)
+    hcan_t * hcan, MotorType_e type, uint16_t motor_id, float pos, float vel, float kp, float kd,
+    float torq)
 {
     uint16_t pos_tmp, vel_tmp, kp_tmp, kd_tmp, tor_tmp;
+
+    DmRange_s range = DmGetRange(type);  // 按型号取 MIT 映射范围
 
     CAN_CTRL_DATA.hcan = hcan;
 
     CAN_CTRL_DATA.tx_header.StdId = motor_id + DM_MODE_MIT;
 
-    pos_tmp = float_to_uint(pos, DM_P_MIN, DM_P_MAX, 16);
-    vel_tmp = float_to_uint(vel, DM_V_MIN, DM_V_MAX, 12);
+    pos_tmp = float_to_uint(pos, -range.p_max, range.p_max, 16);
+    vel_tmp = float_to_uint(vel, -range.v_max, range.v_max, 12);
     kp_tmp = float_to_uint(kp, DM_KP_MIN, DM_KP_MAX, 12);
     kd_tmp = float_to_uint(kd, DM_KD_MIN, DM_KD_MAX, 12);
-    tor_tmp = float_to_uint(torq, DM_T_MIN, DM_T_MAX, 12);
+    tor_tmp = float_to_uint(torq, -range.t_max, range.t_max, 12);
 
     CAN_CTRL_DATA.tx_data[0] = (pos_tmp >> 8);
     CAN_CTRL_DATA.tx_data[1] = pos_tmp;
@@ -334,7 +337,7 @@ void DmMitStop(Motor_s * motor)
     hcan_t * hcan = GetHcanPoint(motor);
     if (hcan == NULL) return;
 
-    MitCtrl(hcan, motor->id, 0, 0, 0, 0, 0);
+    MitCtrl(hcan, motor->type, motor->id, 0, 0, 0, 0, 0);
 }
 
 /**
@@ -347,7 +350,7 @@ void DmMitCtrl(Motor_s * motor, float kp, float kd)
     hcan_t * hcan = GetHcanPoint(motor);
     if (hcan == NULL) return;
 
-    MitCtrl(hcan, motor->id, motor->set.pos, motor->set.vel, kp, kd, motor->set.tor);
+    MitCtrl(hcan, motor->type, motor->id, motor->set.pos, motor->set.vel, kp, kd, motor->set.tor);
 }
 
 /**
@@ -360,7 +363,7 @@ void DmMitCtrlTorque(Motor_s * motor)
     hcan_t * hcan = GetHcanPoint(motor);
     if (hcan == NULL) return;
 
-    MitCtrl(hcan, motor->id, 0, 0, 0, 0, motor->set.tor);
+    MitCtrl(hcan, motor->type, motor->id, 0, 0, 0, 0, motor->set.tor);
 }
 
 /**
@@ -373,7 +376,7 @@ void DmMitCtrlVelocity(Motor_s * motor, float kd)
     hcan_t * hcan = GetHcanPoint(motor);
     if (hcan == NULL) return;
 
-    MitCtrl(hcan, motor->id, 0, motor->set.vel, 0, kd, 0);
+    MitCtrl(hcan, motor->type, motor->id, 0, motor->set.vel, 0, kd, 0);
 }
 
 /**
@@ -386,7 +389,7 @@ void DmMitCtrlPosition(Motor_s * motor, float kp, float kd)
     hcan_t * hcan = GetHcanPoint(motor);
     if (hcan == NULL) return;
 
-    MitCtrl(hcan, motor->id, motor->set.pos, 0, kp, kd, 0);
+    MitCtrl(hcan, motor->type, motor->id, motor->set.pos, 0, kp, kd, 0);
 }
 
 /**

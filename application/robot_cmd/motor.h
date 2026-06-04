@@ -146,33 +146,40 @@ typedef struct
 #define DM_STATE_COMMUNICATION_LOSS     0x0D
 #define DM_STATE_OVERLOAD               0x0E
 
-#define DM_P_MIN   -12.5f
-#define DM_P_MAX    12.5f
-#define DM_V_MIN   -30.0f
-#define DM_V_MAX    30.0f
+// Kp/Kd 的范围由 MIT 协议固定，所有达妙电机一致
 #define DM_KP_MIN   0.0f
 #define DM_KP_MAX   500.0f
 #define DM_KD_MIN   0.0f
 #define DM_KD_MAX   5.0f
-#define DM_T_MIN   -10.0f
-#define DM_T_MAX    10.0f
 // clang-format on
+
+/**
+ * @brief  达妙电机 MIT 模式的位置/速度/扭矩映射范围
+ * @note   p_des/v_des/t_ff 在 CAN 帧里是定点整数，需按 ±p_max/±v_max/±t_max
+ *         线性映射回物理量；该范围写在电机固件里(调试助手 P_MAX/V_MAX/T_MAX)，
+ *         不同型号不同，下位机必须与电机端设置一致，否则位置/速度/力矩会按比例错位。
+ */
+typedef struct
+{
+    float p_max;  // (rad)   位置映射范围 ±p_max
+    float v_max;  // (rad/s) 速度映射范围 ±v_max
+    float t_max;  // (N*m)   扭矩映射范围 ±t_max
+} DmRange_s;
+
+/**
+ * @brief  按电机型号返回 MIT 映射范围
+ * @note   取值为达妙各型号出厂默认 MIT 范围；若在调试助手中改过 P/V/T_MAX，
+ *         需同步修改此处。
+ */
+extern DmRange_s DmGetRange(MotorType_e type);
 
 typedef struct
 {
     int id;
     int state;
-    int p_int;
-    int v_int;
-    int t_int;
-    int kp_int;
-    int kd_int;
-
-    float pos;
-    float vel;
-    float tor;
-    float Kp;
-    float Kd;
+    int p_int;  // 位置原始定点值，物理量换算见 GetDmFdbData(按型号)
+    int v_int;  // 速度原始定点值
+    int t_int;  // 扭矩原始定点值
 
     float t_mos;
     float t_rotor;

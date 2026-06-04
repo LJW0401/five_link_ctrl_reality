@@ -72,14 +72,13 @@ static uint32_t LAST_RECEIVE_TIME = 0;  // 上次接收时间
  */
 void DmFdbData(DmMeasure_s * dm_measure, uint8_t * rx_data)
 {
+    // 中断里只拿得到 CAN ID、拿不到电机型号，故此处仅解出原始定点值；
+    // int->物理量的映射在 GetDmFdbData 里按 motor->type 完成
     dm_measure->id = (rx_data[0]) & 0x0F;
     dm_measure->state = (rx_data[0]) >> 4;
     dm_measure->p_int = (rx_data[1] << 8) | rx_data[2];
     dm_measure->v_int = (rx_data[3] << 4) | (rx_data[4] >> 4);
     dm_measure->t_int = ((rx_data[4] & 0xF) << 8) | rx_data[5];
-    dm_measure->pos = uint_to_float(dm_measure->p_int, DM_P_MIN, DM_P_MAX, 16);  // (-12.5,12.5)
-    dm_measure->vel = uint_to_float(dm_measure->v_int, DM_V_MIN, DM_V_MAX, 12);  // (-45.0,45.0)
-    dm_measure->tor = uint_to_float(dm_measure->t_int, DM_T_MIN, DM_T_MAX, 12);  // (-18.0,18.0)
     dm_measure->t_mos = (float)(rx_data[6]);
     dm_measure->t_rotor = (float)(rx_data[7]);
 
@@ -425,9 +424,11 @@ CybergearModeState_e GetCybergearModeState(Motor_s * p_motor)
  */
 static void GetDmFdbData(Motor_s * motor, const DmMeasure_s * dm_measure)
 {
-    motor->fdb.pos = dm_measure->pos;
-    motor->fdb.vel = dm_measure->vel;
-    motor->fdb.tor = dm_measure->tor;
+    DmRange_s range = DmGetRange(motor->type);  // 按型号取 MIT 映射范围
+
+    motor->fdb.pos = uint_to_float(dm_measure->p_int, -range.p_max, range.p_max, 16);
+    motor->fdb.vel = uint_to_float(dm_measure->v_int, -range.v_max, range.v_max, 12);
+    motor->fdb.tor = uint_to_float(dm_measure->t_int, -range.t_max, range.t_max, 12);
     motor->fdb.temp = dm_measure->t_mos;
     motor->fdb.state = dm_measure->state;
 
