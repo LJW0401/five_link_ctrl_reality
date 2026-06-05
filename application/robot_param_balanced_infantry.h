@@ -29,7 +29,7 @@
 #define CHASSIS_Y_CHANNEL      2  // 左右的遥控器通道号码
 #define CHASSIS_WZ_CHANNEL     2  // 旋转的遥控器通道号码
 #define CHASSIS_ANGLE_CHANNEL  4  // 腿摆角的遥控器通道号码
-#define CHASSIS_LENGTH_CHANNEL 4  // 腿长的遥控器通道号码
+#define CHASSIS_LENGTH_CHANNEL 1  // 腿长的遥控器通道号码
 #define CHASSIS_ROLL_CHANNEL   4  // ROLL角的遥控器通道号码
 #define CHASSIS_RC_DEADLINE    20 // 摇杆死区
 
@@ -147,7 +147,7 @@
 #define MIN_J2_ANGLE (-1.8f) // (rad)关节角度下限
 #define MIN_J3_ANGLE ( 0.0f) // (rad)关节角度下限
 
-#define MIN_LEG_LENGTH       ( 0.12f)
+#define MIN_LEG_LENGTH       ( 0.11f)
 #define MIN_LEG_ANGLE        ( M_PI_2 - MAX_DELTA_ROD_ANGLE)
 #define MIN_SPEED            (-MAX_SPEED)
 #define MIN_SPEED_VECTOR_VX  (-MAX_SPEED_VECTOR_VX)
@@ -189,7 +189,7 @@
 #define KI_CHASSIS_ROLL_ANGLE        (0.0f)
 #define KD_CHASSIS_ROLL_ANGLE        (0.2f)
 #define MAX_IOUT_CHASSIS_ROLL_ANGLE  (0.0f)
-#define MAX_OUT_CHASSIS_ROLL_ANGLE   (0.1f)
+#define MAX_OUT_CHASSIS_ROLL_ANGLE   (0.0f)
 #define N_CHASSIS_ROLL_ANGLE         (0.1f)
 
 //roll轴跟踪速度环PID参数
@@ -200,10 +200,10 @@
 // #define MAX_OUT_CHASSIS_ROLL_VELOCITY   (0.1f)
 
 // 腿长跟踪长度环PID参数
-#define KP_CHASSIS_LEG_LENGTH_LENGTH        (150.0f)
+#define KP_CHASSIS_LEG_LENGTH_LENGTH        (1000.0f)
 #define KI_CHASSIS_LEG_LENGTH_LENGTH        (0.0f)
 #define KD_CHASSIS_LEG_LENGTH_LENGTH        (1500.0f)
-#define MAX_IOUT_CHASSIS_LEG_LENGTH_LENGTH  (0.0f)
+#define MAX_IOUT_CHASSIS_LEG_LENGTH_LENGTH  (1.0f)
 #define MAX_OUT_CHASSIS_LEG_LENGTH_LENGTH   (40.0f)
 #define N_LEG_LENGTH_LENGTH                 (0.1f)
 

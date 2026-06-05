@@ -45,7 +45,7 @@
 #define TAKE_OFF_DETECT 0  // 启用离地检测
 #define CLOSE_LEG_LEFT 0   // 关闭左腿输出
 #define CLOSE_LEG_RIGHT 0  // 关闭右腿输出
-#define LIFTED_UP 0        // 被架起
+#define LIFTED_UP 1        // 被架起
 
 // Parameters on ---------------------
 #define MS_TO_S 0.001f
@@ -819,12 +819,12 @@ void ChassisReference(void)
             CHASSIS.ref.leg_state[0].theta = rc_angle * RC_TO_ONE * 0.3f;
             CHASSIS.ref.leg_state[1].theta = rc_angle * RC_TO_ONE * 0.3f;
         }
-        case CHASSIS_FREE: 
+        case CHASSIS_FREE:
         case CHASSIS_FOLLOW_GIMBAL_YAW:
         case CHASSIS_CUSTOM:
         case CHASSIS_POS_DEBUG: {
             angle = M_PI_2 + rc_angle * RC_TO_ONE * 0.3f;
-            length = 0.24f + rc_length * 0.00000001f;
+            length = 0.12f + rc_length * RC_TO_ONE * 0.1f;
 
             if (CHASSIS.step == JUMP_STEP_SQUST) {
                 length = MIN_LEG_LENGTH;
@@ -973,7 +973,7 @@ static void LocomotionController(void)
     // ROLL角控制=============================================
     // 计算腿长差值
     float Ld0 = CHASSIS.fdb.leg[0].rod.L0 - CHASSIS.fdb.leg[1].rod.L0;
-    float L_diff = CalcLegLengthDiff(Ld0, CHASSIS.fdb.body.roll, CHASSIS.ref.body.roll);
+    float L_diff = 0;  //CalcLegLengthDiff(Ld0, CHASSIS.fdb.body.roll, CHASSIS.ref.body.roll);
 
     // PID补偿稳态误差
     float delta_L0 = 0.0f;
