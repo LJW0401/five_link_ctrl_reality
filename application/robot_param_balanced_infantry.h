@@ -64,11 +64,11 @@
 #define DEBUG_POS_KD (0.8f) // 调试MIT位置控制KD
 
 //physical parameters ---------------------
-#define LEG_L1 (0.215f)  // (m)腿1长度
-#define LEG_L2 (0.258f)  // (m)腿2长度
+#define LEG_L1 (0.095f)  // (m)腿1长度
+#define LEG_L2 (0.19f)   // (m)腿2长度
 #define LEG_L3 (LEG_L2)  // (m)腿3长度
 #define LEG_L4 (LEG_L1)  // (m)腿4长度
-#define LEG_L5 (0.0f)    // (m)关节间距
+#define LEG_L5 (0.095f)  // (m)关节间距
 
 #define BODY_MASS            (8.5f)      // (kg)机身重量
 #define WHEEL_MASS           (0.65f)      // (kg)轮子重量
@@ -108,7 +108,7 @@
 #define MAX_J2_ANGLE  (0.6f) // (rad)关节角度上限
 #define MAX_J3_ANGLE  (1.8f) // (rad)关节角度上限
 
-#define MAX_LEG_LENGTH       (0.35f)
+#define MAX_LEG_LENGTH       (0.24f)
 #define MAX_LEG_ANGLE        (M_PI_2 + MAX_DELTA_ROD_ANGLE)
 #define MAX_SPEED            (3.5f)
 #define MAX_SPEED_VECTOR_VX  (3.5f)
@@ -147,7 +147,7 @@
 #define MIN_J2_ANGLE (-1.8f) // (rad)关节角度下限
 #define MIN_J3_ANGLE ( 0.0f) // (rad)关节角度下限
 
-#define MIN_LEG_LENGTH       ( 0.11f)
+#define MIN_LEG_LENGTH       ( 0.12f)
 #define MIN_LEG_ANGLE        ( M_PI_2 - MAX_DELTA_ROD_ANGLE)
 #define MIN_SPEED            (-MAX_SPEED)
 #define MIN_SPEED_VECTOR_VX  (-MAX_SPEED_VECTOR_VX)
