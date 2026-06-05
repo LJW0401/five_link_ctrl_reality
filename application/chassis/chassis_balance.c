@@ -1121,8 +1121,10 @@ static void ConsoleNormal(void)
     // 给驱动轮电机赋值
     // QUESTION: 排查电机发送的力矩要反向的问题，这种情况下控制正常
     //不知道为什么要反向，待后续研究
-    CHASSIS.wheel_motor[0].set.tor = -(CHASSIS.cmd.leg[0].wheel.T * (W0_DIRECTION));
-    CHASSIS.wheel_motor[1].set.tor = -(CHASSIS.cmd.leg[1].wheel.T * (W1_DIRECTION));
+    CHASSIS.wheel_motor[0].set.tor = fp32_constrain(
+        -(CHASSIS.cmd.leg[0].wheel.T * (W0_DIRECTION)), MIN_WHEEL_TORQUE, MAX_WHEEL_TORQUE);
+    CHASSIS.wheel_motor[1].set.tor = fp32_constrain(
+        -(CHASSIS.cmd.leg[1].wheel.T * (W1_DIRECTION)), MIN_WHEEL_TORQUE, MAX_WHEEL_TORQUE);
 }
 
 static void ConsoleDebug(void)
@@ -1183,8 +1185,10 @@ static void ConsolePosDebug(void)
         fp32_constrain(CHASSIS.joint_motor[3].set.pos, MIN_J3_ANGLE, MAX_J3_ANGLE);
 
     // ===驱动轮控制===
-    CHASSIS.wheel_motor[0].set.tor = -(CHASSIS.cmd.leg[0].wheel.T * (W0_DIRECTION));
-    CHASSIS.wheel_motor[1].set.tor = -(CHASSIS.cmd.leg[1].wheel.T * (W1_DIRECTION));
+    CHASSIS.wheel_motor[0].set.tor = fp32_constrain(
+        -(CHASSIS.cmd.leg[0].wheel.T * (W0_DIRECTION)), MIN_WHEEL_TORQUE, MAX_WHEEL_TORQUE);
+    CHASSIS.wheel_motor[1].set.tor = fp32_constrain(
+        -(CHASSIS.cmd.leg[1].wheel.T * (W1_DIRECTION)), MIN_WHEEL_TORQUE, MAX_WHEEL_TORQUE);
 
     // DEBUG:架空调试用
     // CHASSIS.wheel_motor[0].set.tor = 0;

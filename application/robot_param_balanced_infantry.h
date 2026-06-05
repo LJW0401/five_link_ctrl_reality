@@ -117,6 +117,7 @@
 
 #define MAX_JOINT_TORQUE      (1.0f)   // (Nm)关节最大扭矩
 #define MAX_JOINT_TORQUE_JUMP (5.0f)  // (Nm)跳跃时的关节最大扭矩
+#define MAX_WHEEL_TORQUE      (3.0f)   // (Nm)驱动轮最大扭矩，DM2325量程10Nm，保守限幅防失控（TODO:实车标定）
 #define MAX_VEL_ADD           (1.0f)   // (m/s)速度增量上限
 #define MAX_PITCH_VEL         (0.1f)   // (rad/s)pitch轴速度上限
 
@@ -153,8 +154,9 @@
 #define MIN_SPEED_VECTOR_VY  (-MAX_SPEED_VECTOR_VY)
 #define MIN_SPEED_VECTOR_WZ  (-MAX_SPEED_VECTOR_WZ)
 
-#define MIN_JOINT_TORQUE      (-MAX_JOINT_TORQUE)  // 
-#define MIN_JOINT_TORQUE_JUMP (-MAX_JOINT_TORQUE_JUMP)  // 
+#define MIN_JOINT_TORQUE      (-MAX_JOINT_TORQUE)  //
+#define MIN_JOINT_TORQUE_JUMP (-MAX_JOINT_TORQUE_JUMP)  //
+#define MIN_WHEEL_TORQUE      (-MAX_WHEEL_TORQUE)  // (Nm)驱动轮最小扭矩
 #define MIN_VEL_ADD           (-MAX_VEL_ADD)    // (m/s)速度增量下限
 #define MIN_PITCH_VEL         (-MAX_PITCH_VEL)  // (rad/s)pitch轴速度下限
 
