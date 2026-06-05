@@ -70,11 +70,11 @@
 #define LEG_L4 (LEG_L1)  // (m)腿4长度
 #define LEG_L5 (0.095f)  // (m)关节间距
 
-#define BODY_MASS            (8.5f)      // (kg)机身重量
-#define WHEEL_MASS           (0.65f)      // (kg)轮子重量
-#define WHEEL_RADIUS         (0.0625f)    // (m)轮子半径
-#define WHEEL_START_TORQUE   (0.3f)      // (Nm)轮子起动力矩
-#define WHEEL_BASE           (0.51175f)  // (m)驱动轮轴距
+#define BODY_MASS            (2.250f)      // (kg)机身重量
+#define WHEEL_MASS           (0.158f)      // (kg)轮子重量
+#define WHEEL_RADIUS         (0.0425f)    // (m)轮子半径
+#define WHEEL_START_TORQUE   (0.0f)      // (Nm)轮子起动力矩
+#define WHEEL_BASE           (0.25f)  // (m)驱动轮轴距
 
 #define J0_ANGLE_OFFSET     (-0.13866615f + M_PI) // (rad)关节0角度偏移量(电机0点到水平线的夹角)
 #define J1_ANGLE_OFFSET     (0.13866615f)         // (rad)关节1角度偏移量(电机0点到水平线的夹角)
@@ -248,7 +248,7 @@
 
 #define X0_OFFSET (0.0f)   // 目标theta偏移量
 #define X1_OFFSET (0.0f)   // 目标theta_dot偏移量
-#define X2_OFFSET (-0.09f) // 目标x偏移量
+#define X2_OFFSET (0.0f)   // 目标x偏移量
 #define X3_OFFSET (0.0f)   // 目标x_dot偏移量
 #define X4_OFFSET (0.0f)   // 目标phi偏移量
 #define X5_OFFSET (0.0f)   // 目标phi_dot偏移量

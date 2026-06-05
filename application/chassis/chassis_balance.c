@@ -151,8 +151,8 @@ void ChassisInit(void)
     MotorInit(&CHASSIS.joint_motor[2], 4, JOINT_CAN, DM_4310, J2_DIRECTION, 1, DM_MODE_MIT);
     MotorInit(&CHASSIS.joint_motor[3], 1, JOINT_CAN, DM_4310, J3_DIRECTION, 1, DM_MODE_MIT);
 
-    MotorInit(&CHASSIS.wheel_motor[0], 5, WHEEL_CAN, DM_2325, W0_DIRECTION, 1, DM_MODE_MIT);
-    MotorInit(&CHASSIS.wheel_motor[1], 6, WHEEL_CAN, DM_2325, W1_DIRECTION, 1, DM_MODE_MIT);
+    MotorInit(&CHASSIS.wheel_motor[0], 5, WHEEL_CAN, DM_2325, W0_DIRECTION, 25, DM_MODE_MIT);
+    MotorInit(&CHASSIS.wheel_motor[1], 6, WHEEL_CAN, DM_2325, W1_DIRECTION, 25, DM_MODE_MIT);
 
     /*-------------------- 值归零 --------------------*/
     memset(&CHASSIS.fdb, 0, sizeof(CHASSIS.fdb));
