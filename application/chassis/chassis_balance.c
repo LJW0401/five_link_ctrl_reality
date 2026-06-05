@@ -370,7 +370,15 @@ void ChassisSetMode(void)
                 CHASSIS.mode = CHASSIS_SAFE;
             }
         } else if (switch_is_mid(CHASSIS.rc->rc.s[SWITCH_LEFT])) {
-            CHASSIS.mode = CHASSIS_CALIBRATE;
+            // 在安全模式时，遥控器摇杆打成左下，右上进入校准模式
+            if (CHASSIS.rc->rc.ch[0] > RC_OFF_HOOK_VALUE_HOLE &&
+                CHASSIS.rc->rc.ch[1] > RC_OFF_HOOK_VALUE_HOLE &&
+                CHASSIS.rc->rc.ch[2] < -RC_OFF_HOOK_VALUE_HOLE &&
+                CHASSIS.rc->rc.ch[3] < -RC_OFF_HOOK_VALUE_HOLE) {
+                CHASSIS.mode = CHASSIS_CALIBRATE;
+            } else {
+                CHASSIS.mode = CHASSIS_SAFE;
+            }
         } else if (switch_is_down(CHASSIS.rc->rc.s[SWITCH_LEFT])) {
             CHASSIS.mode = CHASSIS_SAFE;
         }
@@ -378,20 +386,11 @@ void ChassisSetMode(void)
         switch_is_mid(
             CHASSIS.rc->rc.s[SWITCH_RIGHT])) {  // 右拨杆中时控制正常模式，跟随云台/自由/安全
         if (switch_is_up(CHASSIS.rc->rc.s[SWITCH_LEFT])) {
-            // CHASSIS.mode = CHASSIS_FREE;
-            CHASSIS.mode = CHASSIS_SAFE;
-        } else if (switch_is_mid(CHASSIS.rc->rc.s[SWITCH_LEFT])) {
             CHASSIS.mode = CHASSIS_FOLLOW_GIMBAL_YAW;
+        } else if (switch_is_mid(CHASSIS.rc->rc.s[SWITCH_LEFT])) {
+            CHASSIS.mode = CHASSIS_FREE;
         } else if (switch_is_down(CHASSIS.rc->rc.s[SWITCH_LEFT])) {
-            // 在安全模式时，遥控器摇杆打成左下，右上进入脱困模式
-            if (CHASSIS.rc->rc.ch[0] > RC_OFF_HOOK_VALUE_HOLE &&
-                CHASSIS.rc->rc.ch[1] > RC_OFF_HOOK_VALUE_HOLE &&
-                CHASSIS.rc->rc.ch[2] < -RC_OFF_HOOK_VALUE_HOLE &&
-                CHASSIS.rc->rc.ch[3] < -RC_OFF_HOOK_VALUE_HOLE) {
-                CHASSIS.mode = CHASSIS_OFF_HOOK;
-            } else {
-                CHASSIS.mode = CHASSIS_SAFE;
-            }
+            CHASSIS.mode = CHASSIS_SAFE;
         }
     } else if (switch_is_down(CHASSIS.rc->rc.s[SWITCH_RIGHT])) {  // 右拨杆下时关闭模式
         CHASSIS.mode = CHASSIS_OFF;
