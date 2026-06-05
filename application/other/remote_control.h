@@ -71,7 +71,7 @@
 #define HT8A_RC_CH47_VALUE_OFFSET      ((uint16_t)992)
 #define HT8A_RC_CH47_VALUE_MAX         ((uint16_t)1792)
 
-#define HT8A_RC_CONNECTED_FLAG         ((uint8_t)12)
+#define HT8A_RC_CONNECTED_FLAG         ((uint8_t)3)
 
 // ET08A 遥控器通道值范围
 #define ET08A_RC_CH_VALUE_MIN         ((uint16_t)353)
