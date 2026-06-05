@@ -76,10 +76,10 @@
 #define WHEEL_START_TORQUE   (0.3f)      // (Nm)轮子起动力矩
 #define WHEEL_BASE           (0.51175f)  // (m)驱动轮轴距
 
-#define J0_ANGLE_OFFSET     (-0.19163715f + M_PI) // (rad)关节0角度偏移量(电机0点到水平线的夹角)
-#define J1_ANGLE_OFFSET     (0.19163715f)         // (rad)关节1角度偏移量(电机0点到水平线的夹角)
-#define J2_ANGLE_OFFSET     (0.19163715f + M_PI)  // (rad)关节2角度偏移量(电机0点到水平线的夹角)
-#define J3_ANGLE_OFFSET     (-0.19163715f)        // (rad)关节3角度偏移量(电机0点到水平线的夹角)
+#define J0_ANGLE_OFFSET     (-0.13866615f + M_PI) // (rad)关节0角度偏移量(电机0点到水平线的夹角)
+#define J1_ANGLE_OFFSET     (0.13866615f)         // (rad)关节1角度偏移量(电机0点到水平线的夹角)
+#define J2_ANGLE_OFFSET     (0.13866615f + M_PI)  // (rad)关节2角度偏移量(电机0点到水平线的夹角)
+#define J3_ANGLE_OFFSET     (-0.13866615f)        // (rad)关节3角度偏移量(电机0点到水平线的夹角)
 
 #define DLENGTH_DIRECTION  (-1) // ROLL角补偿量方向(腿长增加方向)
 
@@ -200,11 +200,11 @@
 // #define MAX_OUT_CHASSIS_ROLL_VELOCITY   (0.1f)
 
 // 腿长跟踪长度环PID参数
-#define KP_CHASSIS_LEG_LENGTH_LENGTH        (1000.0f)
-#define KI_CHASSIS_LEG_LENGTH_LENGTH        (0.0f)
+#define KP_CHASSIS_LEG_LENGTH_LENGTH        (700.0f)
+#define KI_CHASSIS_LEG_LENGTH_LENGTH        (10.0f)
 #define KD_CHASSIS_LEG_LENGTH_LENGTH        (1500.0f)
-#define MAX_IOUT_CHASSIS_LEG_LENGTH_LENGTH  (1.0f)
-#define MAX_OUT_CHASSIS_LEG_LENGTH_LENGTH   (40.0f)
+#define MAX_IOUT_CHASSIS_LEG_LENGTH_LENGTH  (20.0f)
+#define MAX_OUT_CHASSIS_LEG_LENGTH_LENGTH   (60.0f)
 #define N_LEG_LENGTH_LENGTH                 (0.1f)
 
 // 腿长跟踪速度环PID参数
