@@ -1382,25 +1382,25 @@ static void SendWheelMotorCmd(void)
                 DmMitCtrlTorque(&CHASSIS.wheel_motor[1]);
             } break;
             case CHASSIS_STAND_UP: {
-                DmMitCtrlPosition(&CHASSIS.wheel_motor[0], NORMAL_POS_KP, NORMAL_POS_KD);
-                DmMitCtrlPosition(&CHASSIS.wheel_motor[1], NORMAL_POS_KP, NORMAL_POS_KD);
+                DmMitCtrlTorque(&CHASSIS.wheel_motor[0]);
+                DmMitCtrlTorque(&CHASSIS.wheel_motor[1]);
             } break;
             case CHASSIS_CALIBRATE: {
-                DmMitCtrlVelocity(&CHASSIS.wheel_motor[0], CALIBRATE_VEL_KP);
-                DmMitCtrlVelocity(&CHASSIS.wheel_motor[1], CALIBRATE_VEL_KP);
+                DmMitCtrlTorque(&CHASSIS.wheel_motor[0]);
+                DmMitCtrlTorque(&CHASSIS.wheel_motor[1]);
             } break;
             case CHASSIS_OFF_HOOK: {
-                DmMitCtrlVelocity(&CHASSIS.wheel_motor[0], CALIBRATE_VEL_KP);
-                DmMitCtrlVelocity(&CHASSIS.wheel_motor[1], CALIBRATE_VEL_KP);
+                DmMitCtrlTorque(&CHASSIS.wheel_motor[0]);
+                DmMitCtrlTorque(&CHASSIS.wheel_motor[1]);
             } break;
             case CHASSIS_POS_DEBUG: {
-                DmMitCtrlPosition(&CHASSIS.wheel_motor[0], DEBUG_KP, DEBUG_KD);
-                DmMitCtrlPosition(&CHASSIS.wheel_motor[1], DEBUG_KP, DEBUG_KD);
+                DmMitCtrlTorque(&CHASSIS.wheel_motor[0]);
+                DmMitCtrlTorque(&CHASSIS.wheel_motor[1]);
             } break;
             case CHASSIS_SAFE:
             default: {
-                DmMitCtrlVelocity(&CHASSIS.wheel_motor[0], ZERO_FORCE_VEL_KP);
-                DmMitCtrlVelocity(&CHASSIS.wheel_motor[1], ZERO_FORCE_VEL_KP);
+                DmMitCtrlTorque(&CHASSIS.wheel_motor[0]);
+                DmMitCtrlTorque(&CHASSIS.wheel_motor[1]);
             }
         }
     }
