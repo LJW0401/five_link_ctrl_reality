@@ -25,7 +25,6 @@
 #define CHASSIS_CONTROL_TIME_S (CHASSIS_CONTROL_TIME_MS / 1000.0f)   // 底盘任务控制间隔
 
 // 底盘的遥控器相关宏定义 ---------------------
-#define CHASSIS_MODE_CHANNEL   0  // 选择底盘状态 开关通道号
 #define CHASSIS_X_CHANNEL      3  // 前后的遥控器通道号码
 #define CHASSIS_Y_CHANNEL      2  // 左右的遥控器通道号码
 #define CHASSIS_WZ_CHANNEL     2  // 旋转的遥控器通道号码
@@ -87,7 +86,7 @@
 //upper_limit parameters ---------------------
 
 #define MAX_DELTA_ROD_ANGLE (0.25f) // (rad)腿摆角最大变化量
-#define MAX_TORQUE_PROTECT  (25.0f)  // (Nm)最大扭矩保护
+#define MAX_TORQUE_PROTECT  (5.0f)  // (Nm)最大扭矩保护
 
 #define MAX_DELTA_VEL_FDB_TO_REF (0.8f) // (m/s)速度反馈到参考速度的最大变化量
 
@@ -116,8 +115,8 @@
 #define MAX_SPEED_VECTOR_VY  (3.5f)
 #define MAX_SPEED_VECTOR_WZ  (6.0f)
 
-#define MAX_JOINT_TORQUE      (7.0f)   // (Nm)关节最大扭矩
-#define MAX_JOINT_TORQUE_JUMP (20.0f)  // (Nm)跳跃时的关节最大扭矩
+#define MAX_JOINT_TORQUE      (1.0f)   // (Nm)关节最大扭矩
+#define MAX_JOINT_TORQUE_JUMP (5.0f)  // (Nm)跳跃时的关节最大扭矩
 #define MAX_VEL_ADD           (1.0f)   // (m/s)速度增量上限
 #define MAX_PITCH_VEL         (0.1f)   // (rad/s)pitch轴速度上限
 
