@@ -819,6 +819,7 @@ void ChassisReference(void)
             CHASSIS.ref.leg_state[0].theta = rc_angle * RC_TO_ONE * 0.3f;
             CHASSIS.ref.leg_state[1].theta = rc_angle * RC_TO_ONE * 0.3f;
         }
+        case CHASSIS_FREE: 
         case CHASSIS_FOLLOW_GIMBAL_YAW:
         case CHASSIS_CUSTOM:
         case CHASSIS_POS_DEBUG: {
@@ -832,8 +833,6 @@ void ChassisReference(void)
             } else if (CHASSIS.step == JUMP_STEP_RECOVERY) {
                 length = MIN_LEG_LENGTH + 0.05f;
             }
-        } break;
-        case CHASSIS_FREE: {
         } break;
         default: {
             angle = M_PI_2;
