@@ -45,7 +45,7 @@
 #define TAKE_OFF_DETECT 0  // 启用离地检测
 #define CLOSE_LEG_LEFT 0   // 关闭左腿输出
 #define CLOSE_LEG_RIGHT 0  // 关闭右腿输出
-#define LIFTED_UP 1        // 被架起
+#define LIFTED_UP 0        // 被架起
 
 // Parameters on ---------------------
 #define MS_TO_S 0.001f
@@ -824,7 +824,7 @@ void ChassisReference(void)
         case CHASSIS_CUSTOM:
         case CHASSIS_POS_DEBUG: {
             angle = M_PI_2 + rc_angle * RC_TO_ONE * 0.3f;
-            length = 0.12f + rc_length * RC_TO_ONE * 0.1f;
+            length = 0.15f + rc_length * RC_TO_ONE * 0.1f;
 
             if (CHASSIS.step == JUMP_STEP_SQUST) {
                 length = MIN_LEG_LENGTH;
@@ -1065,6 +1065,9 @@ static void ConsoleZeroForce(void)
     CHASSIS.joint_motor[2].set.vel = 0;
     CHASSIS.joint_motor[3].set.vel = 0;
 
+    CHASSIS.wheel_motor[0].set.tor = 0;
+    CHASSIS.wheel_motor[1].set.tor = 0;
+
     CHASSIS.wheel_motor[0].set.vel = 0;
     CHASSIS.wheel_motor[1].set.vel = 0;
 
@@ -1121,9 +1124,9 @@ static void ConsoleNormal(void)
     // QUESTION: 排查电机发送的力矩要反向的问题，这种情况下控制正常
     //不知道为什么要反向，待后续研究
     CHASSIS.wheel_motor[0].set.tor = fp32_constrain(
-        -(CHASSIS.cmd.leg[0].wheel.T * (W0_DIRECTION)), MIN_WHEEL_TORQUE, MAX_WHEEL_TORQUE);
+        (CHASSIS.cmd.leg[0].wheel.T * (W0_DIRECTION)), MIN_WHEEL_TORQUE, MAX_WHEEL_TORQUE);
     CHASSIS.wheel_motor[1].set.tor = fp32_constrain(
-        -(CHASSIS.cmd.leg[1].wheel.T * (W1_DIRECTION)), MIN_WHEEL_TORQUE, MAX_WHEEL_TORQUE);
+        (CHASSIS.cmd.leg[1].wheel.T * (W1_DIRECTION)), MIN_WHEEL_TORQUE, MAX_WHEEL_TORQUE);
 }
 
 static void ConsoleDebug(void)
@@ -1402,8 +1405,8 @@ static void SendWheelMotorCmd(void)
             } break;
             case CHASSIS_SAFE:
             default: {
-                DmMitCtrlTorque(&CHASSIS.wheel_motor[0]);
-                DmMitCtrlTorque(&CHASSIS.wheel_motor[1]);
+                DmMitStop(&CHASSIS.wheel_motor[0]);
+                DmMitStop(&CHASSIS.wheel_motor[1]);
             }
         }
     }
