@@ -1375,8 +1375,8 @@ static void SendWheelMotorCmd(void)
             } break;
             case CHASSIS_SAFE:
             default: {
-                DmMitCtrlVelocity(&CHASSIS.joint_motor[0], ZERO_FORCE_VEL_KP);
-                DmMitCtrlVelocity(&CHASSIS.joint_motor[1], ZERO_FORCE_VEL_KP);
+                DmMitCtrlVelocity(&CHASSIS.wheel_motor[0], ZERO_FORCE_VEL_KP);
+                DmMitCtrlVelocity(&CHASSIS.wheel_motor[1], ZERO_FORCE_VEL_KP);
             }
         }
     }
