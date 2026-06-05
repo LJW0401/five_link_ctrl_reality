@@ -143,13 +143,13 @@ void ChassisInit(void)
     TRANSITION_MATRIX[JUMP_STEP_JUMP] = JUMP_STEP_RECOVERY;
     TRANSITION_MATRIX[JUMP_STEP_RECOVERY] = NORMAL_STEP;
     /*-------------------- 初始化底盘电机 --------------------*/
-    MotorInit(&CHASSIS.joint_motor[0], 1, JOINT_CAN, DM_8009, J0_DIRECTION, 1, DM_MODE_MIT);
-    MotorInit(&CHASSIS.joint_motor[1], 2, JOINT_CAN, DM_8009, J1_DIRECTION, 1, DM_MODE_MIT);
-    MotorInit(&CHASSIS.joint_motor[2], 3, JOINT_CAN, DM_8009, J2_DIRECTION, 1, DM_MODE_MIT);
-    MotorInit(&CHASSIS.joint_motor[3], 4, JOINT_CAN, DM_8009, J3_DIRECTION, 1, DM_MODE_MIT);
+    MotorInit(&CHASSIS.joint_motor[0], 2, JOINT_CAN, DM_4310, J0_DIRECTION, 1, DM_MODE_MIT);
+    MotorInit(&CHASSIS.joint_motor[1], 3, JOINT_CAN, DM_4310, J1_DIRECTION, 1, DM_MODE_MIT);
+    MotorInit(&CHASSIS.joint_motor[2], 4, JOINT_CAN, DM_4310, J2_DIRECTION, 1, DM_MODE_MIT);
+    MotorInit(&CHASSIS.joint_motor[3], 1, JOINT_CAN, DM_4310, J3_DIRECTION, 1, DM_MODE_MIT);
 
-    MotorInit(&CHASSIS.wheel_motor[0], 1, WHEEL_CAN, MF_9025, W0_DIRECTION, 1, 0);
-    MotorInit(&CHASSIS.wheel_motor[1], 2, WHEEL_CAN, MF_9025, W1_DIRECTION, 1, 0);
+    MotorInit(&CHASSIS.wheel_motor[0], 5, WHEEL_CAN, DM_2325, W0_DIRECTION, 1, DM_MODE_MIT);
+    MotorInit(&CHASSIS.wheel_motor[1], 6, WHEEL_CAN, DM_2325, W1_DIRECTION, 1, DM_MODE_MIT);
 
     /*-------------------- 值归零 --------------------*/
     memset(&CHASSIS.fdb, 0, sizeof(CHASSIS.fdb));

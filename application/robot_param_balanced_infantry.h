@@ -42,8 +42,8 @@
 #define ROLL_VEL_LIMIT_FACTOR  (0.1f)    // roll角速度抑制比例系数
 
 // motor parameters ---------------------
-#define JOINT_CAN (1)
-#define WHEEL_CAN (2)
+#define JOINT_CAN (2)
+#define WHEEL_CAN (1)
 
 #define J0_DIRECTION (-1)
 #define J1_DIRECTION (-1)
