@@ -53,14 +53,14 @@
 #define W1_DIRECTION (-1)
 
 // DM控制参数
-#define CALIBRATE_VEL_KP  (4.0f)  // 校准MIT速度控制KP
-#define DEBUG_VEL_KP      (4.0f)  // 调试MIT速度控制KP
-#define ZERO_FORCE_VEL_KP (4.0f)  // 无力MIT速度控制KP
+#define CALIBRATE_VEL_KP  (1.0f)  // 校准MIT速度控制KP
+#define DEBUG_VEL_KP      (1.0f)  // 调试MIT速度控制KP
+#define ZERO_FORCE_VEL_KP (1.0f)  // 无力MIT速度控制KP
 
-#define NORMAL_POS_KP (20.0f) // 正常MIT位置控制KP
+#define NORMAL_POS_KP (2.0f) // 正常MIT位置控制KP
 #define NORMAL_POS_KD (1.0f)  // 正常MIT位置控制KD
 
-#define DEBUG_POS_KP (8.0f) // 调试MIT位置控制KP
+#define DEBUG_POS_KP (2.0f) // 调试MIT位置控制KP
 #define DEBUG_POS_KD (0.8f) // 调试MIT位置控制KD
 
 //physical parameters ---------------------
@@ -86,7 +86,7 @@
 //upper_limit parameters ---------------------
 
 #define MAX_DELTA_ROD_ANGLE (0.25f) // (rad)腿摆角最大变化量
-#define MAX_TORQUE_PROTECT  (5.0f)  // (Nm)最大扭矩保护
+#define MAX_TORQUE_PROTECT  (10.0f)  // (Nm)最大扭矩保护
 
 #define MAX_DELTA_VEL_FDB_TO_REF (0.8f) // (m/s)速度反馈到参考速度的最大变化量
 
@@ -108,7 +108,7 @@
 #define MAX_J2_ANGLE  (0.6f) // (rad)关节角度上限
 #define MAX_J3_ANGLE  (1.8f) // (rad)关节角度上限
 
-#define MAX_LEG_LENGTH       (0.24f)
+#define MAX_LEG_LENGTH       (0.20f)
 #define MAX_LEG_ANGLE        (M_PI_2 + MAX_DELTA_ROD_ANGLE)
 #define MAX_SPEED            (3.5f)
 #define MAX_SPEED_VECTOR_VX  (3.5f)
