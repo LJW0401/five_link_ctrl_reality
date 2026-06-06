@@ -1,8 +1,8 @@
 #ifndef __MUSIC_CASTLE_IN_THE_SKY_H_
 #define __MUSIC_CASTLE_IN_THE_SKY_H_
 
-#include "music_typedef.h"
+extern void MusicCastleInTheSkyInit(void);
 
-extern MusicInfo_s MusicCastleInTheSkyInit(void);
+extern void MusicCastleInTheSkyPlay(void);
 
 #endif  // __MUSIC_CASTLE_IN_THE_SKY_H_

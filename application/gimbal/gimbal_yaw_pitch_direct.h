@@ -37,6 +37,7 @@
 #include "math.h"
 #include "macro_typedef.h"
 #include "supervisory_computer_cmd.h"
+#include "signal_generator.h"
 
 
 /**
@@ -49,8 +50,13 @@ typedef enum {
     GIMBAL_DBUS_ERR,    //遥控器断联相关处理任务
     GIMBAL_GAP,         //跳出矫正进入IMU/AUTO_AIM模式之前的存储数据模式
     GIMBAL_AUTO_AIM,    //自瞄模式
+    GIMBAL_TEST,
 } GimbalMode_e;
 
+typedef enum{
+    SEARCHING,          //搜索模式
+    TRACKING,           //跟踪模式
+}GimbalAutoAimMode_e;
 
 /**
  * @brief 状态、期望和限制值
@@ -75,7 +81,7 @@ typedef struct
 {
     const RC_ctrl_t * rc;  // 遥控器指针
     GimbalMode_e mode,last_mode,mode_before_rc_err;  // 模式
-
+    GimbalAutoAimMode_e aim_mode,last_aim_mode;  //自瞄模式以及其记录
     /*-------------------- Motors --------------------*/
     Motor_s yaw,pitch;
     /*-------------------- Values --------------------*/
@@ -83,6 +89,9 @@ typedef struct
     Values_t feedback_pos,feedback_vel;     // 状态值(目前专供给IMU数据)
     Values_t upper_limit;  // 上限值
     Values_t lower_limit;  // 下限值
+    Values_t init_base;    //初始上电的imu
+
+    bool init_base_record; //是否需要记录imu初始位置
 
     PID_t pid;  // PID控制器
 
@@ -91,6 +100,8 @@ typedef struct
     uint32_t init_start_time,init_timer;
 
     bool init_continue; //是否继续进行校准模式
+
+    fp32 search_base_time,search_time;
 } Gimbal_s;
 
 extern void GimbalInit(void);

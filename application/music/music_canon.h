@@ -1,8 +1,8 @@
 #ifndef __MUSIC_CANON_H_
 #define __MUSIC_CANON_H_
 
-#include "music_typedef.h"
+extern void MusicCanonInit(void);
 
-extern MusicInfo_s MusicCanonInit(void);
+extern void MusicCanonPlay(void);
 
 #endif  // __MUSIC_CANON_H_

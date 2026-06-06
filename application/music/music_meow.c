@@ -3,7 +3,6 @@
 #include "bsp_buzzer.h"
 #include "music.h"
 #include "stm32f4xx_hal.h"
-#include "music_typedef.h"
 
 
 #define NOTE_NUM 15

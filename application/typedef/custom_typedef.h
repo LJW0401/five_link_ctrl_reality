@@ -11,7 +11,8 @@
 #define VIRTUAL_RC_NAME "virtual_rc_ctrl"
 #define CALI_BUZZER_STATE_NAME "CaliBuzzerState"
 
-typedef enum {
+typedef enum
+{
     CALI_BUZZER_OFF = 0,
     CALI_BUZZER_BEGIN,
     CALI_BUZZER_MIDDLE_TIME,
@@ -22,9 +23,9 @@ typedef enum {
 
 typedef struct __Imu
 {
-    float angle[3];  // rad 欧拉角数据
-    float gyro[3];   // rad/s 陀螺仪数据
-    float accel[3];  // m/s^2 加速度计数据
+    float yaw, pitch, roll;              // rad
+    float yaw_vel, pitch_vel, roll_vel;  // rad/s
+    float x_accel, y_accel, z_accel;     // m/s^2
 } Imu_t;
 
 typedef struct  // 底盘速度向量结构体
@@ -53,8 +54,13 @@ typedef struct
 
     struct
     {
-        bool fire;
-        bool fric_on;
+        bool tracking;
+    }  tracking;
+
+    struct
+    {
+        uint8_t fire;
+        uint8_t fric_on;
     } shoot;
 
 } RobotCmdData_t;

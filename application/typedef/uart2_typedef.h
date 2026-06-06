@@ -29,11 +29,14 @@
 #define Uart2_Data_Test_ID              ((uint8_t)0x01)
 #define Uart2_Data_Rc_ID                ((uint8_t)0x02)
 #define Uart2_Data_Gimbal_ID            ((uint8_t)0x03)
+#define Uart2_Data_Referee_ID           ((uint8_t)0x04)
+#define Uart2_Data_UI_ID                ((uint8_t)0x05)
 
 #define Uart2_Data_Test_Duration        ((uint32_t)20) // ms
 #define Uart2_Data_Rc_Duration          ((uint32_t)16) // ms
 #define Uart2_Data_Gimbal_Duration      ((uint32_t)10) // ms
-
+#define Uart2_Data_Referee_Duration      ((uint32_t)10)// ms
+#define Uart2_Data_UI_Duration          ((uint32_t)10)
 // UART2通信协议数据包长度定义
 #define UART2_FRAME_MAX_SIZE            ((uint8_t)250) // Byte
 
@@ -48,12 +51,12 @@
 /*-------------------- Send & Receive --------------------*/
 
 typedef enum {
-    STEP_HEADER_SOF = 0,
-    STEP_LENGTH = 1,
-    STEP_ID = 2,
-    STEP_TYPE = 3,
-    STEP_HEADER_CRC8 = 4,
-    STEP_DATA_CRC16 = 5,
+    UART2_STEP_HEADER_SOF = 0,
+    UART2_STEP_LENGTH = 1,
+    UART2_STEP_ID = 2,
+    UART2_STEP_TYPE = 3,
+    UART2_STEP_HEADER_CRC8 = 4,
+    UART2_STEP_DATA_CRC16 = 5,
 } UnpackStep_e;
 
 typedef struct
@@ -62,6 +65,8 @@ typedef struct
     uint32_t Data_Test;
     uint32_t Data_Rc;
     uint32_t Data_Gimbal;
+    uint32_t Data_Referee;
+    uint32_t Data_UI;
 } LastTime_t;
 
 typedef struct
@@ -131,5 +136,34 @@ typedef struct
 
     uint16_t crc16;  //crc16校验
 } __attribute__((packed)) Data_Gimbal_s;
+//裁判系统数据包
+typedef struct
+{
+    FrameHeader_t frame_header;
+
+    uint32_t time_stamp;  //数据段时间戳
+
+    struct
+    {
+        uint16_t shooter_barrel_heat_limit;
+        uint16_t shooter_barrel_heat;
+    }__attribute__((packed)) data;
+    uint16_t crc16;  //crc16校验 
+} __attribute__((packed)) Data_Referee_s;
+// UI数据包
+typedef struct
+{
+    FrameHeader_t frame_header;
+
+    uint32_t time_stamp;  //数据段时间戳
+
+    struct
+    {
+        uint8_t shoot_deta;
+        uint8_t fric_deta;
+    } __attribute__((packed)) data;
+
+    uint16_t crc16;  //crc16校验
+} __attribute__((packed)) Data_UI_s;
 #endif
 /*------------------------------ End of File ------------------------------*/

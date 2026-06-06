@@ -71,16 +71,16 @@
 #define LEG_L4 (LEG_L1)  // (m)腿4长度
 #define LEG_L5 (0.0f)    // (m)关节间距
 
-#define BODY_MASS            (8.5f)      // (kg)机身重量
+#define BODY_MASS            (16.0f)      // (kg)机身重量15.5
 #define WHEEL_MASS           (0.65f)      // (kg)轮子重量
 #define WHEEL_RADIUS         (0.0625f)    // (m)轮子半径
 #define WHEEL_START_TORQUE   (0.3f)      // (Nm)轮子起动力矩
 #define WHEEL_BASE           (0.51175f)  // (m)驱动轮轴距
 
-#define J0_ANGLE_OFFSET     (-0.1770f + M_PI) // (rad)关节0角度偏移量(电机0点到水平线的夹角)
-#define J1_ANGLE_OFFSET     (0.1770f)         // (rad)关节1角度偏移量(电机0点到水平线的夹角)
-#define J2_ANGLE_OFFSET     (0.1770f + M_PI)  // (rad)关节2角度偏移量(电机0点到水平线的夹角)
-#define J3_ANGLE_OFFSET     (-0.1770f)        // (rad)关节3角度偏移量(电机0点到水平线的夹角)
+#define J0_ANGLE_OFFSET     (-0.1770f + M_PI) // (rad)关节0角度偏移量(电机0点到水平线的夹角)-0.1770f + M_PI
+#define J1_ANGLE_OFFSET     (0.1770f)         // (rad)关节1角度偏移量(电机0点到水平线的夹角)0.1770
+#define J2_ANGLE_OFFSET     (0.1770f + M_PI)  // (rad)关节2角度偏移量(电机0点到水平线的夹角)0.1770f + M_PI
+#define J3_ANGLE_OFFSET     (-0.1770f)        // (rad)关节3角度偏移量(电机0点到水平线的夹角)-0.1770f
 
 #define DLENGTH_DIRECTION  (-1) // ROLL角补偿量方向(腿长增加方向)
 
@@ -159,6 +159,7 @@
 #define MIN_VEL_ADD           (-MAX_VEL_ADD)    // (m/s)速度增量下限
 #define MIN_PITCH_VEL         (-MAX_PITCH_VEL)  // (rad/s)pitch轴速度下限
 
+
 //PID parameters ---------------------
 //yaw轴跟踪角度环PID参数
 #define KP_CHASSIS_YAW_ANGLE        (2.3f)
@@ -168,11 +169,11 @@
 #define MAX_OUT_CHASSIS_YAW_ANGLE   (5.0f)
 
 //yaw轴跟踪速度环PID参数
-#define KP_CHASSIS_YAW_VELOCITY        (2.2f)
+#define KP_CHASSIS_YAW_VELOCITY        (3.2f)//5.2
 #define KI_CHASSIS_YAW_VELOCITY        (0.5f)
 #define KD_CHASSIS_YAW_VELOCITY        (0.0f)
 #define MAX_IOUT_CHASSIS_YAW_VELOCITY  (0.5f)
-#define MAX_OUT_CHASSIS_YAW_VELOCITY   (2.0f)
+#define MAX_OUT_CHASSIS_YAW_VELOCITY   (3.0f)//3.0
 
 // vel_add PID参数
 #define KP_CHASSIS_VEL_ADD        (0.1f) //0.1
@@ -199,11 +200,11 @@
 // #define MAX_OUT_CHASSIS_ROLL_VELOCITY   (0.1f)
 
 // 腿长跟踪长度环PID参数
-#define KP_CHASSIS_LEG_LENGTH_LENGTH        (150.0f)
-#define KI_CHASSIS_LEG_LENGTH_LENGTH        (0.0f)
-#define KD_CHASSIS_LEG_LENGTH_LENGTH        (1500.0f)
-#define MAX_IOUT_CHASSIS_LEG_LENGTH_LENGTH  (0.0f)
-#define MAX_OUT_CHASSIS_LEG_LENGTH_LENGTH   (40.0f)
+#define KP_CHASSIS_LEG_LENGTH_LENGTH        (150.0f)//140.0f
+#define KI_CHASSIS_LEG_LENGTH_LENGTH        (0.3f)//0.1f
+#define KD_CHASSIS_LEG_LENGTH_LENGTH        (1400.0f)//1300.0f
+#define MAX_IOUT_CHASSIS_LEG_LENGTH_LENGTH  (0.5f)//0.5f
+#define MAX_OUT_CHASSIS_LEG_LENGTH_LENGTH   (40.0f)//40.0f
 #define N_LEG_LENGTH_LENGTH                 (0.1f)
 
 // 腿长跟踪速度环PID参数
@@ -230,11 +231,11 @@
 #define MAX_OUT_CHASSIS_WHEEL_STOP  (200.0f)
 
 // 云台跟随用的pid
-#define KP_CHASSIS_FOLLOW_GIMBAL       (5.0f)
+#define KP_CHASSIS_FOLLOW_GIMBAL       (12.0f)//12.0f 
 #define KI_CHASSIS_FOLLOW_GIMBAL       (0.0f)
-#define KD_CHASSIS_FOLLOW_GIMBAL       (0.0f)
+#define KD_CHASSIS_FOLLOW_GIMBAL       (0.0f)//10.0f
 #define MAX_IOUT_CHASSIS_FOLLOW_GIMBAL (0.0f)
-#define MAX_OUT_CHASSIS_FOLLOW_GIMBAL  (6.0f)
+#define MAX_OUT_CHASSIS_FOLLOW_GIMBAL  (6.0f)//20.0f
 
 //LPF parameters ---------------------
 #define LEG_DDL0_LPF_ALPHA           (0.9f)
@@ -242,6 +243,7 @@
 #define LEG_DDTHETA_LPF_ALPHA        (0.9f)
 #define LEG_SUPPORT_FORCE_LPF_ALPHA  (0.9f)
 #define CHASSIS_ROLL_ALPHA           (0.5f)
+#define CHASSIS_vx_LPF_ALPHA         (0.9f)
 
 //offest parameters ---------------------
 

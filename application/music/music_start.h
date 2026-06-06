@@ -2,8 +2,8 @@
 #define MUSIC_START_H
 #include <stdbool.h>
 
-#include "music_typedef.h"
+extern void MusicStartInit(void);
 
-extern MusicInfo_s MusicStartInit(void);
+extern bool MusicStartPlay(void);
 
 #endif  // MUSIC_START_H
