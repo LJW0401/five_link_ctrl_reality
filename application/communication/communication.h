@@ -35,6 +35,9 @@ extern bool GetUartRcOffline(void);
 extern float GetUartGimbalYawMotorPos(void);
 extern bool GetUartGimbalInitJudge(void);
 extern uint32_t GetUartTimeStampForTest(void);
+extern void GetUart_shoot_heat0_limit_and_heat0(uint16_t *heat_limit, uint16_t *heat);
+extern uint8_t GetUart_shoot_deta(void);
+extern uint8_t GetUart_fric_deta(void);
 
 #endif  // __COMMUNICATION_H
 /*------------------------------ End of File ------------------------------*/

@@ -25,10 +25,12 @@
 #include "detect_task.h"
 #include "fifo.h"
 #include "gimbal.h"
+#include "referee.h"
 #include "robot_param.h"
 #include "signal_generator.h"
 #include "uart2_typedef.h"
 #include "usb_debug.h"
+#include "shoot_fric_trigger.h"
 
 /*******************************************************************************/
 /* Macro Definitions                                                           */
@@ -95,12 +97,15 @@ LastTime_t LastReceiveTime;
 Data_Test_s   Send_Data_Test;
 Data_Rc_s     Send_Data_Rc;
 Data_Gimbal_s Send_Data_Gimbal;
+Data_Referee_s Send_Data_Referee;
+Data_UI_s Send_Data_UI;
 
 // receive data
 Data_Test_s   Receive_Data_Test;
 Data_Rc_s     Receive_Data_Rc;
 Data_Gimbal_s Receive_Data_Gimbal;
-
+Data_Referee_s Receive_Data_Referee;
+Data_UI_s Receive_Data_UI;
 // receive data buffer
 uint8_t usart1_buf[2][USART_RX_BUF_LENGHT];
 fifo_s_t usart1_fifo;
@@ -121,6 +126,8 @@ void Uart2SendDataInit(void)
     UART2DataInit(Test);
     UART2DataInit(Rc);
     UART2DataInit(Gimbal);
+    UART2DataInit(Referee);
+    UART2DataInit(UI);
 }
 
 // 4pin Uart串口初始化
@@ -196,7 +203,27 @@ void DataGimbalRenew()
     Send_Data_Gimbal.data.init_judge = GetGimbalInitJudgeReturn();
     append_CRC16_check_sum((uint8_t *)(&Send_Data_Gimbal), sizeof(Data_Gimbal_s));
 }
+void DataRefereeRenew()
+{
+    uint16_t heat_limit, heat;
+    Send_Data_Referee.time_stamp = HAL_GetTick();
 
+    get_shoot_heat0_limit_and_heat0(&heat_limit, &heat);
+    Send_Data_Referee.data.shooter_barrel_heat_limit = heat_limit;
+    Send_Data_Referee.data.shooter_barrel_heat = heat;
+    append_CRC16_check_sum((uint8_t *)(&Send_Data_Referee), sizeof(Data_Referee_s));
+}
+// void DataUIRenew()
+// {
+//     uint16_t shoot_deta, fric_deta;
+//     shoot_deta = GetShoot_flag();
+//     fric_deta = GetFric_flag();
+//     Send_Data_UI.time_stamp = HAL_GetTick();
+//     Send_Data_UI.data.shoot_deta = shoot_deta;
+//     Send_Data_UI.data.fric_deta = fric_deta;
+//     append_CRC16_check_sum((uint8_t *)(&Send_Data_UI), sizeof(Data_UI_s));
+    
+// }
 /*******************************************************************************/
 /* Uart2 Receive Data Solve Functions                                          */
 /*     Uart2DataSolve                                                          */
@@ -235,6 +262,14 @@ void Uart2DataSolve(uint8_t * frame)
             memcpy(&Receive_Data_Gimbal, frame, sizeof(Data_Gimbal_s));
             LastReceiveTime.Data_Gimbal = HAL_GetTick();
         } break;
+        case Uart2_Data_Referee_ID: {
+            memcpy(&Receive_Data_Referee, frame, sizeof(Data_Referee_s));
+            LastReceiveTime.Data_Referee = HAL_GetTick();
+        } break;
+        case Uart2_Data_UI_ID: {
+            memcpy(&Receive_Data_UI, frame, sizeof(Data_UI_s));
+            LastReceiveTime.Data_UI = HAL_GetTick();
+        } break;
         default:
             break;
     }
@@ -253,56 +288,56 @@ void DataUnpack(void)
     while (fifo_s_used(&usart1_fifo)) {
         byte = fifo_s_get(&usart1_fifo);
         switch (p_obj->unpack_step) {
-            case STEP_HEADER_SOF: {
+            case UART2_STEP_HEADER_SOF: {
                 if (byte == UART2_COMMUNICATE_SOF) {
-                    p_obj->unpack_step = STEP_LENGTH;
+                    p_obj->unpack_step = UART2_STEP_LENGTH;
                     p_obj->protocol_packet[p_obj->index++] = byte;
                 } else {
                     p_obj->index = 0;
                 }
             } break;
 
-            case STEP_LENGTH: {
+            case UART2_STEP_LENGTH: {
                 p_obj->data_len = byte;
                 p_obj->protocol_packet[p_obj->index++] = byte;
-                p_obj->unpack_step = STEP_ID;
+                p_obj->unpack_step = UART2_STEP_ID;
             } break;
 
-            case STEP_ID: {
+            case UART2_STEP_ID: {
                 p_obj->protocol_packet[p_obj->index++] = byte;
 
                 if (p_obj->data_len < (UART2_FRAME_MAX_SIZE - UART2_HEADER_CRC_TIMESTAMP_LEN)) {
-                    p_obj->unpack_step = STEP_TYPE;
+                    p_obj->unpack_step = UART2_STEP_TYPE;
                 } else {
-                    p_obj->unpack_step = STEP_HEADER_SOF;
+                    p_obj->unpack_step = UART2_STEP_HEADER_SOF;
                     p_obj->index = 0;
                 }
             } break;
 
-            case STEP_TYPE: {
+            case UART2_STEP_TYPE: {
                 p_obj->protocol_packet[p_obj->index++] = byte;
-                p_obj->unpack_step = STEP_HEADER_CRC8;
+                p_obj->unpack_step = UART2_STEP_HEADER_CRC8;
             } break;
 
-            case STEP_HEADER_CRC8: {
+            case UART2_STEP_HEADER_CRC8: {
                 p_obj->protocol_packet[p_obj->index++] = byte;
 
                 if (p_obj->index == UART2_FRAME_HEADER_SIZE) {
                     if (verify_CRC8_check_sum(p_obj->protocol_packet, UART2_FRAME_HEADER_SIZE)) {
-                        p_obj->unpack_step = STEP_DATA_CRC16;
+                        p_obj->unpack_step = UART2_STEP_DATA_CRC16;
                     } else {
-                        p_obj->unpack_step = STEP_HEADER_SOF;
+                        p_obj->unpack_step = UART2_STEP_HEADER_SOF;
                         p_obj->index = 0;
                     }
                 }
             } break;
 
-            case STEP_DATA_CRC16: {
+            case UART2_STEP_DATA_CRC16: {
                 if (p_obj->index < UART2_HEADER_CRC_TIMESTAMP_LEN + p_obj->data_len) {
                     p_obj->protocol_packet[p_obj->index++] = byte;
                 }
                 if (p_obj->index >= UART2_HEADER_CRC_TIMESTAMP_LEN + p_obj->data_len) {
-                    p_obj->unpack_step = STEP_HEADER_SOF;
+                    p_obj->unpack_step = UART2_STEP_HEADER_SOF;
                     p_obj->index = 0;
 
                     if (verify_CRC16_check_sum(
@@ -314,7 +349,7 @@ void DataUnpack(void)
             } break;
 
             default: {
-                p_obj->unpack_step = STEP_HEADER_SOF;
+                p_obj->unpack_step = UART2_STEP_HEADER_SOF;
                 p_obj->index = 0;
             } break;
         }
@@ -333,8 +368,10 @@ void Uart2TaskLoop(void)
 
 #if __SELF_BOARD_ID == C_BOARD_BALANCE_CHASSIS
     Uart2CheckDurationAndSend(Rc);
+    Uart2CheckDurationAndSend(Referee);
 #elif __SELF_BOARD_ID == C_BOARD_BALANCE_GIMBAL
     Uart2CheckDurationAndSend(Gimbal);
+    Uart2CheckDurationAndSend(UI);
 #elif __SELF_BOARD_ID == C_BOARD_DEFAULT
     Uart2CheckDurationAndSend(Test);
 #endif
@@ -383,5 +420,19 @@ bool GetUartGimbalInitJudge(void)
 }
 
 uint32_t GetUartTimeStampForTest(void) { return Receive_Data_Test.time_stamp; }
-
+void GetUart_shoot_heat0_limit_and_heat0(uint16_t *heat_limit, uint16_t  *heat)
+{
+    *heat_limit = Receive_Data_Referee.data.shooter_barrel_heat_limit;
+    *heat = Receive_Data_Referee.data.shooter_barrel_heat;
+} 
+uint8_t GetUart_shoot_deta(void)
+{   uint8_t shoot_deta;
+    shoot_deta = Receive_Data_UI.data.shoot_deta;
+    return shoot_deta;
+}
+uint8_t GetUart_fric_deta(void)
+{   uint8_t fric_deta;
+    fric_deta = Receive_Data_UI.data.fric_deta;
+    return fric_deta;
+}
 /*------------------------------ End of File ------------------------------*/

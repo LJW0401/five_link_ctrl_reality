@@ -216,8 +216,8 @@ typedef struct
         float standard_4_x;
         float standard_4_y;
 
-        float standard_5_x;
-        float standard_5_y;
+        float reserved1;
+        float reserved2;
     } __packed__ data;
     uint16_t crc;
 } __packed__ SendDataGroundRobotPosition_s;
@@ -368,6 +368,11 @@ typedef struct RobotCmdData
             uint8_t fire;
             uint8_t fric_on;
         } __packed__ shoot;
+        struct
+        {
+            bool tracking;
+        } __packed__ tracking;
+        
     } __packed__ data;
     uint16_t checksum;
 } __packed__ ReceiveDataRobotCmd_s;

@@ -1,9 +1,9 @@
 #ifndef __MUSIC_SEE_YOU_AGAIN_H_
 #define __MUSIC_SEE_YOU_AGAIN_H_
 
-#include "music_typedef.h"
+extern void MusicSeeYouAgainInit(void);
 
-extern MusicInfo_s MusicSeeYouAgainInit(void);
+extern void MusicSeeYouAgainPlay(void);
 
 #endif  // __MUSIC_CANON_H_
 /*------------------------------ End of File ------------------------------*/

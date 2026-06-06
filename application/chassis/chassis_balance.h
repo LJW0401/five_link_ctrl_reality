@@ -44,17 +44,16 @@
 typedef enum {
     CHASSIS_OFF,        // 底盘关闭
     CHASSIS_SAFE,       // 底盘无力，所有控制量置0
-    CHASSIS_STAND_UP,   // 底盘起立，从倒地状态到站立状态的中间过程
-    CHASSIS_CALIBRATE,  // 底盘校准
-    CHASSIS_FOLLOW_GIMBAL_YAW,  // 底盘跟随云台（运动方向为云台坐标系方向，需进行坐标转换）
-    CHASSIS_FLOATING,   // 底盘悬空状态
-    CHASSIS_CRASHING,   // 底盘接地状态，进行缓冲
-    CHASSIS_FREE,       // 底盘不跟随云台
-    CHASSIS_AUTO,       // 底盘自动模式
     CHASSIS_OFF_HOOK,   // 底盘脱困模式
+    CHASSIS_FOLLOW_GIMBAL_YAW,// 底盘跟随云台（运动方向为云台坐标系方向，需进行坐标转换）
+    CHASSIS_SPIN,       // 小陀螺模式
+    CHASSIS_FREE,       // 底盘不跟随云台
+    CHASSIS_GLISSADE,   // 滑行上台阶模式
+    CHASSIS_STAND_UP,   // 底盘起立，从倒地状态到站立状态的中间过程
+    CHASSIS_CALIBRATE,  // 底盘校准  
+    CHASSIS_AUTO,       // 底盘自动模式
     CHASSIS_DEBUG,      // 调试模式
     CHASSIS_POS_DEBUG,  // 位控调试模式
-    CHASSIS_CUSTOM      // 自定义模式
 } ChassisMode_e;
 
 typedef struct Leg
@@ -224,6 +223,7 @@ typedef struct LPF
     LowPassFilter_t leg_theta_accel_filter[2];
     LowPassFilter_t support_force_filter[2];
     LowPassFilter_t roll;
+    LowPassFilter_t vx;
 } LPF_t;
 
 /**
@@ -233,8 +233,11 @@ typedef struct LPF
 typedef struct
 {
     const RC_ctrl_t * rc;  // 底盘使用的遥控器指针
+    bool shift_press;
+    uint8_t spin_flag;
     const Imu_t * imu;     // imu数据
     ChassisMode_e mode;    // 底盘模式
+    ChassisMode_e last_mode ;
     uint8_t error_code;    // 底盘错误代码
     int8_t step;           // 底盘运行步骤号
     uint32_t step_time;    // (ms)底盘步骤运行时间
@@ -256,6 +259,7 @@ typedef struct
     uint32_t duration;   // (ms)任务周期
     float dyaw;  // (rad)(feedback)当前位置与云台中值角度差（用于坐标转换）
     uint16_t yaw_mid;  // (ecd)(preset)云台中值角度
+    uint32_t x_time;  // (ms)速度增量pid加速时间    
 } Chassis_s;
 
 typedef struct Calibrate
@@ -297,6 +301,7 @@ extern void SetCali(const fp32 motor_middle[4]);
 extern bool_t CmdCali(fp32 motor_middle[4]);
 extern void ChassisSetCaliData(const fp32 motor_middle[4]);
 extern bool_t ChassisCmdCali(fp32 motor_middle[4]);
+extern uint8_t Getspin_flag(void);
 
 #endif /* CHASSIS_BALANCE */
 #endif /* CHASSIS_BALANCE_H */

@@ -71,7 +71,9 @@ typedef struct
 {
   const RC_ctrl_t * rc;  // 射击使用的遥控器指针
   LoadMode_e mode;       // 射击模式
-  FricState_e state;     // 摩擦轮状态
+  FricState_e state,last_state;     // 摩擦轮状态
+  fp32 begin_time,time;
+  ramp_function_source_t ramp;
 
   Motor_s fric_motor[2];  // 摩擦轮电机
   Motor_s trigger_motor;  // 拨弹盘电机
@@ -108,6 +110,8 @@ typedef struct
   uint16_t mr_time;
 } Shoot_s;
 
+extern uint16_t GetFric_flag(void);
+extern uint16_t GetShoot_flag(void);
 
 
 extern void ShootInit(void);

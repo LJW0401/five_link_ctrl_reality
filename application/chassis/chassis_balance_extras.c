@@ -98,7 +98,7 @@ void GetLegForce(float J[2][2], float T1, float T2, float F[2])
     float det = J[0][0] * J[1][1] - J[0][1] * J[1][0];
     // clang-format off
     float inv_J[4] = {J[1][1] / det, -J[0][1] / det, 
-                     -J[1][0] / det,  J[1][1] / det};
+                     -J[1][0] / det,  J[0][0] / det};
     // clang-format on
     //F = (inv_J.') * T
     float F0 = inv_J[0] * T1 + inv_J[2] * T2;

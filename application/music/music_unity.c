@@ -47,205 +47,232 @@
 #define HalfBeat  100
 // clang-format on
 
-#define NOTE_NUM 200
+#define NOTE_NUM 300
 static Note Notes[NOTE_NUM];  // Array of notes
-static MusicInfo_s MUSIC_INFO;
+
+static uint32_t last_note_id = 0;  // Index of the last note
+static uint32_t write_id = 1;      // Index of the note to be written
+static uint32_t play_id = 1;       // Index of the note to be played
+
+static uint32_t start_time = 0;  // Start time of the music
+static uint32_t now = 0;
+
+/*-------------------- Private functions --------------------*/
+static void WriteNote(int note, float Long)
+{
+    Notes[write_id].note = note;
+    Notes[write_id].Long = Long;
+    Notes[write_id].end = Notes[write_id - 1].end + Long;
+    write_id++;
+}
 
 /*-------------------- User functions --------------------*/
-
-MusicInfo_s MusicUnityInit(void)
+void MusicUnityPlay(void)
 {
-    MUSIC_INFO.notes = Notes;
+    now = HAL_GetTick();
+    if (now - start_time >= Notes[play_id].end) {
+        play_id++;
+        if (play_id > last_note_id) {
+            play_id = 1;
+            start_time = now;
+        }
 
-    WRITE_NOTE(D3, HalfBeat / 2);
-    WRITE_NOTE(D2, HalfBeat * 3);
-    WRITE_NOTE(D1, HalfBeat / 2);
-    WRITE_NOTE(C6, HalfBeat * 3);
-    WRITE_NOTE(C5, HalfBeat / 2);
-    WRITE_NOTE(C6, OneBeat * 4);
+        buzzer_note(Notes[play_id].note, 0.05);
+    }
+}
 
-    WRITE_NOTE(D3, HalfBeat / 2);
-    WRITE_NOTE(D2, HalfBeat * 3);
-    WRITE_NOTE(D1, HalfBeat / 2);
-    WRITE_NOTE(C6, HalfBeat * 3);
-    WRITE_NOTE(C5, HalfBeat / 2);
-    WRITE_NOTE(C6, OneBeat * 4);
+void MusicUnityInit(void)
+{
+    WriteNote(D3, HalfBeat / 2);
+    WriteNote(D2, HalfBeat * 3);
+    WriteNote(D1, HalfBeat / 2);
+    WriteNote(C6, HalfBeat * 3);
+    WriteNote(C5, HalfBeat / 2);
+    WriteNote(C6, OneBeat * 4);
 
-    WRITE_NOTE(D3, HalfBeat / 2);
-    WRITE_NOTE(D2, HalfBeat * 3);
-    WRITE_NOTE(D1, HalfBeat / 2);
-    WRITE_NOTE(C6, HalfBeat * 3);
-    WRITE_NOTE(C5, HalfBeat / 2);
-    WRITE_NOTE(C6, OneBeat * 2 + HalfBeat);
-    WRITE_NOTE(D1, OneBeat * 2);
-    WRITE_NOTE(D2, OneBeat * 2);
-    WRITE_NOTE(D3, OneBeat * 2);
-    WRITE_NOTE(D2, OneBeat * 2);
-    WRITE_NOTE(0, OneBeat + HalfBeat);
+    WriteNote(D3, HalfBeat / 2);
+    WriteNote(D2, HalfBeat * 3);
+    WriteNote(D1, HalfBeat / 2);
+    WriteNote(C6, HalfBeat * 3);
+    WriteNote(C5, HalfBeat / 2);
+    WriteNote(C6, OneBeat * 4);
 
-    WRITE_NOTE(D3, HalfBeat / 2);
-    WRITE_NOTE(D2, HalfBeat * 3);
-    WRITE_NOTE(D1, HalfBeat / 2);
-    WRITE_NOTE(C6, HalfBeat * 3);
-    WRITE_NOTE(C5, HalfBeat / 2);
-    WRITE_NOTE(C6, OneBeat * 4);
+    WriteNote(D3, HalfBeat / 2);
+    WriteNote(D2, HalfBeat * 3);
+    WriteNote(D1, HalfBeat / 2);
+    WriteNote(C6, HalfBeat * 3);
+    WriteNote(C5, HalfBeat / 2);
+    WriteNote(C6, OneBeat * 2 + HalfBeat);
+    WriteNote(D1, OneBeat * 2);
+    WriteNote(D2, OneBeat * 2);
+    WriteNote(D3, OneBeat * 2);
+    WriteNote(D2, OneBeat * 2);
+    WriteNote(0, OneBeat + HalfBeat);
 
-    WRITE_NOTE(D3, HalfBeat / 2);
-    WRITE_NOTE(D2, HalfBeat * 3);
-    WRITE_NOTE(D1, HalfBeat / 2);
-    WRITE_NOTE(C6, HalfBeat * 3);
-    WRITE_NOTE(C5, HalfBeat / 2);
-    WRITE_NOTE(C6, OneBeat * 4);
+    WriteNote(D3, HalfBeat / 2);
+    WriteNote(D2, HalfBeat * 3);
+    WriteNote(D1, HalfBeat / 2);
+    WriteNote(C6, HalfBeat * 3);
+    WriteNote(C5, HalfBeat / 2);
+    WriteNote(C6, OneBeat * 4);
 
-    WRITE_NOTE(B6, HalfBeat / 2);
-    WRITE_NOTE(C1, HalfBeat * 3);
-    WRITE_NOTE(C2, HalfBeat / 2);
-    WRITE_NOTE(C3, HalfBeat * 3);
-    WRITE_NOTE(C5, HalfBeat / 2);
-    WRITE_NOTE(C6, OneBeat * 2 + HalfBeat);
-    WRITE_NOTE(C5, OneBeat * 2);
-    WRITE_NOTE(C6, OneBeat * 2);
-    WRITE_NOTE(D1, OneBeat * 2);
-    WRITE_NOTE(D2, OneBeat * 2);
-    WRITE_NOTE(0, OneBeat + HalfBeat);
+    WriteNote(D3, HalfBeat / 2);
+    WriteNote(D2, HalfBeat * 3);
+    WriteNote(D1, HalfBeat / 2);
+    WriteNote(C6, HalfBeat * 3);
+    WriteNote(C5, HalfBeat / 2);
+    WriteNote(C6, OneBeat * 4);
 
-    WRITE_NOTE(D3, HalfBeat / 2);
-    WRITE_NOTE(D2, HalfBeat * 3);
-    WRITE_NOTE(D1, HalfBeat / 2);
-    WRITE_NOTE(C6, HalfBeat * 3);
-    WRITE_NOTE(C5, HalfBeat / 2);
-    WRITE_NOTE(C6, OneBeat * 4);
+    WriteNote(B6, HalfBeat / 2);
+    WriteNote(C1, HalfBeat * 3);
+    WriteNote(C2, HalfBeat / 2);
+    WriteNote(C3, HalfBeat * 3);
+    WriteNote(C5, HalfBeat / 2);
+    WriteNote(C6, OneBeat * 2 + HalfBeat);
+    WriteNote(C5, OneBeat * 2);
+    WriteNote(C6, OneBeat * 2);
+    WriteNote(D1, OneBeat * 2);
+    WriteNote(D2, OneBeat * 2);
+    WriteNote(0, OneBeat + HalfBeat);
 
-    WRITE_NOTE(D3, HalfBeat / 2);
-    WRITE_NOTE(D2, HalfBeat * 3);
-    WRITE_NOTE(D1, HalfBeat / 2);
-    WRITE_NOTE(C6, HalfBeat * 3);
-    WRITE_NOTE(C5, HalfBeat / 2);
-    WRITE_NOTE(C6, OneBeat * 4);
+    WriteNote(D3, HalfBeat / 2);
+    WriteNote(D2, HalfBeat * 3);
+    WriteNote(D1, HalfBeat / 2);
+    WriteNote(C6, HalfBeat * 3);
+    WriteNote(C5, HalfBeat / 2);
+    WriteNote(C6, OneBeat * 4);
 
-    WRITE_NOTE(D3, HalfBeat / 2);
-    WRITE_NOTE(D2, HalfBeat * 3);
-    WRITE_NOTE(D1, HalfBeat / 2);
-    WRITE_NOTE(C6, HalfBeat * 3);
-    WRITE_NOTE(C5, HalfBeat / 2);
-    WRITE_NOTE(C6, OneBeat * 2 + HalfBeat);
-    WRITE_NOTE(D1, OneBeat * 2);
-    WRITE_NOTE(D2, OneBeat * 2);
-    WRITE_NOTE(D3, OneBeat * 2);
-    WRITE_NOTE(D2, OneBeat * 2);
-    WRITE_NOTE(0, OneBeat + HalfBeat);
+    WriteNote(D3, HalfBeat / 2);
+    WriteNote(D2, HalfBeat * 3);
+    WriteNote(D1, HalfBeat / 2);
+    WriteNote(C6, HalfBeat * 3);
+    WriteNote(C5, HalfBeat / 2);
+    WriteNote(C6, OneBeat * 4);
 
-    WRITE_NOTE(D3, HalfBeat / 2);
-    WRITE_NOTE(D2, HalfBeat * 3);
-    WRITE_NOTE(D1, HalfBeat / 2);
-    WRITE_NOTE(C6, HalfBeat * 3);
-    WRITE_NOTE(C5, HalfBeat / 2);
-    WRITE_NOTE(C6, OneBeat * 4);
+    WriteNote(D3, HalfBeat / 2);
+    WriteNote(D2, HalfBeat * 3);
+    WriteNote(D1, HalfBeat / 2);
+    WriteNote(C6, HalfBeat * 3);
+    WriteNote(C5, HalfBeat / 2);
+    WriteNote(C6, OneBeat * 2 + HalfBeat);
+    WriteNote(D1, OneBeat * 2);
+    WriteNote(D2, OneBeat * 2);
+    WriteNote(D3, OneBeat * 2);
+    WriteNote(D2, OneBeat * 2);
+    WriteNote(0, OneBeat + HalfBeat);
 
-    WRITE_NOTE(D3, HalfBeat / 2);
-    WRITE_NOTE(D2, HalfBeat * 3);
-    WRITE_NOTE(D1, HalfBeat / 2);
-    WRITE_NOTE(C6, HalfBeat * 3);
-    WRITE_NOTE(C5, HalfBeat / 2);
-    WRITE_NOTE(C6, OneBeat * 4);
+    WriteNote(D3, HalfBeat / 2);
+    WriteNote(D2, HalfBeat * 3);
+    WriteNote(D1, HalfBeat / 2);
+    WriteNote(C6, HalfBeat * 3);
+    WriteNote(C5, HalfBeat / 2);
+    WriteNote(C6, OneBeat * 4);
 
-    WRITE_NOTE(B6, HalfBeat / 2);
-    WRITE_NOTE(C1, HalfBeat * 3);
-    WRITE_NOTE(C2, HalfBeat / 2);
-    WRITE_NOTE(C3, HalfBeat * 3);
-    WRITE_NOTE(C5, HalfBeat / 2);
-    WRITE_NOTE(C6, OneBeat * 2 + HalfBeat);
-    WRITE_NOTE(C5, OneBeat * 2);
-    WRITE_NOTE(C6, OneBeat * 2);
-    WRITE_NOTE(D1, OneBeat * 2);
-    WRITE_NOTE(D2, OneBeat * 2);
-    WRITE_NOTE(0,OneBeat + 150);
-    WRITE_NOTE(C3, OneBeat * 2);
-    WRITE_NOTE(0,OneBeat + 150);
+    WriteNote(D3, HalfBeat / 2);
+    WriteNote(D2, HalfBeat * 3);
+    WriteNote(D1, HalfBeat / 2);
+    WriteNote(C6, HalfBeat * 3);
+    WriteNote(C5, HalfBeat / 2);
+    WriteNote(C6, OneBeat * 4);
 
-    WRITE_NOTE(C6, OneBeat * 2);
-    WRITE_NOTE(C6, OneBeat * 2);
-    WRITE_NOTE(C6, OneBeat * 2);
-    WRITE_NOTE(C6, HalfBeat * 3);
-    WRITE_NOTE(C5, HalfBeat);
-    WRITE_NOTE(C6, HalfBeat * 3);
-    WRITE_NOTE(D1, HalfBeat);
-    WRITE_NOTE(C6, OneBeat * 2);
-    WRITE_NOTE(C5, OneBeat * 2);
-    WRITE_NOTE(C3, OneBeat * 2);
+    WriteNote(B6, HalfBeat / 2);
+    WriteNote(C1, HalfBeat * 3);
+    WriteNote(C2, HalfBeat / 2);
+    WriteNote(C3, HalfBeat * 3);
+    WriteNote(C5, HalfBeat / 2);
+    WriteNote(C6, OneBeat * 2 + HalfBeat);
+    WriteNote(C5, OneBeat * 2);
+    WriteNote(C6, OneBeat * 2);
+    WriteNote(D1, OneBeat * 2);
+    WriteNote(D2, OneBeat * 2);
+    WriteNote(0,OneBeat + 150);
+    WriteNote(C3, OneBeat * 2);
+    WriteNote(0,OneBeat + 150);
 
-    WRITE_NOTE(C6, OneBeat * 2);
-    WRITE_NOTE(C6, OneBeat * 2);
-    WRITE_NOTE(C6, OneBeat * 2);
-    WRITE_NOTE(C6, HalfBeat * 3);
-    WRITE_NOTE(C5, HalfBeat);
-    WRITE_NOTE(C6, HalfBeat * 3);
-    WRITE_NOTE(D6, HalfBeat);
-    WRITE_NOTE(D5, OneBeat * 2);
-    WRITE_NOTE(D3, OneBeat * 2);
-    WRITE_NOTE(D2, OneBeat * 2);
+    WriteNote(C6, OneBeat * 2);
+    WriteNote(C6, OneBeat * 2);
+    WriteNote(C6, OneBeat * 2);
+    WriteNote(C6, HalfBeat * 3);
+    WriteNote(C5, HalfBeat);
+    WriteNote(C6, HalfBeat * 3);
+    WriteNote(D1, HalfBeat);
+    WriteNote(C6, OneBeat * 2);
+    WriteNote(C5, OneBeat * 2);
+    WriteNote(C3, OneBeat * 2);
 
-    WRITE_NOTE(D3, OneBeat * 2);
-    WRITE_NOTE(D3, OneBeat * 2);
-    WRITE_NOTE(D3, OneBeat * 2);
-    WRITE_NOTE(D3, HalfBeat * 3);
-    WRITE_NOTE(D2, HalfBeat);
-    WRITE_NOTE(D3, HalfBeat * 3);
-    WRITE_NOTE(D5, HalfBeat);
-    WRITE_NOTE(D3, OneBeat * 2);
-    WRITE_NOTE(D2, OneBeat * 2);
-    WRITE_NOTE(D1, OneBeat * 2);
+    WriteNote(C6, OneBeat * 2);
+    WriteNote(C6, OneBeat * 2);
+    WriteNote(C6, OneBeat * 2);
+    WriteNote(C6, HalfBeat * 3);
+    WriteNote(C5, HalfBeat);
+    WriteNote(C6, HalfBeat * 3);
+    WriteNote(D6, HalfBeat);
+    WriteNote(D5, OneBeat * 2);
+    WriteNote(D3, OneBeat * 2);
+    WriteNote(D2, OneBeat * 2);
 
-    WRITE_NOTE(D3, OneBeat * 2);
-    WRITE_NOTE(D3, OneBeat * 2);
-    WRITE_NOTE(D3, OneBeat * 2);
-    WRITE_NOTE(D3, HalfBeat * 3);
-    WRITE_NOTE(D2, HalfBeat);
-    WRITE_NOTE(D3, HalfBeat * 3);
-    WRITE_NOTE(D5, HalfBeat);
-    WRITE_NOTE(D3, OneBeat * 2);
-    WRITE_NOTE(D2, OneBeat * 2);
-    WRITE_NOTE(D1, OneBeat * 2);
+    WriteNote(D3, OneBeat * 2);
+    WriteNote(D3, OneBeat * 2);
+    WriteNote(D3, OneBeat * 2);
+    WriteNote(D3, HalfBeat * 3);
+    WriteNote(D2, HalfBeat);
+    WriteNote(D3, HalfBeat * 3);
+    WriteNote(D5, HalfBeat);
+    WriteNote(D3, OneBeat * 2);
+    WriteNote(D2, OneBeat * 2);
+    WriteNote(D1, OneBeat * 2);
 
-    WRITE_NOTE(C6, OneBeat * 2);
-    WRITE_NOTE(C6, OneBeat * 2);
-    WRITE_NOTE(C6, OneBeat * 2);
-    WRITE_NOTE(C6, HalfBeat * 3);
-    WRITE_NOTE(C5, HalfBeat);
-    WRITE_NOTE(C6, HalfBeat * 3);
-    WRITE_NOTE(D1, HalfBeat);
-    WRITE_NOTE(C6, OneBeat * 2);
-    WRITE_NOTE(C5, OneBeat * 2);
-    WRITE_NOTE(C3, OneBeat * 2);
+    WriteNote(D3, OneBeat * 2);
+    WriteNote(D3, OneBeat * 2);
+    WriteNote(D3, OneBeat * 2);
+    WriteNote(D3, HalfBeat * 3);
+    WriteNote(D2, HalfBeat);
+    WriteNote(D3, HalfBeat * 3);
+    WriteNote(D5, HalfBeat);
+    WriteNote(D3, OneBeat * 2);
+    WriteNote(D2, OneBeat * 2);
+    WriteNote(D1, OneBeat * 2);
 
-    WRITE_NOTE(C6, OneBeat * 2);
-    WRITE_NOTE(C6, OneBeat * 2);
-    WRITE_NOTE(C6, OneBeat * 2);
-    WRITE_NOTE(C6, HalfBeat * 3);
-    WRITE_NOTE(C5, HalfBeat);
-    WRITE_NOTE(C6, HalfBeat * 3);
-    WRITE_NOTE(D6, HalfBeat);
-    WRITE_NOTE(D5, OneBeat * 2);
-    WRITE_NOTE(D3, OneBeat * 2);
-    WRITE_NOTE(D2, OneBeat * 2);
+    WriteNote(C6, OneBeat * 2);
+    WriteNote(C6, OneBeat * 2);
+    WriteNote(C6, OneBeat * 2);
+    WriteNote(C6, HalfBeat * 3);
+    WriteNote(C5, HalfBeat);
+    WriteNote(C6, HalfBeat * 3);
+    WriteNote(D1, HalfBeat);
+    WriteNote(C6, OneBeat * 2);
+    WriteNote(C5, OneBeat * 2);
+    WriteNote(C3, OneBeat * 2);
 
-    WRITE_NOTE(D3, OneBeat * 2);
-    WRITE_NOTE(D3, OneBeat * 2);
-    WRITE_NOTE(D3, HalfBeat * 3);
-    WRITE_NOTE(D2, HalfBeat);
-    WRITE_NOTE(D1, HalfBeat * 3);
-    WRITE_NOTE(D2, HalfBeat);
-    WRITE_NOTE(D3, OneBeat * 2);
-    WRITE_NOTE(D3, OneBeat * 2);
-    WRITE_NOTE(D3, HalfBeat * 3);
-    WRITE_NOTE(D2, HalfBeat);
-    WRITE_NOTE(D1, HalfBeat * 3);
-    WRITE_NOTE(D2, HalfBeat);
-    WRITE_NOTE(D3, OneBeat * 2);
-    WRITE_NOTE(D3, OneBeat * 2);
-    WRITE_NOTE(D3, OneBeat * 2);
-    WRITE_NOTE(D3, OneBeat * 2);
-    WRITE_NOTE(D3, OneBeat * 2);
+    WriteNote(C6, OneBeat * 2);
+    WriteNote(C6, OneBeat * 2);
+    WriteNote(C6, OneBeat * 2);
+    WriteNote(C6, HalfBeat * 3);
+    WriteNote(C5, HalfBeat);
+    WriteNote(C6, HalfBeat * 3);
+    WriteNote(D6, HalfBeat);
+    WriteNote(D5, OneBeat * 2);
+    WriteNote(D3, OneBeat * 2);
+    WriteNote(D2, OneBeat * 2);
 
-    return MUSIC_INFO;
+    WriteNote(D3, OneBeat * 2);
+    WriteNote(D3, OneBeat * 2);
+    WriteNote(D3, HalfBeat * 3);
+    WriteNote(D2, HalfBeat);
+    WriteNote(D1, HalfBeat * 3);
+    WriteNote(D2, HalfBeat);
+    WriteNote(D3, OneBeat * 2);
+    WriteNote(D3, OneBeat * 2);
+    WriteNote(D3, HalfBeat * 3);
+    WriteNote(D2, HalfBeat);
+    WriteNote(D1, HalfBeat * 3);
+    WriteNote(D2, HalfBeat);
+    WriteNote(D3, OneBeat * 2);
+    WriteNote(D3, OneBeat * 2);
+    WriteNote(D3, OneBeat * 2);
+    WriteNote(D3, OneBeat * 2);
+    WriteNote(D3, OneBeat * 2);
+
+    last_note_id = write_id - 1;
+    write_id = 1;
 }
