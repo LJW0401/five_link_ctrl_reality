@@ -33,7 +33,7 @@ void develop_task(void const * pvParameters)
         ModifyDebugDataPackage(6, CHASSIS.cmd.leg[0].wheel.T, "wheel_T");
         ModifyDebugDataPackage(7, CHASSIS.cmd.leg[0].rod.Tp, "rod_Tp");
         
-        ModifyDebugDataPackage(7, CHASSIS.fdb.leg[0].rod.L0, "rod_L0");
+        ModifyDebugDataPackage(8, CHASSIS.fdb.leg[0].rod.L0, "rod_L0");
 
 
         vTaskDelay(1);
