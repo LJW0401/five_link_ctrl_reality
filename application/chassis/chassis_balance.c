@@ -737,7 +737,7 @@ static void BodyMotionObserve(void)
     if (fabs(CHASSIS.ref.speed_vector.vx) < WHEEL_DEADZONE &&
         fabs(CHASSIS.fdb.body.x_dot_obv) < 0.8f) {
         // 当目标速度为0，且速度小于阈值时，计算反馈距离
-        CHASSIS.fdb.body.x += CHASSIS.fdb.body.x_dot_obv * CHASSIS.duration * MS_TO_S;
+        CHASSIS.fdb.body.x += CHASSIS.fdb.body.x_dot_obv * CHASSIS.duration * MS_TO_S * 0.1f;
     } else {
         //CHASSIS.fdb.body.x = 0;
     }
@@ -937,7 +937,7 @@ void ChassisReference(void)
         case CHASSIS_FOLLOW_GIMBAL_YAW:
         case CHASSIS_POS_DEBUG: {
             angle = M_PI_2 + rc_angle * RC_TO_ONE * 0.3f;
-            length = 0.20f + rc_length * 0.00000001f;
+            length = 0.20f + CHASSIS.rc->rc.ch[2] *RC_TO_ONE*0.1f ;
 
             // if (CHASSIS.step == JUMP_STEP_SQUST) {
             //     length = MIN_LEG_LENGTH+0.09f;

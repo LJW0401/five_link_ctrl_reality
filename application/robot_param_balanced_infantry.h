@@ -32,7 +32,7 @@
 #define CHASSIS_ANGLE_CHANNEL  4  // 腿摆角的遥控器通道号码
 #define CHASSIS_LENGTH_CHANNEL 4  // 腿长的遥控器通道号码
 #define CHASSIS_ROLL_CHANNEL   4  // ROLL角的遥控器通道号码
-#define CHASSIS_RC_DEADLINE    20 // 摇杆死区
+#define CHASSIS_RC_DEADLINE    5 // 摇杆死区
 
 // deadzone parameters ---------------------
 #define WHEEL_DEADZONE (0.01f)  // (m/s)轮子速度死区
