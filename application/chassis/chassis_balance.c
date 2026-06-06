@@ -937,7 +937,7 @@ void ChassisReference(void)
         case CHASSIS_FOLLOW_GIMBAL_YAW:
         case CHASSIS_POS_DEBUG: {
             angle = M_PI_2 + rc_angle * RC_TO_ONE * 0.3f;
-            length = 0.14f + rc_length * 0.00000001f;
+            length = 0.20f + rc_length * 0.00000001f;
 
             // if (CHASSIS.step == JUMP_STEP_SQUST) {
             //     length = MIN_LEG_LENGTH+0.09f;
