@@ -44,7 +44,7 @@ uint32_t usb_high_water;
 
 // clang-format off
 
-#define SEND_DURATION_Debug       5   // ms
+#define SEND_DURATION_Debug       20  // ms
 #define SEND_DURATION_Imu         5   // ms
 #define SEND_DURATION_RobotStateInfo   10  // ms
 #define SEND_DURATION_Event       10  // ms
