@@ -742,15 +742,9 @@ void ChassisReference(void)
             break;
         }
         case CHASSIS_FOLLOW_GIMBAL_YAW: {  // 云台跟随模式下，控制量为云台坐标系下的速度，需要进行坐标转换
-            float delta_yaw = GetGimbalDeltaYawMid();
-            CHASSIS.ref.speed_vector.vx = v_set.vx * cosf(delta_yaw);
+            CHASSIS.ref.speed_vector.vx = v_set.vx;
             CHASSIS.ref.speed_vector.vy = 0;
-            if (GetGimbalInitJudgeReturn()) {
-                CHASSIS.ref.speed_vector.wz = 0;
-            } else {
-                CHASSIS.ref.speed_vector.wz =
-                    PID_calc(&CHASSIS.pid.chassis_follow_gimbal, -delta_yaw, 0);
-            }
+            CHASSIS.ref.speed_vector.wz = v_set.wz;
         } break;
         case CHASSIS_AUTO: {  // 底盘自动模式，控制量为云台坐标系下的速度，需要进行坐标转换
             CHASSIS.ref.speed_vector.vx = v_set.vx;
